@@ -1,0 +1,41 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Acadimy - Student</title>
+    <link rel="stylesheet" href="~/css/student.css" />
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+
+        <div class="nav-left">
+            <a class="logo" href="/Home/IndexStudent">🎓 Acadimy</a>
+        </div>
+
+        <div class="nav-center">
+            <a href="/Home/IndexStudent">Home</a>
+            <a href="/Student/Profile">My Profile</a>
+            <a href="/Student/Courses">Courses</a>
+            <a href="/Student/MyApplications">Applications</a>
+        </div>
+
+        <div class="nav-right">
+            <span>@User.Identity.Name</span>
+
+            <form asp-controller="Account" asp-action="Logout" method="post">
+                <button class="logout-btn">Logout</button>
+            </form>
+        </div>
+
+    </nav>
+
+    <!-- CONTENT -->
+    <div class="container">
+        @RenderBody()
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,61 @@
+﻿body {
+    margin: 0;
+    font-family: Arial;
+    background: #f5f7fb;
+}
+
+/* NAVBAR */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, #1e3c72, #2a5298);
+    padding: 15px 40px;
+    color: white;
+}
+
+/* LOGO */
+.logo {
+    font-size: 22px;
+    font-weight: bold;
+    color: white;
+    text-decoration: none;
+}
+
+/* LINKS */
+.nav-center a {
+    margin: 0 15px;
+    text-decoration: none;
+    color: white;
+    font-weight: 500;
+}
+
+    .nav-center a:hover {
+        color: #00ffcc;
+    }
+
+/* RIGHT */
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+/* LOGOUT */
+.logout-btn {
+    background: #ff4d4d;
+    border: none;
+    padding: 6px 12px;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+    .logout-btn:hover {
+        background: #cc0000;
+    }
+
+/* CONTENT */
+.container {
+    padding: 20px;
+}

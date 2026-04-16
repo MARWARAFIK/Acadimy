@@ -1,0 +1,47 @@
+﻿@model Acadimy.ViewModels.LoginViewModel
+@{
+    Layout = null;
+}
+
+<link rel="stylesheet" href="~/css/auth.css" />
+
+<div class="auth-container">
+    <div class="auth-card">
+
+        <div class="auth-logo">Jobstack</div>
+
+        <h2>Login</h2>
+
+        <form asp-action="Login" method="post">
+
+            <div class="form-group">
+                <label>Email</label>
+                <input asp-for="Email" class="form-control" />
+            </div>
+
+            <div class="form-group">
+                <label>Password</label>
+                <input asp-for="Password" type="password" class="form-control" />
+            </div>
+
+            <div class="auth-extra">
+                <label>
+                    <input asp-for="RememberMe" /> Remember me
+                </label>
+            </div>
+
+            <button class="auth-btn">Login</button>
+
+        </form>
+
+        <div style="color:red; text-align:center;">
+            @ViewBag.Message
+        </div>
+
+        <div class="auth-footer">
+            Don't have an account?
+            <a asp-action="Register">Create account</a>
+        </div>
+
+    </div>
+</div>
