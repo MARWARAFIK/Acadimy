@@ -10,5 +10,7 @@ namespace Acadimy.Data
             : base(options)
         {
         }
+
+       
     }
 }

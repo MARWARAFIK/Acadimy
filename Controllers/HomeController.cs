@@ -1,17 +1,22 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-public class HomeController : Controller
+namespace Acadimy.Controllers
 {
-    [Authorize(Roles = "Student")]
-    public IActionResult IndexStudent()
+    public class HomeController : Controller
     {
-        return View();
-    }
+        public IActionResult Index()
+        {
+            return View();
+        }
 
-    [Authorize(Roles = "Teacher")]
-    public IActionResult IndexTeacher()
-    {
-        return View();
+        public IActionResult IndexStudent()
+        {
+            return View();
+        }
+
+        public IActionResult IndexTeacher()
+        {
+            return View();
+        }
     }
 }

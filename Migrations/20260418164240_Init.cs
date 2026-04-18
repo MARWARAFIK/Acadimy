@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Acadimy.Migrations
 {
     /// <inheritdoc />
-    public partial class InitAuth : Migration
+    public partial class Init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -30,7 +30,22 @@ namespace Acadimy.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    FullName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    FirstName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    LastName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Location = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PhoneNumberCustom = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Website = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Bio = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Filiere = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Niveau = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ProfileImagePath = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CoverImagePath = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    NotifyNewCourse = table.Column<bool>(type: "bit", nullable: false),
+                    NotifyApplicationStatus = table.Column<bool>(type: "bit", nullable: false),
+                    NotifyAnnouncement = table.Column<bool>(type: "bit", nullable: false),
+                    NotifyMessages = table.Column<bool>(type: "bit", nullable: false),
+                    Skill = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    SkillPercent = table.Column<int>(type: "int", nullable: false),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),

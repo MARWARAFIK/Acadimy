@@ -3,45 +3,269 @@
     Layout = null;
 }
 
-<link rel="stylesheet" href="~/css/auth.css" />
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login - Acadimy</title>
 
-<div class="auth-container">
-    <div class="auth-card">
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" />
 
-        <div class="auth-logo">Jobstack</div>
+    <style>
+            * {
+                box-sizing: border-box;
+            }
 
-        <h2>Login</h2>
+            body {
+                margin: 0;
+                min-height: 100vh;
+                font-family: 'Segoe UI', sans-serif;
+                background:
+                    linear-gradient(rgba(10, 25, 47, 0.58), rgba(10, 25, 47, 0.58)),
+                    url('https://images.unsplash.com/photo-1497366412874-3415097a27e7?q=80&w=1600&auto=format&fit=crop') center center / cover no-repeat;
+            }
 
-        <form asp-action="Login" method="post">
+            .auth-page {
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: flex-start;
+                padding: 40px 70px;
+            }
 
-            <div class="form-group">
-                <label>Email</label>
-                <input asp-for="Email" class="form-control" />
+            .auth-card {
+                width: 100%;
+                max-width: 430px;
+                background: rgba(255,255,255,0.96);
+                border-radius: 20px;
+                padding: 26px 26px 22px;
+                box-shadow: 0 18px 45px rgba(0,0,0,0.18);
+            }
+
+            .auth-logo {
+                text-align: center;
+                font-size: 18px;
+                font-weight: 700;
+                color: #111827;
+                margin-bottom: 18px;
+            }
+
+            .auth-logo i {
+                color: #16a34a;
+                margin-right: 6px;
+            }
+
+            .auth-title {
+                font-size: 26px;
+                font-weight: 700;
+                color: #0f172a;
+                margin-bottom: 22px;
+            }
+
+            .form-label {
+                font-size: 15px;
+                font-weight: 600;
+                color: #0f172a;
+                margin-bottom: 8px;
+            }
+
+            .form-control {
+                height: 50px;
+                border-radius: 12px;
+                border: 1px solid #d6dde7;
+                font-size: 15px;
+                padding: 0 46px 0 14px;
+                box-shadow: none !important;
+            }
+
+            .form-control:focus {
+                border-color: #22c55e;
+            }
+
+            .field-group {
+                margin-bottom: 16px;
+            }
+
+            .password-box {
+                position: relative;
+            }
+
+            .toggle-password {
+                position: absolute;
+                top: 50%;
+                right: 12px;
+                transform: translateY(-50%);
+                width: 34px;
+                height: 34px;
+                border: none;
+                border-radius: 10px;
+                background: #f8fafc;
+                color: #475569;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition: 0.2s ease;
+            }
+
+            .toggle-password:hover {
+                background: #eef2f7;
+                color: #0f172a;
+            }
+
+            .auth-options {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 10px;
+                flex-wrap: wrap;
+                margin-bottom: 18px;
+                font-size: 14px;
+                color: #64748b;
+            }
+
+            .remember-wrap {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .remember-wrap input {
+                width: 16px;
+                height: 16px;
+            }
+
+            .auth-options a {
+                color: #64748b;
+                text-decoration: none;
+            }
+
+            .auth-options a:hover {
+                color: #16a34a;
+            }
+
+            .auth-btn {
+                width: 100%;
+                height: 50px;
+                border: none;
+                border-radius: 12px;
+                background: #16a34a;
+                color: #fff;
+                font-size: 17px;
+                font-weight: 700;
+                transition: 0.2s ease;
+            }
+
+            .auth-btn:hover {
+                background: #15803d;
+                color: #fff;
+            }
+
+            .auth-footer {
+                margin-top: 18px;
+                text-align: center;
+                font-size: 15px;
+                color: #64748b;
+            }
+
+            .auth-footer a {
+                text-decoration: none;
+                color: #0f172a;
+                font-weight: 700;
+                margin-left: 4px;
+            }
+
+            .auth-footer a:hover {
+                color: #16a34a;
+            }
+
+            @@media (max-width: 768px) {
+                .auth-page {
+                    justify-content: center;
+                    padding: 20px;
+                }
+
+                .auth-card {
+                    max-width: 100%;
+                    padding: 22px 18px 18px;
+                }
+
+                .auth-title {
+                    font-size: 24px;
+                }
+            }
+    </style>
+</head>
+<body>
+    <div class="auth-page">
+        <div class="auth-card">
+            <div class="auth-logo">
+                <i class="bi bi-mortarboard-fill"></i> Acadimy
             </div>
 
-            <div class="form-group">
-                <label>Password</label>
-                <input asp-for="Password" type="password" class="form-control" />
-            </div>
+            <h2 class="auth-title">Login</h2>
 
-            <div class="auth-extra">
-                <label>
-                    <input asp-for="RememberMe" /> Remember me
-                </label>
-            </div>
+            @if (ViewBag.Message != null)
+            {
+                <div class="alert alert-danger py-2">@ViewBag.Message</div>
+            }
 
-            <button class="auth-btn">Login</button>
+            <form asp-action="Login" method="post">
+                <div asp-validation-summary="All" class="text-danger mb-2"></div>
 
-        </form>
+                <div class="field-group">
+                    <label asp-for="Email" class="form-label">Email Address</label>
+                    <input asp-for="Email" class="form-control" placeholder="name@example.com" />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
 
-        <div style="color:red; text-align:center;">
-            @ViewBag.Message
+                <div class="field-group">
+                    <label asp-for="Password" class="form-label">Password</label>
+                    <div class="password-box">
+                        <input asp-for="Password" type="password" class="form-control" id="loginPassword" placeholder="Password" />
+                        <button type="button" class="toggle-password" onclick="togglePassword('loginPassword','loginEye')">
+                            <i class="bi bi-eye" id="loginEye"></i>
+                        </button>
+                    </div>
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                </div>
+
+                <div class="auth-options">
+                    <label class="remember-wrap">
+                        <input asp-for="RememberMe" type="checkbox" />
+                        <span>Remember me</span>
+                    </label>
+
+                    <a href="#">Forgot password?</a>
+                </div>
+
+                <button type="submit" class="auth-btn">Login</button>
+
+                <div class="auth-footer">
+                    Don't have an account?
+                    <a asp-action="Register" asp-controller="Account">Sign Up</a>
+                </div>
+            </form>
         </div>
-
-        <div class="auth-footer">
-            Don't have an account?
-            <a asp-action="Register">Create account</a>
-        </div>
-
     </div>
-</div>
+
+    <script>
+            function togglePassword(inputId, iconId) {
+                const input = document.getElementById(inputId);
+                const icon = document.getElementById(iconId);
+
+                if (input.type === "password") {
+                    input.type = "text";
+                    icon.classList.remove("bi-eye");
+                    icon.classList.add("bi-eye-slash");
+                } else {
+                    input.type = "password";
+                    icon.classList.remove("bi-eye-slash");
+                    icon.classList.add("bi-eye");
+                }
+            }
+    </script>
+</body>
+</html>

@@ -1,0 +1,197 @@
+﻿@model Acadimy.ViewModels.Student.SettingsViewModel
+
+@{
+    Layout = "~/Views/Shared/LayoutStudent.cshtml";
+}
+
+<div class="student-settings-page">
+
+    @if (ViewBag.Message != null)
+    {
+        <div class="alert alert-success">@ViewBag.Message</div>
+    }
+
+    <form asp-action="Index" method="post" enctype="multipart/form-data">
+        @Html.AntiForgeryToken()
+
+        <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+        <div class="card settings-card mb-4">
+            <div class="card-body p-4">
+                <h3 class="settings-title mb-4">Personal Detail</h3>
+
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <label asp-for="FirstName" class="form-label settings-label">First Name</label>
+                        <input asp-for="FirstName" class="form-control settings-input" />
+                        <span asp-validation-for="FirstName" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6 mb-4">
+                        <label asp-for="LastName" class="form-label settings-label">Last Name</label>
+                        <input asp-for="LastName" class="form-control settings-input" />
+                        <span asp-validation-for="LastName" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6 mb-4">
+                        <label asp-for="Email" class="form-label settings-label">Email</label>
+                        <input asp-for="Email" class="form-control settings-input" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6 mb-4">
+                        <label asp-for="Niveau" class="form-label settings-label">Niveau</label>
+                        <select asp-for="Niveau" class="form-select settings-input">
+                            <option value="">Choose niveau</option>
+                            <option>1ère année</option>
+                            <option>2ème année</option>
+                            <option>3ème année</option>
+                            <option>4ème année</option>
+                            <option>5ème année</option>
+                            <option>Licence</option>
+                            <option>Master</option>
+                            <option>Doctorat</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6 mb-4">
+                        <label asp-for="Filiere" class="form-label settings-label">Filière</label>
+                        <input asp-for="Filiere" class="form-control settings-input" placeholder="Ex: Informatique, Maths..." />
+                    </div>
+
+                    <div class="col-md-6 mb-4">
+                        <label asp-for="Location" class="form-label settings-label">Location</label>
+                        <input asp-for="Location" class="form-control settings-input" />
+                    </div>
+
+                    <div class="col-12 mb-4">
+                        <label asp-for="Bio" class="form-label settings-label">Intro</label>
+                        <textarea asp-for="Bio" class="form-control settings-textarea" rows="5"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card settings-card mb-4">
+            <div class="card-body p-4">
+                <h3 class="settings-title mb-4">Images</h3>
+
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <label asp-for="ProfileImage" class="form-label settings-label">Profile Photo</label>
+                        <input asp-for="ProfileImage" type="file" class="form-control settings-input" />
+                        @if (!string.IsNullOrEmpty(Model.ExistingProfileImagePath))
+                        {
+                            <img src="@Model.ExistingProfileImagePath" class="preview-img mt-3" alt="Profile Preview" />
+                        }
+                    </div>
+
+                    <div class="col-md-6 mb-4">
+                        <label asp-for="CoverImage" class="form-label settings-label">Cover Photo</label>
+                        <input asp-for="CoverImage" type="file" class="form-control settings-input" />
+                        @if (!string.IsNullOrEmpty(Model.ExistingCoverImagePath))
+                        {
+                            <img src="@Model.ExistingCoverImagePath" class="preview-cover mt-3" alt="Cover Preview" />
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card settings-card mb-4">
+            <div class="card-body p-4">
+                <h3 class="settings-title mb-4">Contact Info</h3>
+
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <label asp-for="PhoneNumberCustom" class="form-label settings-label">Phone</label>
+                        <input asp-for="PhoneNumberCustom" class="form-control settings-input" />
+                    </div>
+
+                    <div class="col-md-6 mb-4">
+                        <label asp-for="Website" class="form-label settings-label">Website</label>
+                        <input asp-for="Website" class="form-control settings-input" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card settings-card mb-4">
+            <div class="card-body p-4">
+                <h3 class="settings-title mb-4">Skill</h3>
+
+                <div class="row">
+                    <div class="col-md-8 mb-4">
+                        <label asp-for="Skill" class="form-label settings-label">Skill</label>
+                        <input asp-for="Skill" class="form-control settings-input" placeholder="Ex: HTML" />
+                    </div>
+
+                    <div class="col-md-4 mb-4">
+                        <label asp-for="SkillPercent" class="form-label settings-label">Skill %</label>
+                        <input asp-for="SkillPercent" type="number" min="0" max="100" class="form-control settings-input" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card settings-card mb-4">
+            <div class="card-body p-4">
+                <h3 class="settings-title mb-4">Change Password</h3>
+
+                <div class="row">
+                    <div class="col-md-4 mb-4">
+                        <label asp-for="CurrentPassword" class="form-label settings-label">Current Password</label>
+                        <input asp-for="CurrentPassword" type="password" class="form-control settings-input" />
+                        <span asp-validation-for="CurrentPassword" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-4 mb-4">
+                        <label asp-for="NewPassword" class="form-label settings-label">New Password</label>
+                        <input asp-for="NewPassword" type="password" class="form-control settings-input" />
+                        <span asp-validation-for="NewPassword" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-4 mb-4">
+                        <label asp-for="ConfirmNewPassword" class="form-label settings-label">Confirm New Password</label>
+                        <input asp-for="ConfirmNewPassword" type="password" class="form-control settings-input" />
+                        <span asp-validation-for="ConfirmNewPassword" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card settings-card mb-4">
+            <div class="card-body p-4">
+                <h3 class="settings-title mb-4">Account Notifications</h3>
+
+                <div class="notification-row">
+                    <span>When a teacher publishes a new course</span>
+                    <input asp-for="NotifyNewCourse" class="form-check-input notification-check" />
+                </div>
+
+                <div class="notification-row">
+                    <span>When application status changes</span>
+                    <input asp-for="NotifyApplicationStatus" class="form-check-input notification-check" />
+                </div>
+
+                <div class="notification-row">
+                    <span>When an admin sends an announcement</span>
+                    <input asp-for="NotifyAnnouncement" class="form-check-input notification-check" />
+                </div>
+
+                <div class="notification-row border-bottom-0">
+                    <span>When a teacher sends a message</span>
+                    <input asp-for="NotifyMessages" class="form-check-input notification-check" />
+                </div>
+
+                <div class="mt-4">
+                    <button type="submit" class="btn save-btn">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

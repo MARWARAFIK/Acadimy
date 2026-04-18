@@ -1,0 +1,111 @@
+﻿@model Acadimy.ViewModels.Student.ProfileViewModel
+
+@{
+    Layout = "~/Views/Shared/LayoutStudent.cshtml";
+
+    var cover = string.IsNullOrEmpty(Model.CoverImagePath)
+        ? "/images/default-cover.jpg"
+        : Model.CoverImagePath;
+
+    var profile = string.IsNullOrEmpty(Model.ProfileImagePath)
+        ? "/images/default-user.png"
+        : Model.ProfileImagePath;
+}
+
+<div class="student-profile-page">
+
+    <div class="profile-cover-box">
+        <img src="@cover" class="profile-cover-img" alt="Cover Image" />
+    </div>
+
+    <div class="profile-head-box">
+        <div class="profile-avatar-wrap">
+            <img src="@profile" class="profile-avatar-img" alt="Profile Image" />
+        </div>
+
+        <div class="profile-basic-info">
+            <h2>@Model.FullName</h2>
+            <p class="profile-subtitle">@Model.Filiere - @Model.Niveau</p>
+            <p class="profile-location">@Model.Location</p>
+        </div>
+
+        <div class="profile-action">
+            <a asp-controller="Settings" asp-action="Index" class="btn btn-success">
+                Edit Profile
+            </a>
+        </div>
+    </div>
+
+    <div class="profile-content-section">
+        <div class="row">
+
+            <div class="col-lg-8">
+                <div class="card profile-card-box mb-4">
+                    <div class="card-body p-4">
+                        <h3 class="profile-section-title">About</h3>
+                        <p class="profile-text">@Model.Bio</p>
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrEmpty(Model.Skill))
+                {
+                    <div class="card profile-card-box mb-4">
+                        <div class="card-body p-4">
+                            <h3 class="profile-section-title">Skill</h3>
+
+                            <div class="skill-item">
+                                <div class="skill-header">
+                                    <span>@Model.Skill</span>
+                                    <span>@Model.SkillPercent%</span>
+                                </div>
+                                <div class="skill-bar">
+                                    <div class="skill-fill" style="width:@Model.SkillPercent%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card profile-card-box mb-4">
+                    <div class="card-body p-4">
+                        <h3 class="profile-section-title">Personal Detail</h3>
+
+                        <div class="profile-detail-row">
+                            <span>Email :</span>
+                            <strong>@Model.Email</strong>
+                        </div>
+
+                        <div class="profile-detail-row">
+                            <span>Phone :</span>
+                            <strong>@Model.Phone</strong>
+                        </div>
+
+                        <div class="profile-detail-row">
+                            <span>Filière :</span>
+                            <strong>@Model.Filiere</strong>
+                        </div>
+
+                        <div class="profile-detail-row">
+                            <span>Niveau :</span>
+                            <strong>@Model.Niveau</strong>
+                        </div>
+
+                        <div class="profile-detail-row">
+                            <span>Location :</span>
+                            <strong>@Model.Location</strong>
+                        </div>
+
+                        <div class="profile-detail-row border-0">
+                            <span>Website :</span>
+                            <strong>@Model.Website</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
