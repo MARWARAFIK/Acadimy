@@ -1,4 +1,6 @@
-﻿namespace Acadimy.ViewModels.Student
+﻿using System.Collections.Generic;
+
+namespace Acadimy.ViewModels.Student
 {
     public class ProfileViewModel
     {
@@ -17,5 +19,8 @@
 
         public string? Skill { get; set; }
         public int SkillPercent { get; set; }
+
+        public CreatePostViewModel NewPost { get; set; } = new();
+        public List<PostItemViewModel> Posts { get; set; } = new();
     }
 }

@@ -25,6 +25,7 @@ namespace Acadimy.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
             if (!ModelState.IsValid)
@@ -70,6 +71,7 @@ namespace Acadimy.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
             if (!ModelState.IsValid)
@@ -83,7 +85,7 @@ namespace Acadimy.Controllers
 
             if (!result.Succeeded)
             {
-                ViewBag.Message = "Email ou mot de passe incorrect";
+                ModelState.AddModelError("", "Email ou mot de passe incorrect.");
                 return View(model);
             }
 
@@ -102,6 +104,7 @@ namespace Acadimy.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
             await _signInManager.SignOutAsync();

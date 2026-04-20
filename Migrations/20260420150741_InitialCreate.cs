@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Acadimy.Migrations
 {
     /// <inheritdoc />
-    public partial class Init : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -30,21 +30,21 @@ namespace Acadimy.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    FirstName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    LastName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Location = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    PhoneNumberCustom = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Website = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    FirstName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    LastName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    Location = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: true),
+                    PhoneNumberCustom = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    Website = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: true),
                     Bio = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Filiere = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Niveau = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Filiere = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    Niveau = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     ProfileImagePath = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CoverImagePath = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     NotifyNewCourse = table.Column<bool>(type: "bit", nullable: false),
                     NotifyApplicationStatus = table.Column<bool>(type: "bit", nullable: false),
                     NotifyAnnouncement = table.Column<bool>(type: "bit", nullable: false),
                     NotifyMessages = table.Column<bool>(type: "bit", nullable: false),
-                    Skill = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Skill = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     SkillPercent = table.Column<int>(type: "int", nullable: false),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -172,6 +172,83 @@ namespace Acadimy.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "StudentPosts",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ImagePath = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_StudentPosts", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_StudentPosts_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "StudentPostComments",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    StudentPostId = table.Column<int>(type: "int", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_StudentPostComments", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_StudentPostComments_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_StudentPostComments_StudentPosts_StudentPostId",
+                        column: x => x.StudentPostId,
+                        principalTable: "StudentPosts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "StudentPostLikes",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    StudentPostId = table.Column<int>(type: "int", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_StudentPostLikes", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_StudentPostLikes_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_StudentPostLikes_StudentPosts_StudentPostId",
+                        column: x => x.StudentPostId,
+                        principalTable: "StudentPosts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -210,6 +287,31 @@ namespace Acadimy.Migrations
                 column: "NormalizedUserName",
                 unique: true,
                 filter: "[NormalizedUserName] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_StudentPostComments_StudentPostId",
+                table: "StudentPostComments",
+                column: "StudentPostId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_StudentPostComments_UserId",
+                table: "StudentPostComments",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_StudentPostLikes_StudentPostId",
+                table: "StudentPostLikes",
+                column: "StudentPostId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_StudentPostLikes_UserId",
+                table: "StudentPostLikes",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_StudentPosts_UserId",
+                table: "StudentPosts",
+                column: "UserId");
         }
 
         /// <inheritdoc />
@@ -231,7 +333,16 @@ namespace Acadimy.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
+                name: "StudentPostComments");
+
+            migrationBuilder.DropTable(
+                name: "StudentPostLikes");
+
+            migrationBuilder.DropTable(
                 name: "AspNetRoles");
+
+            migrationBuilder.DropTable(
+                name: "StudentPosts");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");

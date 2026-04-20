@@ -1,0 +1,107 @@
+﻿@model List<Acadimy.ViewModels.Student.PostItemViewModel>
+
+@{
+    Layout = "~/Views/Shared/LayoutStudent.cshtml";
+}
+
+<div class="student-settings-page">
+    <div class="card profile-card-box mb-4">
+        <div class="card-body p-3">
+            <h3 class="profile-section-title mb-3">Explore Posts</h3>
+
+            @if (Model != null && Model.Any())
+            {
+                @foreach (var post in Model)
+                {
+                    <div class="fb-post-card mb-3">
+                        <div class="fb-post-header">
+                            <div class="fb-post-user">
+                                <img src="@(string.IsNullOrEmpty(post.ProfileImagePath) ? "/images/default-user.png" : post.ProfileImagePath)"
+                                     class="fb-post-avatar"
+                                     alt="Profile" />
+
+                                <div>
+                                    <div class="fb-post-name">@post.FullName</div>
+                                    <div class="fb-post-date">@post.CreatedAt.ToString("dd/MM/yyyy HH:mm")</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="fb-post-body">
+                            <p class="fb-post-text">@post.Content</p>
+
+                            @if (!string.IsNullOrEmpty(post.ImagePath))
+                            {
+                                <img src="@post.ImagePath" class="fb-post-image" alt="Post image" />
+                            }
+                        </div>
+
+                        <div class="fb-post-stats">
+                            <span>@post.LikesCount Likes</span>
+                            <span>@post.Comments.Count Comments</span>
+                        </div>
+
+                        <div class="fb-post-actions">
+                            <form asp-controller="Posts" asp-action="Like" method="post" class="m-0 flex-fill">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="postId" value="@post.Id" />
+                                <input type="hidden" name="returnTo" value="Explore" />
+                                <button type="submit" class="fb-action-btn w-100">
+                                    @(post.IsLikedByCurrentUser ? "💙 Liked" : "👍 Like")
+                                </button>
+                            </form>
+
+                            <button type="button" class="fb-action-btn flex-fill" onclick="toggleCommentBox('comment-@post.Id')">
+                                💬 Comment
+                            </button>
+                        </div>
+
+                        <div class="fb-comment-box" id="comment-@post.Id" style="display:none;">
+                            <form asp-controller="Posts" asp-action="AddComment" method="post" class="mb-3">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="PostId" value="@post.Id" />
+                                <input type="hidden" name="returnTo" value="Explore" />
+                                <input type="text" name="Content" class="form-control fb-comment-input" placeholder="Write a comment..." />
+                            </form>
+
+                            @if (post.Comments != null && post.Comments.Any())
+                            {
+                                @foreach (var comment in post.Comments)
+                                {
+                                    <div class="fb-single-comment">
+                                        <div class="d-flex align-items-start gap-2">
+                                            <img src="@(string.IsNullOrEmpty(comment.ProfileImagePath) ? "/images/default-user.png" : comment.ProfileImagePath)"
+                                                 class="fb-comment-avatar"
+                                                 alt="Comment user" />
+
+                                            <div class="fb-comment-content">
+                                                <div class="fb-comment-name">@comment.FullName</div>
+                                                <div class="fb-comment-text">@comment.Content</div>
+                                                <div class="fb-comment-date">@comment.CreatedAt.ToString("dd/MM/yyyy HH:mm")</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <p class="text-muted">No posts available.</p>
+            }
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleCommentBox(id) {
+        var box = document.getElementById(id);
+        if (box.style.display === "none") {
+            box.style.display = "block";
+        } else {
+            box.style.display = "none";
+        }
+    }
+</script>
