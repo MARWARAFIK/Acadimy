@@ -3,11 +3,11 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Acadimy - Student</title>
+    <title>Acadimy - Teacher</title>
 
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet" />
-    <link rel="stylesheet" href="~/css/student.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/teacher.css" asp-append-version="true" />
     <style>
             .navbar {
                 border-bottom: 1px solid #eee;
@@ -27,6 +27,7 @@
                 color: #4b5563;
                 font-size: 1.5rem;
                 transition: 0.2s;
+                cursor: pointer;
             }
 
                 .user-icon-btn:hover {
@@ -43,55 +44,61 @@
     <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
         <div class="container">
 
-            <a class="navbar-brand fw-bold" asp-controller="Student" asp-action="Index">
-                <span style="color: #16a34a;"><i class="bi bi-mortarboard-fill"></i> Acadimy</span>
+            <a class="navbar-brand fw-bold" asp-controller="Teacher" asp-action="Index">
+                <span style="color: #16a34a;"><i class="bi bi-person-workspace"></i> Acadimy</span>
             </a>
 
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarStudent">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTeacher">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
-            <div class="collapse navbar-collapse" id="navbarStudent">
+            <div class="collapse navbar-collapse" id="navbarTeacher">
                 <ul class="navbar-nav ms-auto align-items-center">
 
                     <li class="nav-item">
-                        <a class="nav-link" asp-controller="Student" asp-action="Index">
+                        <a class="nav-link" asp-controller="Teacher" asp-action="Index">
                             <i class="bi bi-house"></i> Home
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" asp-controller="Courses" asp-action="Index">
-                            <i class="bi bi-book"></i> Courses
+                        <a class="nav-link" asp-controller="Courses" asp-action="Manage">
+                            <i class="bi bi-journals"></i> My Courses
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" asp-controller="Applications" asp-action="Index">
-                            <i class="bi bi-briefcase"></i> Applications
+                        <a class="nav-link" asp-controller="Students" asp-action="Index">
+                            <i class="bi bi-people"></i> Students
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Assignments" asp-action="Index">
+                            <i class="bi bi-file-earmark-check"></i> Assignments
                         </a>
                     </li>
 
                     <li class="nav-item dropdown ms-lg-3">
                         <a class="nav-link dropdown-toggle user-icon-btn"
                            href="#"
-                           id="studentUserDropdown"
+                           id="teacherUserDropdown"
                            role="button"
                            data-bs-toggle="dropdown"
                            aria-expanded="false">
                             <i class="bi bi-person-circle"></i>
                         </a>
-                        <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" aria-labelledby="studentUserDropdown">
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" aria-labelledby="teacherUserDropdown">
                             <li class="px-3 py-2 small text-muted border-bottom">
-                                @User.Identity?.Name
+                                Enseignant : @User.Identity?.Name
                             </li>
                             <li>
-                                <a class="dropdown-item py-2" asp-controller="Profile" asp-action="Index">
+                                <a class="dropdown-item py-2" asp-controller="TeacherProfile" asp-action="Index">
                                     <i class="bi bi-person me-2"></i> Profile
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item py-2" asp-controller="Settings" asp-action="Index">
+                                <a class="dropdown-item py-2" asp-controller="TeacherSettings" asp-action="Index">
                                     <i class="bi bi-gear me-2"></i> Settings
                                 </a>
                             </li>

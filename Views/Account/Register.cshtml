@@ -2,22 +2,15 @@
 @{
     Layout = null;
 }
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Register - Acadimy</title>
-
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" />
-
     <style>
-            * {
-                box-sizing: border-box;
-            }
-
             body {
                 margin: 0;
                 min-height: 100vh;
@@ -69,77 +62,13 @@
                 margin-bottom: 8px;
             }
 
-            .form-control,
-            .form-select {
-                height: 50px;
+            .form-control, .form-select {
+                height: 48px;
                 border-radius: 12px;
                 border: 1px solid #d6dde7;
                 font-size: 15px;
-                box-shadow: none !important;
+                margin-bottom: 12px;
             }
-
-            .form-control {
-                padding: 0 46px 0 14px;
-            }
-
-            .form-select {
-                padding-left: 14px;
-            }
-
-                .form-control:focus,
-                .form-select:focus {
-                    border-color: #22c55e;
-                }
-
-            .field-group {
-                margin-bottom: 14px;
-            }
-
-            .password-box {
-                position: relative;
-            }
-
-            .toggle-password {
-                position: absolute;
-                top: 50%;
-                right: 12px;
-                transform: translateY(-50%);
-                width: 34px;
-                height: 34px;
-                border: none;
-                border-radius: 10px;
-                background: #f8fafc;
-                color: #475569;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                cursor: pointer;
-                transition: 0.2s ease;
-            }
-
-                .toggle-password:hover {
-                    background: #eef2f7;
-                    color: #0f172a;
-                }
-
-            .terms-row {
-                margin-top: 8px;
-                margin-bottom: 18px;
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                color: #64748b;
-                font-size: 14px;
-            }
-
-                .terms-row input {
-                    width: 16px;
-                    height: 16px;
-                }
-
-                .terms-row strong {
-                    color: #16a34a;
-                }
 
             .auth-btn {
                 width: 100%;
@@ -151,15 +80,30 @@
                 font-size: 17px;
                 font-weight: 700;
                 transition: 0.2s ease;
+                margin-top: 10px;
             }
 
                 .auth-btn:hover {
                     background: #15803d;
-                    color: #fff;
                 }
 
+            .password-box {
+                position: relative;
+            }
+
+            .toggle-password {
+                position: absolute;
+                top: 40%; /* Ajusté pour le margin-bottom de l'input */
+                right: 12px;
+                transform: translateY(-50%);
+                border: none;
+                background: none;
+                color: #64748b;
+                cursor: pointer;
+            }
+
             .auth-footer {
-                margin-top: 18px;
+                margin-top: 20px;
                 text-align: center;
                 font-size: 15px;
                 color: #64748b;
@@ -171,119 +115,69 @@
                     font-weight: 700;
                     margin-left: 4px;
                 }
-
-                    .auth-footer a:hover {
-                        color: #16a34a;
-                    }
-
-            @@media (max-width: 768px) {
-                .auth-page {
-                    justify-content: center;
-                    padding: 20px;
-                }
-
-                .auth-card {
-                    max-width: 100%;
-                    padding: 22px 18px 18px;
-                }
-
-                .auth-title {
-                    font-size: 24px;
-                }
-            }
     </style>
 </head>
 <body>
     <div class="auth-page">
         <div class="auth-card">
-            <div class="auth-logo">
-                <i class="bi bi-mortarboard-fill"></i> Acadimy
-            </div>
-
+            <div class="auth-logo"><i class="bi bi-mortarboard-fill"></i> Acadimy</div>
             <h2 class="auth-title">Signup</h2>
 
             <form asp-action="Register" method="post">
-                <div asp-validation-summary="All" class="text-danger mb-2"></div>
+                <div asp-validation-summary="All" class="text-danger small mb-2"></div>
 
-                <div class="field-group">
+                <div class="mb-1">
                     <label asp-for="FirstName" class="form-label">First Name</label>
                     <input asp-for="FirstName" class="form-control" placeholder="Harry" />
-                    <span asp-validation-for="FirstName" class="text-danger"></span>
                 </div>
 
-                <div class="field-group">
+                <div class="mb-1">
                     <label asp-for="LastName" class="form-label">Last Name</label>
                     <input asp-for="LastName" class="form-control" placeholder="Potter" />
-                    <span asp-validation-for="LastName" class="text-danger"></span>
                 </div>
 
-                <div class="field-group">
+                <div class="mb-1">
                     <label asp-for="Email" class="form-label">Email Address</label>
                     <input asp-for="Email" class="form-control" placeholder="name@example.com" />
-                    <span asp-validation-for="Email" class="text-danger"></span>
                 </div>
 
-                <div class="field-group">
+                <div class="mb-1">
                     <label asp-for="Password" class="form-label">Password</label>
                     <div class="password-box">
-                        <input asp-for="Password" type="password" class="form-control" id="registerPassword" placeholder="Password" />
-                        <button type="button" class="toggle-password" onclick="togglePassword('registerPassword','registerEye')">
-                            <i class="bi bi-eye" id="registerEye"></i>
-                        </button>
+                        <input asp-for="Password" type="password" class="form-control" id="pwd" />
+                        <button type="button" class="toggle-password" onclick="toggle('pwd')"><i class="bi bi-eye"></i></button>
                     </div>
-                    <span asp-validation-for="Password" class="text-danger"></span>
                 </div>
 
-                <div class="field-group">
+                <div class="mb-1">
                     <label asp-for="ConfirmPassword" class="form-label">Confirm Password</label>
                     <div class="password-box">
-                        <input asp-for="ConfirmPassword" type="password" class="form-control" id="confirmPassword" placeholder="Confirm Password" />
-                        <button type="button" class="toggle-password" onclick="togglePassword('confirmPassword','confirmEye')">
-                            <i class="bi bi-eye" id="confirmEye"></i>
-                        </button>
+                        <input asp-for="ConfirmPassword" type="password" class="form-control" id="cpwd" />
+                        <button type="button" class="toggle-password" onclick="toggle('cpwd')"><i class="bi bi-eye"></i></button>
                     </div>
-                    <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
                 </div>
 
-                <div class="field-group">
+                <div class="mb-2">
                     <label asp-for="Role" class="form-label">Role</label>
                     <select asp-for="Role" class="form-select">
                         <option value="">Choose role</option>
-                        <option value="Student">Student</option>
-                        <option value="Teacher">Teacher</option>
+                        <option value="Étudiant">Student</option>
+                        <option value="Enseignant">Teacher</option>
                     </select>
-                    <span asp-validation-for="Role" class="text-danger"></span>
                 </div>
-
-                <label class="terms-row">
-                    <input type="checkbox" />
-                    <span>I accept <strong>Terms and Conditions</strong></span>
-                </label>
 
                 <button type="submit" class="auth-btn">Register</button>
 
                 <div class="auth-footer">
-                    Already have an account?
-                    <a asp-action="Login" asp-controller="Account">Sign in</a>
+                    Already have an account? <a asp-action="Login">Sign in</a>
                 </div>
             </form>
         </div>
     </div>
-
     <script>
-            function togglePassword(inputId, iconId) {
-                const input = document.getElementById(inputId);
-                const icon = document.getElementById(iconId);
-
-                if (input.type === "password") {
-                    input.type = "text";
-                    icon.classList.remove("bi-eye");
-                    icon.classList.add("bi-eye-slash");
-                } else {
-                    input.type = "password";
-                    icon.classList.remove("bi-eye-slash");
-                    icon.classList.add("bi-eye");
-                }
+            function toggle(id) {
+                const input = document.getElementById(id);
+                input.type = input.type === "password" ? "text" : "password";
             }
     </script>
 </body>

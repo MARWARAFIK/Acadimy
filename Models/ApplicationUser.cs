@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Identity;
 
 namespace Acadimy.Models
 {
@@ -10,6 +10,9 @@ namespace Acadimy.Models
 
         [MaxLength(100)]
         public string? LastName { get; set; }
+
+        // Propriété calculée — pas de migration nécessaire
+        public string FullName => $"{FirstName} {LastName}".Trim();
 
         [MaxLength(150)]
         public string? Location { get; set; }
@@ -28,19 +31,25 @@ namespace Acadimy.Models
         [MaxLength(50)]
         public string? Niveau { get; set; }
 
+        [MaxLength(100)]
+        public string? Grade { get; set; }
+
+        [MaxLength(100)]
+        public string? Specialite { get; set; }
+
+        public int Experience { get; set; }
+
         public string? ProfileImagePath { get; set; }
         public string? CoverImagePath { get; set; }
-
-        public bool NotifyNewCourse { get; set; } = true;
-        public bool NotifyApplicationStatus { get; set; } = true;
-        public bool NotifyAnnouncement { get; set; } = true;
-        public bool NotifyMessages { get; set; } = true;
 
         [MaxLength(100)]
         public string? Skill { get; set; }
 
         public int SkillPercent { get; set; } = 0;
 
-        public string FullName => $"{FirstName} {LastName}".Trim();
+        public bool NotifyNewCourse { get; set; } = true;
+        public bool NotifyApplicationStatus { get; set; } = true;
+        public bool NotifyAnnouncement { get; set; } = true;
+        public bool NotifyMessages { get; set; } = true;
     }
 }

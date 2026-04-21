@@ -10,32 +10,45 @@ namespace Acadimy.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
 
-        public AccountController(
-            UserManager<ApplicationUser> userManager,
-            SignInManager<ApplicationUser> signInManager)
+        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
         {
             _userManager = userManager;
             _signInManager = signInManager;
         }
 
         [HttpGet]
-        public IActionResult Register()
+        public IActionResult Login() => View();
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Login(LoginViewModel model)
         {
-            return View();
+            if (!ModelState.IsValid) return View(model);
+
+            var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, false);
+
+            if (result.Succeeded)
+            {
+                var user = await _userManager.FindByEmailAsync(model.Email);
+                var roles = await _userManager.GetRolesAsync(user!);
+
+                if (roles.Contains("Enseignant")) return RedirectToAction("Index", "Teacher");
+                if (roles.Contains("Étudiant")) return RedirectToAction("Index", "Student");
+            }
+
+            ModelState.AddModelError("", "Email ou mot de passe incorrect.");
+            return View(model);
         }
+
+        // CORRECTION : Affiche la page d'inscription (Règle la 404)
+        [HttpGet]
+        public IActionResult Register() => View();
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
-            if (!ModelState.IsValid)
-                return View(model);
-
-            if (model.Role != "Student" && model.Role != "Teacher")
-            {
-                ModelState.AddModelError("", "Choisissez un rôle valide.");
-                return View(model);
-            }
+            if (!ModelState.IsValid) return View(model);
 
             var user = new ApplicationUser
             {
@@ -49,62 +62,18 @@ namespace Acadimy.Controllers
 
             if (result.Succeeded)
             {
+                // Utilise le rôle sélectionné dans ton formulaire
                 await _userManager.AddToRoleAsync(user, model.Role);
-                await _signInManager.SignInAsync(user, false);
+                await _signInManager.SignInAsync(user, isPersistent: false);
 
-                if (model.Role == "Student")
-                    return RedirectToAction("IndexStudent", "Home");
-
-                return RedirectToAction("IndexTeacher", "Home");
+                return model.Role == "Enseignant" ? RedirectToAction("Index", "Teacher") : RedirectToAction("Index", "Student");
             }
 
-            foreach (var error in result.Errors)
-                ModelState.AddModelError("", error.Description);
-
+            foreach (var error in result.Errors) ModelState.AddModelError("", error.Description);
             return View(model);
         }
 
-        [HttpGet]
-        public IActionResult Login()
-        {
-            return View();
-        }
-
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(LoginViewModel model)
-        {
-            if (!ModelState.IsValid)
-                return View(model);
-
-            var result = await _signInManager.PasswordSignInAsync(
-                model.Email,
-                model.Password,
-                model.RememberMe,
-                false);
-
-            if (!result.Succeeded)
-            {
-                ModelState.AddModelError("", "Email ou mot de passe incorrect.");
-                return View(model);
-            }
-
-            var user = await _userManager.FindByEmailAsync(model.Email);
-
-            if (user != null)
-            {
-                if (await _userManager.IsInRoleAsync(user, "Student"))
-                    return RedirectToAction("IndexStudent", "Home");
-
-                if (await _userManager.IsInRoleAsync(user, "Teacher"))
-                    return RedirectToAction("IndexTeacher", "Home");
-            }
-
-            return RedirectToAction("Login");
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
             await _signInManager.SignOutAsync();

@@ -1,0 +1,103 @@
+﻿@model Acadimy.ViewModels.Teacher.TeacherSettingsViewModel
+@{
+    Layout = "~/Views/Shared/LayoutTeacher.cshtml";
+}
+
+<div class="student-settings-page">
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+
+    <form asp-action="Index" asp-controller="TeacherSettings" method="post" enctype="multipart/form-data">
+        @Html.AntiForgeryToken()
+
+        <div class="card settings-card mb-4">
+            <div class="card-body p-4">
+                <h3 class="settings-title mb-4">Photo de profil</h3>
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label settings-label">Photo de profil</label>
+                        <input asp-for="ProfileImage" type="file" class="form-control settings-input" />
+                        @if (!string.IsNullOrEmpty(Model.ExistingProfileImagePath))
+                        {
+                            <img src="@Model.ExistingProfileImagePath"
+                                 class="preview-img mt-3" alt="Profile Preview" />
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card settings-card mb-4">
+            <div class="card-body p-4">
+                <h3 class="settings-title mb-4">Informations académiques</h3>
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label settings-label">Grade</label>
+                        <select asp-for="Grade" class="form-select settings-input">
+                            <option value="">-- Choisir --</option>
+                            <option value="Professeur">Professeur</option>
+                            <option value="Maître de Conférences">Maître de Conférences</option>
+                            <option value="Doctorant">Doctorant</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label settings-label">Spécialité</label>
+                        <input asp-for="Specialite" class="form-control settings-input"
+                               placeholder="ex: Intelligence Artificielle" />
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label settings-label">Années d'expérience</label>
+                        <input asp-for="Experience" type="number" min="0"
+                               class="form-control settings-input" />
+                    </div>
+                    <div class="col-12 mb-4">
+                        <label class="form-label settings-label">Bio Professionnelle</label>
+                        <textarea asp-for="Bio" class="form-control settings-textarea" rows="5"
+                                  placeholder="Décrivez votre parcours..."></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card settings-card mb-4">
+            <div class="card-body p-4">
+                <h3 class="settings-title mb-4">Changer le mot de passe</h3>
+                <div class="row">
+                    <div class="col-md-4 mb-4">
+                        <label asp-for="CurrentPassword" class="form-label settings-label">
+                            Mot de passe actuel
+                        </label>
+                        <input asp-for="CurrentPassword" type="password"
+                               class="form-control settings-input" />
+                    </div>
+                    <div class="col-md-4 mb-4">
+                        <label asp-for="NewPassword" class="form-label settings-label">
+                            Nouveau mot de passe
+                        </label>
+                        <input asp-for="NewPassword" type="password"
+                               class="form-control settings-input" />
+                    </div>
+                    <div class="col-md-4 mb-4">
+                        <label asp-for="ConfirmNewPassword" class="form-label settings-label">
+                            Confirmer le mot de passe
+                        </label>
+                        <input asp-for="ConfirmNewPassword" type="password"
+                               class="form-control settings-input" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card settings-card mb-4">
+            <div class="card-body p-4">
+                <div class="mt-2">
+                    <button type="submit" class="btn save-btn">Enregistrer les modifications</button>
+                </div>
+            </div>
+        </div>
+
+    </form>
+</div>

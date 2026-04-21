@@ -1,0 +1,19 @@
+﻿@{
+    ViewData["Title"] = "Espace Enseignant";
+}
+
+<div class="container mt-5">
+    <div class="card shadow-sm p-4">
+        <h1 class="text-success"><i class="bi bi-person-workspace"></i> Bienvenue, Cher Enseignant</h1>
+        <p class="lead">Gestion de vos cours et suivi des étudiants d'Acadimy.</p>
+        <hr />
+        <div class="row">
+            <div class="col-md-4">
+                <div class="p-3 border rounded bg-light text-center">
+                    <h3>Mes Cours</h3>
+                    <a class="btn btn-outline-success" asp-controller="Courses" asp-action="Manage">Gérer</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
