@@ -1,94 +1,350 @@
-﻿/* Couleurs de base Teacher */
+﻿/* ================= GLOBAL & LAYOUT ================= */
 body {
     margin: 0;
     font-family: 'Segoe UI', sans-serif;
-    background-color: #f1f5f9; /* Un gris un peu plus pro */
+    background-color: #f8f9fb;
     color: #1e293b;
 }
 
 .navbar {
     padding: 14px 0;
-    border-bottom: 2px solid #0284c7; /* Ligne bleue pour l'enseignant */
+    border-bottom: 1px solid #ececec;
 }
 
 .navbar-brand {
     font-size: 20px;
     font-weight: 700;
+    color: #111827 !important;
 }
 
 .navbar .nav-link {
-    color: #475569;
+    color: #444;
     font-weight: 500;
     margin-left: 10px;
     font-size: 16px;
-    transition: 0.3s;
 }
 
     .navbar .nav-link:hover {
-        color: #0284c7; /* Bleu au survol */
+        color: #0d6efd;
     }
 
-/* Boutons spéciaux Teacher */
-.btn-teacher {
+.bi-person-circle {
+    font-size: 28px;
+    color: #333;
+}
+
+.dropdown-menu {
+    border: 1px solid #e9ecef;
+    border-radius: 14px;
+    min-width: 220px;
+    padding: 10px 0;
+}
+
+    .dropdown-menu .dropdown-item {
+        padding: 12px 18px;
+        font-size: 16px;
+    }
+
+/* ================= SETTINGS ================= */
+
+.teacher-settings-page {
+    padding: 20px 0 40px;
+}
+
+.settings-card {
+    border: 1px solid #e9ecef;
+    border-radius: 18px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+    background: #fff;
+}
+
+.settings-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.settings-label {
+    font-size: 17px;
+    font-weight: 500;
+    color: #0f172a;
+    margin-bottom: 12px;
+}
+
+.settings-input {
+    height: 58px;
+    border-radius: 10px;
+    border: 1px solid #dfe3e8;
+    font-size: 17px;
+    padding-left: 18px;
+    box-shadow: none !important;
+}
+
+.settings-textarea {
+    border-radius: 10px;
+    border: 1px solid #dfe3e8;
+    font-size: 17px;
+    padding: 16px 18px;
+    resize: none;
+    box-shadow: none !important;
+}
+
+    .settings-input:focus,
+    .settings-textarea:focus {
+        border-color: #0284c7;
+        box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.08) !important;
+    }
+
+.preview-img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #e5e7eb;
+}
+
+.preview-cover {
+    width: 100%;
+    max-width: 260px;
+    height: 120px;
+    border-radius: 14px;
+    object-fit: cover;
+    border: 3px solid #e5e7eb;
+}
+
+.save-btn {
     background-color: #0284c7;
     border: none;
     color: white;
-    padding: 10px 20px;
+    padding: 14px 30px;
+    font-size: 18px;
+    font-weight: 700;
     border-radius: 10px;
-    font-weight: 600;
 }
 
-    .btn-teacher:hover {
+    .save-btn:hover {
         background-color: #0369a1;
         color: white;
     }
 
-/* Card Style (Cours et Suivi) */
-.teacher-card {
-    border: none;
-    border-radius: 18px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    background: #fff;
-    transition: transform 0.2s;
+.notification-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 0;
+    border-bottom: 1px solid #edf0f2;
+    font-size: 18px;
 }
 
-    .teacher-card:hover {
-        transform: translateY(-5px);
+.notification-check {
+    width: 22px;
+    height: 22px;
+}
+
+/* ================= PROFILE ================= */
+
+.teacher-profile-page {
+    padding: 20px 0 40px;
+}
+
+.profile-cover-box {
+    width: 100%;
+    height: 320px;
+    border-radius: 24px;
+    overflow: hidden;
+    background: #e5e7eb;
+}
+
+.profile-cover-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile-head-box {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 25px;
+    margin-top: -80px;
+    padding: 0 40px;
+    position: relative;
+    z-index: 2;
+}
+
+.profile-avatar-wrap {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 6px solid #fff;
+    background: #fff;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    flex-shrink: 0;
+}
+
+.profile-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile-basic-info {
+    flex: 1;
+    min-width: 260px;
+    padding-top: 90px;
+}
+
+    .profile-basic-info h2 {
+        margin: 0;
+        font-size: 36px;
+        font-weight: 700;
+        color: #0f172a;
+        line-height: 1.2;
     }
 
-/* Sections du Profil Teacher */
-.teacher-profile-header {
-    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
-    height: 200px;
-    border-radius: 24px;
+.profile-subtitle {
+    font-size: 24px;
+    color: #94a3b8;
+    margin-top: 8px;
+    margin-bottom: 6px;
 }
 
-/* Les Inputs du mode Teacher */
-.teacher-input:focus {
-    border-color: #0284c7;
-    box-shadow: 0 0 0 0.25rem rgba(2, 132, 199, 0.25);
+.profile-location {
+    font-size: 18px;
+    color: #64748b;
+    margin-bottom: 0;
 }
 
-/* Status Labels (Pour les inscriptions des étudiants)  */
-.badge-pending {
-    background-color: #f59e0b;
-    color: white;
+.profile-action {
+    padding-top: 90px;
 }
 
-.badge-accepted {
-    background-color: #10b981;
-    color: white;
+.profile-content-section {
+    margin-top: 35px;
 }
 
-.badge-rejected {
-    background-color: #ef4444;
-    color: white;
+.profile-card-box {
+    border: 1px solid #e9ecef;
+    border-radius: 18px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+    background: #fff;
 }
 
-/* Styles identiques pour la cohérence */
-.dropdown-menu {
-    border-radius: 14px;
-    min-width: 220px;
-    border: none;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+.profile-section-title {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 18px;
+    color: #0f172a;
+}
+
+.profile-text {
+    font-size: 18px;
+    line-height: 1.9;
+    color: #64748b;
+}
+
+.profile-detail-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 0;
+    border-bottom: 1px solid #edf0f2;
+    font-size: 17px;
+}
+
+    .profile-detail-row span {
+        color: #94a3b8;
+    }
+
+    .profile-detail-row strong {
+        color: #0f172a;
+        text-align: right;
+    }
+
+/* ================= SKILL ================= */
+
+.skill-item {
+    margin-top: 8px;
+}
+
+.skill-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    font-size: 17px;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.skill-bar {
+    width: 100%;
+    height: 10px;
+    background: #e5e7eb;
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.skill-fill {
+    height: 100%;
+    background: #0284c7;
+    border-radius: 999px;
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media (max-width: 768px) {
+    .profile-cover-box {
+        height: 220px;
+    }
+
+    .profile-head-box {
+        margin-top: -50px;
+        padding: 0 15px;
+        gap: 18px;
+    }
+
+    .profile-avatar-wrap {
+        width: 110px;
+        height: 110px;
+    }
+
+    .profile-basic-info {
+        padding-top: 30px;
+    }
+
+    .profile-action {
+        padding-top: 20px;
+        width: 100%;
+    }
+
+    .profile-basic-info h2 {
+        font-size: 28px;
+    }
+
+    .profile-subtitle {
+        font-size: 18px;
+    }
+
+    .settings-input {
+        height: 52px;
+        font-size: 16px;
+    }
+
+    .settings-textarea {
+        font-size: 16px;
+    }
+
+    .save-btn {
+        width: 100%;
+    }
+}
+.teacher-profile-page {
+    padding: 20px 0 40px;
+}
+
+.teacher-settings-page {
+    padding: 20px 0 40px;
 }

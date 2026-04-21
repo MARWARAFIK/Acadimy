@@ -1,5 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Acadimy.Models.Teacher;
 using Microsoft.AspNetCore.Identity;
+using System.ComponentModel.DataAnnotations;
 
 namespace Acadimy.Models
 {
@@ -11,7 +12,6 @@ namespace Acadimy.Models
         [MaxLength(100)]
         public string? LastName { get; set; }
 
-        // Propriété calculée — pas de migration nécessaire
         public string FullName => $"{FirstName} {LastName}".Trim();
 
         [MaxLength(150)]
@@ -42,6 +42,7 @@ namespace Acadimy.Models
         public string? ProfileImagePath { get; set; }
         public string? CoverImagePath { get; set; }
 
+        // anciens champs - ممكن تخليهم مؤقتاً
         [MaxLength(100)]
         public string? Skill { get; set; }
 
@@ -51,5 +52,7 @@ namespace Acadimy.Models
         public bool NotifyApplicationStatus { get; set; } = true;
         public bool NotifyAnnouncement { get; set; } = true;
         public bool NotifyMessages { get; set; } = true;
+
+        public ICollection<TeacherExpertise> TeacherExpertises { get; set; } = new List<TeacherExpertise>();
     }
 }
