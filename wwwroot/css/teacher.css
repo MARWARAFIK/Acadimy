@@ -1,14 +1,41 @@
-﻿/* ================= GLOBAL & LAYOUT ================= */
-body {
-    margin: 0;
-    font-family: 'Segoe UI', sans-serif;
-    background-color: #f8f9fb;
-    color: #1e293b;
+﻿/* ================= VARIABLES & ROOT ================= */
+:root {
+    --acadimy-blue: #0284c7;
+    --acadimy-blue-hover: #0369a1;
+    --acadimy-green: #28a745;
+    --acadimy-green-hover: #218838;
+    --acadimy-red: #e11d48;
+    --acadimy-yellow: #f59e0b;
+    --acadimy-purple: #6366f1;
+    --acadimy-purple-hover: #4f46e5;
+    --bg-light: #f8f9fb;
+    --text-main: #1e293b;
+    --border-color: #edf0f2;
+    --card-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
 }
 
+/* ================= GLOBAL ================= */
+body {
+    margin: 0;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background-color: var(--bg-light);
+    color: var(--text-main);
+}
+
+a {
+    text-decoration: none;
+}
+
+img {
+    max-width: 100%;
+    display: block;
+}
+
+/* ================= NAVBAR ================= */
 .navbar {
     padding: 14px 0;
     border-bottom: 1px solid #ececec;
+    background: #fff;
 }
 
 .navbar-brand {
@@ -25,28 +52,10 @@ body {
 }
 
     .navbar .nav-link:hover {
-        color: #0d6efd;
-    }
-
-.bi-person-circle {
-    font-size: 28px;
-    color: #333;
-}
-
-.dropdown-menu {
-    border: 1px solid #e9ecef;
-    border-radius: 14px;
-    min-width: 220px;
-    padding: 10px 0;
-}
-
-    .dropdown-menu .dropdown-item {
-        padding: 12px 18px;
-        font-size: 16px;
+        color: var(--acadimy-blue);
     }
 
 /* ================= SETTINGS ================= */
-
 .teacher-settings-page {
     padding: 20px 0 40px;
 }
@@ -64,87 +73,40 @@ body {
     color: #0f172a;
 }
 
-.settings-label {
-    font-size: 17px;
-    font-weight: 500;
-    color: #0f172a;
-    margin-bottom: 12px;
-}
-
-.settings-input {
-    height: 58px;
-    border-radius: 10px;
-    border: 1px solid #dfe3e8;
-    font-size: 17px;
-    padding-left: 18px;
-    box-shadow: none !important;
-}
-
+.settings-input,
 .settings-textarea {
     border-radius: 10px;
     border: 1px solid #dfe3e8;
-    font-size: 17px;
-    padding: 16px 18px;
-    resize: none;
+    font-size: 16px;
+    padding-left: 18px;
     box-shadow: none !important;
 }
 
     .settings-input:focus,
     .settings-textarea:focus {
-        border-color: #0284c7;
+        border-color: var(--acadimy-blue);
         box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.08) !important;
     }
 
-.preview-img {
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 3px solid #e5e7eb;
-}
-
-.preview-cover {
-    width: 100%;
-    max-width: 260px;
-    height: 120px;
-    border-radius: 14px;
-    object-fit: cover;
-    border: 3px solid #e5e7eb;
-}
-
 .save-btn {
-    background-color: #0284c7;
+    background-color: var(--acadimy-blue);
     border: none;
     color: white;
     padding: 14px 30px;
-    font-size: 18px;
+    font-size: 17px;
     font-weight: 700;
     border-radius: 10px;
+    transition: 0.2s;
 }
 
     .save-btn:hover {
-        background-color: #0369a1;
+        background-color: var(--acadimy-blue-hover);
         color: white;
     }
 
-.notification-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 24px 0;
-    border-bottom: 1px solid #edf0f2;
-    font-size: 18px;
-}
-
-.notification-check {
-    width: 22px;
-    height: 22px;
-}
-
-/* ================= PROFILE ================= */
-
+/* ================= PROFILE PAGE ================= */
 .teacher-profile-page {
-    padding: 20px 0 40px;
+    padding: 24px 0 40px;
 }
 
 .profile-cover-box {
@@ -153,6 +115,7 @@ body {
     border-radius: 24px;
     overflow: hidden;
     background: #e5e7eb;
+    box-shadow: var(--card-shadow);
 }
 
 .profile-cover-img {
@@ -162,26 +125,31 @@ body {
 }
 
 .profile-head-box {
+    background: #fff;
+    border-radius: 24px;
+    margin-top: -60px;
+    margin-left: 24px;
+    margin-right: 24px;
+    padding: 24px 28px;
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 25px;
-    margin-top: -80px;
-    padding: 0 40px;
+    gap: 24px;
     position: relative;
-    z-index: 2;
+    z-index: 5;
+    box-shadow: var(--card-shadow);
+    border: 1px solid #eef2f7;
 }
 
 .profile-avatar-wrap {
     width: 150px;
     height: 150px;
+    min-width: 150px;
     border-radius: 50%;
-    overflow: hidden;
     border: 6px solid #fff;
-    background: #fff;
     box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-    flex-shrink: 0;
+    overflow: hidden;
+    background: #fff;
 }
 
 .profile-avatar-img {
@@ -192,159 +160,400 @@ body {
 
 .profile-basic-info {
     flex: 1;
-    min-width: 260px;
-    padding-top: 90px;
 }
 
     .profile-basic-info h2 {
-        margin: 0;
-        font-size: 36px;
-        font-weight: 700;
+        font-size: 30px;
+        font-weight: 800;
+        margin-bottom: 8px;
         color: #0f172a;
-        line-height: 1.2;
     }
 
 .profile-subtitle {
-    font-size: 24px;
-    color: #94a3b8;
-    margin-top: 8px;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
+    color: #475569;
+    font-size: 16px;
+    font-weight: 600;
 }
 
 .profile-location {
-    font-size: 18px;
-    color: #64748b;
     margin-bottom: 0;
+    color: #64748b;
+    font-size: 15px;
 }
 
-.profile-action {
-    padding-top: 90px;
+.profile-action .btn {
+    border-radius: 12px;
+    padding: 12px 18px;
+    font-weight: 700;
 }
 
 .profile-content-section {
-    margin-top: 35px;
+    margin-top: 24px;
 }
 
 .profile-card-box {
-    border: 1px solid #e9ecef;
-    border-radius: 18px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+    border: 1px solid #e9eef5;
+    border-radius: 20px;
     background: #fff;
+    box-shadow: var(--card-shadow);
+    overflow: hidden;
 }
 
 .profile-section-title {
     font-size: 22px;
-    font-weight: 700;
-    margin-bottom: 18px;
+    font-weight: 800;
     color: #0f172a;
+    margin-bottom: 16px;
 }
 
-.profile-text {
-    font-size: 18px;
-    line-height: 1.9;
-    color: #64748b;
-}
-
-.profile-detail-row {
-    display: flex;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 14px 0;
-    border-bottom: 1px solid #edf0f2;
-    font-size: 17px;
-}
-
-    .profile-detail-row span {
-        color: #94a3b8;
-    }
-
-    .profile-detail-row strong {
-        color: #0f172a;
-        text-align: right;
-    }
-
-/* ================= SKILL ================= */
-
-.skill-item {
-    margin-top: 8px;
-}
-
-.skill-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-    font-size: 17px;
-    font-weight: 600;
-    color: #0f172a;
-}
-
-.skill-bar {
-    width: 100%;
-    height: 10px;
-    background: #e5e7eb;
-    border-radius: 999px;
+/* ================= POSTS ================= */
+.fb-post-card {
+    background: #fff;
+    border: 1px solid #e8edf3;
+    border-radius: 20px;
+    box-shadow: var(--card-shadow);
     overflow: hidden;
+    padding: 20px;
 }
 
-.skill-fill {
-    height: 100%;
-    background: #0284c7;
-    border-radius: 999px;
+.fb-post-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
 }
+
+.fb-post-user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.fb-post-avatar {
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #eef2f7;
+}
+
+.fb-post-name {
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.2;
+}
+
+.fb-post-date {
+    font-size: 13px;
+    color: #64748b;
+    margin-top: 2px;
+}
+
+.fb-post-body {
+    margin-bottom: 14px;
+}
+
+.fb-post-text {
+    font-size: 15px;
+    color: #1e293b;
+    line-height: 1.6;
+    margin-bottom: 12px;
+    white-space: pre-wrap;
+}
+
+.fb-post-image {
+    width: 100%;
+    max-height: 480px;
+    object-fit: cover;
+    border-radius: 16px;
+    border: 1px solid #eef2f7;
+}
+
+.fb-post-actions {
+    display: flex;
+    gap: 10px;
+    padding-top: 12px;
+    border-top: 1px solid #eef2f7;
+}
+
+.fb-action-btn {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    color: #334155;
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-weight: 700;
+    transition: 0.2s ease;
+}
+
+    .fb-action-btn:hover {
+        background: #eef6ff;
+        border-color: #cfe7ff;
+        color: var(--acadimy-blue);
+    }
+
+/* ================= COMMENTS ================= */
+.fb-comment-box {
+    border-radius: 16px;
+    margin-top: 14px;
+    border: 1px solid #edf2f7;
+}
+
+.fb-comment-input {
+    border-radius: 12px;
+    border: 1px solid #dbe3ec;
+    min-height: 42px;
+}
+
+    .fb-comment-input:focus {
+        border-color: var(--acadimy-blue);
+        box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.08);
+    }
+
+.fb-comment-avatar {
+    width: 38px;
+    height: 38px;
+    min-width: 38px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #eef2f7;
+}
+
+.fb-comment-content {
+    background: #f8fafc;
+    border: 1px solid #e8edf3;
+    border-radius: 16px;
+    padding: 12px 14px;
+}
+
+.fb-comment-name {
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 4px;
+}
+
+.fb-comment-text {
+    color: #334155;
+    font-size: 14px;
+    line-height: 1.5;
+    margin-bottom: 4px;
+    white-space: pre-wrap;
+}
+
+.fb-comment-date {
+    color: #64748b;
+    font-size: 12px;
+}
+
+.border-start.ps-3 {
+    border-color: #dbe7f3 !important;
+}
+
+/* ================= COURSES ================= */
+.course-management-card {
+    border: 1px solid #e9ecef;
+    border-radius: 18px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    background: #fff;
+    overflow: hidden;
+    margin-top: 20px;
+}
+
+.btn-add-course {
+    background-color: var(--acadimy-green) !important;
+    border: none !important;
+    color: white !important;
+    padding: 12px 25px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 50px;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none !important;
+}
+
+    .btn-add-course:hover {
+        background-color: var(--acadimy-green-hover) !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(40, 167, 69, 0.3);
+    }
+
+.acadimy-table thead th {
+    background-color: #f8fafc;
+    border-bottom: 2px solid var(--border-color);
+    color: #64748b;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 700;
+    padding: 18px;
+}
+
+.acadimy-table tbody td {
+    padding: 16px;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.badge-cat {
+    background: #e8f5e9;
+    color: #2e7d32;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 12px;
+}
+
+.badge-lvl {
+    background: #f1f5f9;
+    color: #475569;
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    font-weight: 600;
+    font-size: 12px;
+}
+
+.action-group {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.btn-action-edit,
+.btn-action-delete,
+.btn-action-archive,
+.btn-action-restore {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s;
+    border: none;
+    text-decoration: none !important;
+    cursor: pointer;
+}
+
+    .btn-action-edit i,
+    .btn-action-delete i,
+    .btn-action-archive i,
+    .btn-action-restore i {
+        font-size: 15px;
+        line-height: 1;
+    }
+
+.btn-action-edit {
+    background: #fff9e6;
+    color: var(--acadimy-yellow);
+}
+
+    .btn-action-edit:hover {
+        background: var(--acadimy-yellow);
+        color: #fff;
+    }
+
+.btn-action-delete {
+    background: #fff1f2;
+    color: var(--acadimy-red);
+}
+
+    .btn-action-delete:hover {
+        background: var(--acadimy-red);
+        color: #fff;
+    }
+
+.btn-action-archive {
+    background: #eef2ff;
+    color: var(--acadimy-purple);
+}
+
+    .btn-action-archive:hover {
+        background: var(--acadimy-purple);
+        color: #fff;
+    }
+
+.btn-action-restore {
+    background: #ecfdf3;
+    color: var(--acadimy-green);
+}
+
+    .btn-action-restore:hover {
+        background: var(--acadimy-green);
+        color: #fff;
+    }
 
 /* ================= RESPONSIVE ================= */
+@media (max-width: 992px) {
+    .profile-head-box {
+        margin-left: 12px;
+        margin-right: 12px;
+        padding: 20px;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .profile-action {
+        width: 100%;
+    }
+
+        .profile-action .btn {
+            width: 100%;
+        }
+}
 
 @media (max-width: 768px) {
     .profile-cover-box {
-        height: 220px;
-    }
-
-    .profile-head-box {
-        margin-top: -50px;
-        padding: 0 15px;
-        gap: 18px;
+        height: 200px;
+        border-radius: 18px;
     }
 
     .profile-avatar-wrap {
         width: 110px;
         height: 110px;
-    }
-
-    .profile-basic-info {
-        padding-top: 30px;
-    }
-
-    .profile-action {
-        padding-top: 20px;
-        width: 100%;
+        min-width: 110px;
     }
 
     .profile-basic-info h2 {
-        font-size: 28px;
+        font-size: 24px;
     }
 
-    .profile-subtitle {
-        font-size: 18px;
+    .fb-post-actions {
+        flex-direction: column;
     }
 
-    .settings-input {
-        height: 52px;
-        font-size: 16px;
+    .acadimy-table thead {
+        display: none;
     }
 
-    .settings-textarea {
-        font-size: 16px;
-    }
-
-    .save-btn {
+    .save-btn,
+    .btn-add-course {
         width: 100%;
+        text-align: center;
+        justify-content: center;
     }
 }
-.teacher-profile-page {
-    padding: 20px 0 40px;
+.btn-action-restore {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s;
+    border: none;
+    text-decoration: none !important;
+    cursor: pointer;
+    background: #ecfdf3;
+    color: #28a745;
 }
 
-.teacher-settings-page {
-    padding: 20px 0 40px;
-}
+    .btn-action-restore:hover {
+        background: #28a745;
+        color: #fff;
+    }

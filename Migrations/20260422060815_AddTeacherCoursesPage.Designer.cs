@@ -4,6 +4,7 @@ using Acadimy.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Acadimy.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260422060815_AddTeacherCoursesPage")]
+    partial class AddTeacherCoursesPage
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -241,40 +244,6 @@ namespace Acadimy.Migrations
                     b.ToTable("StudentPostLikes");
                 });
 
-            modelBuilder.Entity("Acadimy.Models.Teacher.CourseCategory", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("CourseCategories");
-                });
-
-            modelBuilder.Entity("Acadimy.Models.Teacher.CourseLevel", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("CourseLevels");
-                });
-
             modelBuilder.Entity("Acadimy.Models.Teacher.TeacherCourse", b =>
                 {
                     b.Property<int>("Id")
@@ -283,10 +252,6 @@ namespace Acadimy.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Category")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -294,24 +259,14 @@ namespace Acadimy.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("FilePath")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsArchived")
                         .HasColumnType("bit");
 
-                    b.Property<string>("Level")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("ThumbnailPath")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -322,44 +277,6 @@ namespace Acadimy.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("TeacherCourses");
-                });
-
-            modelBuilder.Entity("Acadimy.Models.Teacher.TeacherEnrollment", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("EnrolledAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsCompleted")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("ProgressPercent")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("StudentId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("TeacherCourseId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("StudentId");
-
-                    b.HasIndex("TeacherCourseId");
-
-                    b.ToTable("TeacherEnrollments");
                 });
 
             modelBuilder.Entity("Acadimy.Models.Teacher.TeacherExpertise", b =>
@@ -698,25 +615,6 @@ namespace Acadimy.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Acadimy.Models.Teacher.TeacherEnrollment", b =>
-                {
-                    b.HasOne("Acadimy.Models.ApplicationUser", "Student")
-                        .WithMany("TeacherEnrollments")
-                        .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Acadimy.Models.Teacher.TeacherCourse", "TeacherCourse")
-                        .WithMany("Enrollments")
-                        .HasForeignKey("TeacherCourseId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Student");
-
-                    b.Navigation("TeacherCourse");
-                });
-
             modelBuilder.Entity("Acadimy.Models.Teacher.TeacherExpertise", b =>
                 {
                     b.HasOne("Acadimy.Models.ApplicationUser", "User")
@@ -856,8 +754,6 @@ namespace Acadimy.Migrations
 
             modelBuilder.Entity("Acadimy.Models.ApplicationUser", b =>
                 {
-                    b.Navigation("TeacherEnrollments");
-
                     b.Navigation("TeacherExpertises");
                 });
 
@@ -866,11 +762,6 @@ namespace Acadimy.Migrations
                     b.Navigation("Comments");
 
                     b.Navigation("Likes");
-                });
-
-            modelBuilder.Entity("Acadimy.Models.Teacher.TeacherCourse", b =>
-                {
-                    b.Navigation("Enrollments");
                 });
 
             modelBuilder.Entity("Acadimy.Models.Teacher.TeacherPost", b =>

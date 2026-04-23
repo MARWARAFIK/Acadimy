@@ -1,5 +1,4 @@
 ﻿@model Acadimy.ViewModels.Teacher.TeacherSettingsViewModel
-
 @{
     Layout = "~/Views/Shared/LayoutTeacher.cshtml";
 }
@@ -16,7 +15,6 @@
 
         <div asp-validation-summary="All" class="text-danger mb-3"></div>
 
-        <!-- PERSONAL DETAILS -->
         <div class="card settings-card mb-4">
             <div class="card-body p-4">
                 <h3 class="settings-title mb-4">Personal Details</h3>
@@ -48,7 +46,6 @@
             </div>
         </div>
 
-        <!-- PROFESSIONAL DETAILS -->
         <div class="card settings-card mb-4">
             <div class="card-body p-4">
                 <h3 class="settings-title mb-4">Professional Details</h3>
@@ -71,7 +68,7 @@
 
                     <div class="col-md-6 mb-4">
                         <label asp-for="Specialite" class="form-label settings-label">Spécialité</label>
-                        <input asp-for="Specialite" class="form-control settings-input" placeholder="Ex: Informatique, Maths..." />
+                        <input asp-for="Specialite" class="form-control settings-input" />
                     </div>
 
                     <div class="col-md-6 mb-4">
@@ -92,13 +89,11 @@
                             <div class="col-md-7">
                                 <label class="form-label settings-label">Expertise</label>
                                 <input asp-for="Expertises[i].Name" class="form-control settings-input" placeholder="Ex: ASP.NET Core" />
-                                <span asp-validation-for="Expertises[i].Name" class="text-danger"></span>
                             </div>
 
                             <div class="col-md-3">
                                 <label class="form-label settings-label">%</label>
                                 <input asp-for="Expertises[i].Percentage" type="number" min="0" max="100" class="form-control settings-input" />
-                                <span asp-validation-for="Expertises[i].Percentage" class="text-danger"></span>
                             </div>
 
                             <div class="col-md-2 d-flex align-items-end">
@@ -114,7 +109,6 @@
             </div>
         </div>
 
-        <!-- IMAGES -->
         <div class="card settings-card mb-4">
             <div class="card-body p-4">
                 <h3 class="settings-title mb-4">Images</h3>
@@ -141,7 +135,6 @@
             </div>
         </div>
 
-        <!-- PASSWORD -->
         <div class="card settings-card mb-4">
             <div class="card-body p-4">
                 <h3 class="settings-title mb-4">Change Password</h3>
@@ -177,7 +170,6 @@
             </div>
         </div>
 
-        <!-- NOTIFICATIONS -->
         <div class="card settings-card mb-4">
             <div class="card-body p-4">
                 <h3 class="settings-title mb-4">Account Notifications</h3>
@@ -214,48 +206,53 @@
     <partial name="_ValidationScriptsPartial" />
 
     <script>
-        let expertiseIndex = @Model.Expertises.Count;
+        let expertiseIndex = @(Model.Expertises?.Count ?? 0);
 
-        document.getElementById("addExpertiseBtn").addEventListener("click", function () {
-            const container = document.getElementById("expertiseContainer");
+        const addBtn = document.getElementById("addExpertiseBtn");
+        if (addBtn) {
+            addBtn.addEventListener("click", function () {
+                const container = document.getElementById("expertiseContainer");
 
-            const html = `
-                <div class="row expertise-item mb-3">
-                    <div class="col-md-7">
-                        <label class="form-label settings-label">Expertise</label>
-                        <input name="Expertises[${expertiseIndex}].Name" class="form-control settings-input" placeholder="Ex: ASP.NET Core" />
+                const html = `
+                    <div class="row expertise-item mb-3">
+                        <div class="col-md-7">
+                            <label class="form-label settings-label">Expertise</label>
+                            <input name="Expertises[${expertiseIndex}].Name" class="form-control settings-input" placeholder="Ex: ASP.NET Core" />
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label settings-label">%</label>
+                            <input name="Expertises[${expertiseIndex}].Percentage" type="number" min="0" max="100" class="form-control settings-input" />
+                        </div>
+
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="button" class="btn btn-danger w-100 remove-expertise">Remove</button>
+                        </div>
                     </div>
+                `;
 
-                    <div class="col-md-3">
-                        <label class="form-label settings-label">%</label>
-                        <input name="Expertises[${expertiseIndex}].Percentage" type="number" min="0" max="100" class="form-control settings-input" />
-                    </div>
-
-                    <div class="col-md-2 d-flex align-items-end">
-                        <button type="button" class="btn btn-danger w-100 remove-expertise">Remove</button>
-                    </div>
-                </div>
-            `;
-
-            container.insertAdjacentHTML("beforeend", html);
-            expertiseIndex++;
-        });
+                container.insertAdjacentHTML("beforeend", html);
+                expertiseIndex++;
+            });
+        }
 
         document.addEventListener("click", function (e) {
             if (e.target.classList.contains("remove-expertise")) {
                 e.target.closest(".expertise-item").remove();
             }
         });
+
+        const changePasswordCheck = document.getElementById("changePasswordCheck");
+        const passwordFields = document.getElementById("passwordFields");
+
+        function togglePasswordFields() {
+            if (!changePasswordCheck || !passwordFields) return;
+            passwordFields.style.display = changePasswordCheck.checked ? "block" : "none";
+        }
+
+        if (changePasswordCheck) {
+            changePasswordCheck.addEventListener("change", togglePasswordFields);
+            togglePasswordFields();
+        }
     </script>
 }
-<script>
-     const changePasswordCheck = document.getElementById("changePasswordCheck");
-     const passwordFields = document.getElementById("passwordFields");
-
-     function togglePasswordFields() {
-         passwordFields.style.display = changePasswordCheck.checked ? "block" : "none";
-     }
-
-     changePasswordCheck.addEventListener("change", togglePasswordFields);
-     togglePasswordFields();
-</script>

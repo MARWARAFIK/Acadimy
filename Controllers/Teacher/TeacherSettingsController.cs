@@ -64,7 +64,6 @@ namespace Acadimy.Controllers.Teacher
                     .ToList()
             };
 
-            // ما نزيدوش expertise فارغة تلقائياً
             return View("~/Views/Teacher/Settings/Index.cshtml", model);
         }
 
@@ -84,12 +83,10 @@ namespace Acadimy.Controllers.Teacher
             model.ExistingProfileImagePath = user.ProfileImagePath;
             model.ExistingCoverImagePath = user.CoverImagePath;
 
-            // نحيدو validation التلقائي ديال password
             ModelState.Remove(nameof(TeacherSettingsViewModel.CurrentPassword));
             ModelState.Remove(nameof(TeacherSettingsViewModel.NewPassword));
             ModelState.Remove(nameof(TeacherSettingsViewModel.ConfirmNewPassword));
 
-            // نخليو غير expertises اللي فيها اسم حقيقي
             model.Expertises = model.Expertises?
                 .Where(e => !string.IsNullOrWhiteSpace(e.Name))
                 .Select(e => new TeacherExpertiseItemViewModel
@@ -100,7 +97,6 @@ namespace Acadimy.Controllers.Teacher
                 })
                 .ToList() ?? new List<TeacherExpertiseItemViewModel>();
 
-            // نحيدو أي validation قديم ديال expertises الفارغين
             var expertiseKeys = ModelState.Keys
                 .Where(k => k.StartsWith("Expertises["))
                 .ToList();

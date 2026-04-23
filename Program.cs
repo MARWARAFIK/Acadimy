@@ -1,5 +1,6 @@
 using Acadimy.Data;
 using Acadimy.Models;
+using Acadimy.Models.Teacher;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -33,6 +34,32 @@ using (var scope = app.Services.CreateScope())
             await roleManager.CreateAsync(new IdentityRole(roleName));
         }
     }
+}
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+    // Ajout des catégories si la table est vide
+    if (!context.CourseCategories.Any())
+    {
+        context.CourseCategories.AddRange(
+            new CourseCategory { Name = "Développement Web" },
+            new CourseCategory { Name = "Data Science" },
+            new CourseCategory { Name = "Marketing" },
+            new CourseCategory { Name = "Design" }
+        );
+    }
+
+    // Ajout des niveaux si la table est vide
+    if (!context.CourseLevels.Any())
+    {
+        context.CourseLevels.AddRange(
+            new CourseLevel { Name = "Débutant" },
+            new CourseLevel { Name = "Intermédiaire" },
+            new CourseLevel { Name = "Avancé" }
+        );
+    }
+    context.SaveChanges();
 }
 
 app.UseStaticFiles();

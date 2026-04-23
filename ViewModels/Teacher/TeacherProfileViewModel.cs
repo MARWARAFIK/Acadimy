@@ -13,5 +13,6 @@
         public string? CoverImagePath { get; set; }
 
         public List<TeacherExpertiseItemViewModel> Expertises { get; set; } = new();
+        public List<TeacherPostViewModel> Posts { get; set; } = new();
     }
 }

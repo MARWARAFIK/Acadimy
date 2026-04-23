@@ -1,0 +1,52 @@
+﻿@model Acadimy.ViewModels.Teacher.TeacherStudentsPageViewModel
+@{
+    Layout = "~/Views/Shared/LayoutTeacher.cshtml";
+    ViewData["Title"] = "Students";
+}
+
+<h2>Gestion de mes étudiants</h2>
+<p>Consultez les étudiants inscrits à vos cours</p>
+
+@if (Model.Students != null && Model.Students.Any())
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Étudiant</th>
+                <th>Email</th>
+                <th>Cours</th>
+                <th>Niveau</th>
+                <th>Inscrit le</th>
+                <th>Progression</th>
+                <th>Statut</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var student in Model.Students)
+            {
+                <tr>
+                    <td>@student.FullName</td>
+                    <td>@student.Email</td>
+                    <td>@student.CourseTitle</td>
+                    <td>@student.Level</td>
+                    <td>@student.EnrolledAt.ToString("dd/MM/yyyy")</td>
+                    <td>@student.ProgressPercent%</td>
+                    <td>@student.Status</td>
+                    <td>
+                        <a asp-controller="TeacherStudents"
+                           asp-action="Details"
+                           asp-route-id="@student.EnrollmentId"
+                           class="btn btn-sm btn-success">
+                            Détails
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>Vous n'avez aucun étudiant pour le moment.</p>
+}

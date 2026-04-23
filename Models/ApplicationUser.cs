@@ -54,5 +54,6 @@ namespace Acadimy.Models
         public bool NotifyMessages { get; set; } = true;
 
         public ICollection<TeacherExpertise> TeacherExpertises { get; set; } = new List<TeacherExpertise>();
+        public ICollection<TeacherEnrollment> TeacherEnrollments { get; set; } = new List<TeacherEnrollment>();
     }
 }

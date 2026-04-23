@@ -1,0 +1,19 @@
+﻿@model Acadimy.ViewModels.Teacher.TeacherStudentViewModel
+@{
+    Layout = "~/Views/Shared/LayoutTeacher.cshtml";
+    ViewData["Title"] = "Student Details";
+}
+
+<h2>Détails de l'étudiant</h2>
+
+<p><strong>Nom :</strong> @Model.FullName</p>
+<p><strong>Email :</strong> @Model.Email</p>
+<p><strong>Cours :</strong> @Model.CourseTitle</p>
+<p><strong>Niveau :</strong> @Model.Level</p>
+<p><strong>Date d'inscription :</strong> @Model.EnrolledAt.ToString("dd/MM/yyyy")</p>
+<p><strong>Progression :</strong> @Model.ProgressPercent%</p>
+<p><strong>Statut :</strong> @Model.Status</p>
+
+<a asp-controller="TeacherStudents" asp-action="Index" class="btn btn-secondary">
+    Retour
+</a>

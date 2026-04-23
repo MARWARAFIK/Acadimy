@@ -10,45 +10,62 @@
     var profile = string.IsNullOrEmpty(Model.ProfileImagePath)
         ? "/images/default-user.png"
         : Model.ProfileImagePath;
+
+    bool isOwnProfile = ViewBag.IsOwnProfile != null && (bool)ViewBag.IsOwnProfile;
+    string? currentUserId = ViewBag.CurrentUserId?.ToString();
 }
 
 <div class="teacher-profile-page">
 
+    <!-- COVER -->
     <div class="profile-cover-box">
-        <img src="@cover" class="profile-cover-img" />
+        <img src="@cover" class="profile-cover-img" alt="Cover" />
     </div>
 
+    <!-- HEADER -->
     <div class="profile-head-box">
-        <div class="profile-avatar-wrap">
-            <img src="@profile" class="profile-avatar-img" />
+        <div class="d-flex align-items-center gap-3">
+            <div class="profile-avatar-wrap">
+                <img src="@profile" class="profile-avatar-img" alt="Profile" />
+            </div>
+
+            <div class="profile-basic-info">
+                <h2>@Model.FullName</h2>
+                <p class="profile-subtitle">@Model.Grade - @Model.Specialite</p>
+                <p class="profile-location">
+                    <i class="bi bi-briefcase"></i> @Model.Experience ans d'expérience
+                </p>
+            </div>
         </div>
 
-        <div class="profile-basic-info">
-            <h2>@Model.FullName</h2>
-            <p class="profile-subtitle">@Model.Grade - @Model.Specialite</p>
-            <p class="profile-location">
-                <i class="bi bi-briefcase"></i> @Model.Experience ans d'expérience
-            </p>
-        </div>
-
-        <div class="profile-action">
-            <a asp-controller="TeacherSettings" asp-action="Index" class="btn btn-success">
-                <i class="bi bi-pencil"></i> Edit Profile
-            </a>
-        </div>
+        @if (isOwnProfile)
+        {
+            <div class="profile-action">
+                <a asp-controller="TeacherSettings" asp-action="Index" class="btn btn-success">
+                    <i class="bi bi-pencil"></i> Edit Profile
+                </a>
+            </div>
+        }
     </div>
 
+    <!-- CONTENT -->
     <div class="profile-content-section">
         <div class="row">
 
+            <!-- LEFT -->
             <div class="col-lg-8">
+
+                <!-- ABOUT -->
                 <div class="card profile-card-box mb-4">
                     <div class="card-body p-4">
                         <h3 class="profile-section-title">About</h3>
-                        <p class="mb-0">@Model.Bio</p>
+                        <p class="mb-0">
+                            @(string.IsNullOrWhiteSpace(Model.Bio) ? "No biography available." : Model.Bio)
+                        </p>
                     </div>
                 </div>
 
+                <!-- PROFESSIONAL DETAILS -->
                 <div class="card profile-card-box mb-4">
                     <div class="card-body p-4">
                         <h3 class="profile-section-title">Professional Details</h3>
@@ -56,12 +73,12 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <strong>Grade:</strong>
-                                <div>@Model.Grade</div>
+                                <div>@(string.IsNullOrWhiteSpace(Model.Grade) ? "N/A" : Model.Grade)</div>
                             </div>
 
                             <div class="col-md-6 mb-3">
-                                <strong>Spécialité:</strong>
-                                <div>@Model.Specialite</div>
+                                <strong>Specialité:</strong>
+                                <div>@(string.IsNullOrWhiteSpace(Model.Specialite) ? "N/A" : Model.Specialite)</div>
                             </div>
 
                             <div class="col-md-6 mb-3">
@@ -77,6 +94,7 @@
                     </div>
                 </div>
 
+                <!-- EXPERTISES -->
                 <div class="card profile-card-box mb-4">
                     <div class="card-body p-4">
                         <h3 class="profile-section-title">Expertises</h3>
@@ -94,7 +112,7 @@
                                     <div class="progress" style="height: 12px; border-radius: 10px;">
                                         <div class="progress-bar bg-success"
                                              role="progressbar"
-                                             style="width: @expertise.Percentage%"
+                                             style="width:@expertise.Percentage%"
                                              aria-valuenow="@expertise.Percentage"
                                              aria-valuemin="0"
                                              aria-valuemax="100">
@@ -105,23 +123,273 @@
                         }
                         else
                         {
-                            <p class="text-muted mb-0">Aucune expertise renseignée.</p>
+                            <p class="text-muted mb-0">No expertises added yet.</p>
                         }
                     </div>
                 </div>
+
+                <!-- CREATE POST -->
+                @if (isOwnProfile)
+                {
+                    <div class="card profile-card-box mb-4">
+                        <div class="card-body p-4">
+                            <h3 class="profile-section-title">Create Post</h3>
+
+                            <form asp-controller="TeacherPosts" asp-action="Create" method="post" enctype="multipart/form-data">
+                                @Html.AntiForgeryToken()
+
+                                <textarea name="content"
+                                          class="form-control mb-3"
+                                          placeholder="What's on your mind?"
+                                          rows="3"></textarea>
+
+                                <input type="file" name="image" class="form-control mb-3" />
+
+                                <button class="btn btn-success w-100" type="submit">
+                                    Publish
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                }
+
+                <!-- POSTS -->
+                @if (Model.Posts != null && Model.Posts.Any())
+                {
+                    @foreach (var post in Model.Posts)
+                    {
+                        <div class="fb-post-card mb-3">
+
+                            <div class="fb-post-header">
+                                <div class="fb-post-user">
+                                    <img src="@(string.IsNullOrEmpty(post.ProfileImagePath) ? "/images/default-user.png" : post.ProfileImagePath)"
+                                         class="fb-post-avatar"
+                                         alt="User Avatar" />
+
+                                    <div>
+                                        <div class="fb-post-name">@post.FullName</div>
+                                        <div class="fb-post-date">@post.CreatedAt.ToString("dd MMM yyyy HH:mm")</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="fb-post-body">
+                                @if (!string.IsNullOrWhiteSpace(post.Content))
+                                {
+                                    <p class="fb-post-text">@post.Content</p>
+                                }
+
+                                @if (!string.IsNullOrEmpty(post.ImagePath))
+                                {
+                                    <img src="@post.ImagePath" class="fb-post-image" alt="Post Image" />
+                                }
+                            </div>
+
+                            <div class="fb-post-actions">
+                                <form asp-controller="TeacherPosts"
+                                      asp-action="Like"
+                                      method="post"
+                                      class="m-0 flex-fill">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="postId" value="@post.Id" />
+
+                                    <button type="submit" class="fb-action-btn w-100">
+                                        @(post.IsLikedByCurrentUser ? "💙 Liked" : "👍 Like") (@post.LikesCount)
+                                    </button>
+                                </form>
+
+                                <button type="button"
+                                        class="fb-action-btn flex-fill"
+                                        onclick="toggleCommentBox('comment-@post.Id')">
+                                    💬 Comment (@(post.Comments?.Count ?? 0))
+                                </button>
+                            </div>
+
+                            @if (isOwnProfile)
+                            {
+                                <div class="d-flex gap-2 mt-3">
+                                    <form asp-controller="TeacherPosts"
+                                          asp-action="Archive"
+                                          method="post"
+                                          class="w-50">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="postId" value="@post.Id" />
+                                        <button type="submit" class="btn btn-sm btn-outline-warning w-100">
+                                            Archive
+                                        </button>
+                                    </form>
+
+                                    <form asp-controller="TeacherPosts"
+                                          asp-action="Delete"
+                                          method="post"
+                                          class="w-50">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="postId" value="@post.Id" />
+                                        <button type="submit" class="btn btn-sm btn-outline-danger w-100">
+                                            Delete
+                                        </button>
+                                    </form>
+                                </div>
+                            }
+
+                            <div id="comment-@post.Id"
+                                 class="fb-comment-box p-3"
+                                 style="display:none; background:#f8f9fa;">
+
+                                <form asp-controller="TeacherPosts"
+                                      asp-action="AddComment"
+                                      method="post"
+                                      class="mb-3">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="postId" value="@post.Id" />
+
+                                    <input name="content"
+                                           class="form-control fb-comment-input"
+                                           placeholder="Write a comment..." />
+                                </form>
+
+                                @if (post.Comments != null && post.Comments.Any())
+                                {
+                                    @foreach (var c in post.Comments)
+                                    {
+                                        <div class="d-flex gap-2 mb-3">
+                                            <img src="@(string.IsNullOrEmpty(c.ProfileImagePath) ? "/images/default-user.png" : c.ProfileImagePath)"
+                                                 class="fb-comment-avatar"
+                                                 alt="Comment Avatar" />
+
+                                            <div class="flex-grow-1">
+                                                <div class="fb-comment-content">
+                                                    <div class="fb-comment-name">@c.FullName</div>
+                                                    <div class="fb-comment-text">@c.Content</div>
+
+                                                    <div class="d-flex gap-2 mt-2">
+                                                        <form asp-controller="TeacherPosts"
+                                                              asp-action="LikeComment"
+                                                              method="post">
+                                                            @Html.AntiForgeryToken()
+                                                            <input type="hidden" name="commentId" value="@c.Id" />
+                                                            <button type="submit" class="btn btn-sm btn-outline-primary">
+                                                                👍 (@c.LikesCount)
+                                                            </button>
+                                                        </form>
+
+                                                        <button type="button"
+                                                                class="btn btn-sm btn-outline-secondary"
+                                                                onclick="toggleReplyBox('reply-@c.Id')">
+                                                            Reply
+                                                        </button>
+
+                                                        @if (currentUserId == c.UserId || isOwnProfile)
+                                                        {
+                                                            <form asp-controller="TeacherPosts"
+                                                                  asp-action="DeleteComment"
+                                                                  method="post">
+                                                                @Html.AntiForgeryToken()
+                                                                <input type="hidden" name="commentId" value="@c.Id" />
+                                                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                                    Delete
+                                                                </button>
+                                                            </form>
+                                                        }
+                                                    </div>
+                                                </div>
+
+                                                <div id="reply-@c.Id" style="display:none;" class="mt-2">
+                                                    <form asp-controller="TeacherPosts"
+                                                          asp-action="ReplyComment"
+                                                          method="post">
+                                                        @Html.AntiForgeryToken()
+                                                        <input type="hidden" name="postId" value="@post.Id" />
+                                                        <input type="hidden" name="parentCommentId" value="@c.Id" />
+
+                                                        <input name="content"
+                                                               class="form-control form-control-sm"
+                                                               placeholder="Reply..." />
+                                                    </form>
+                                                </div>
+
+                                                @if (c.Replies != null && c.Replies.Any())
+                                                {
+                                                    @foreach (var r in c.Replies)
+                                                    {
+                                                        <div class="d-flex gap-2 mt-2 ms-4">
+                                                            <img src="@(string.IsNullOrEmpty(r.ProfileImagePath) ? "/images/default-user.png" : r.ProfileImagePath)"
+                                                                 class="fb-comment-avatar"
+                                                                 alt="Reply Avatar" />
+
+                                                            <div class="fb-comment-content">
+                                                                <div class="fb-comment-name">@r.FullName</div>
+                                                                <div class="fb-comment-text">@r.Content</div>
+                                                            </div>
+                                                        </div>
+                                                    }
+                                                }
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                                else
+                                {
+                                    <p class="text-muted small mb-0">No comments yet.</p>
+                                }
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="card profile-card-box">
+                        <div class="card-body p-4 text-center">
+                            <p class="text-muted mb-0">No posts yet.</p>
+                        </div>
+                    </div>
+                }
             </div>
 
+            <!-- RIGHT -->
             <div class="col-lg-4">
+
+                <!-- PERSONAL INFO -->
                 <div class="card profile-card-box mb-4">
                     <div class="card-body p-4">
-                        <h3 class="profile-section-title">Contact Information</h3>
-                        <ul class="list-unstyled">
+                        <h3 class="profile-section-title">Personal Information</h3>
+
+                        <ul class="list-unstyled mb-0">
+                            <li class="mb-2"><strong>Full Name:</strong> @Model.FullName</li>
                             <li class="mb-2"><strong>Email:</strong> @Model.Email</li>
+                            <li class="mb-2"><strong>Grade:</strong> @(string.IsNullOrWhiteSpace(Model.Grade) ? "N/A" : Model.Grade)</li>
+                            <li class="mb-2"><strong>Specialité:</strong> @(string.IsNullOrWhiteSpace(Model.Specialite) ? "N/A" : Model.Specialite)</li>
+                            <li class="mb-0"><strong>Experience:</strong> @Model.Experience ans</li>
                         </ul>
                     </div>
                 </div>
+
+                <!-- CONTACT -->
+                <div class="card profile-card-box">
+                    <div class="card-body p-4">
+                        <h3 class="profile-section-title">Contact</h3>
+                        <p class="mb-0"><strong>Email:</strong> @Model.Email</p>
+                    </div>
+                </div>
+
             </div>
 
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        function toggleCommentBox(id) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.style.display = (el.style.display === "none" || el.style.display === "") ? "block" : "none";
+        }
+
+        function toggleReplyBox(id) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.style.display = (el.style.display === "none" || el.style.display === "") ? "block" : "none";
+        }
+    </script>
+}

@@ -1,0 +1,89 @@
+﻿@using Acadimy.ViewModels.Teacher
+@model TeacherCourseViewModel
+
+@{
+    Layout = "~/Views/Shared/LayoutTeacher.cshtml";
+    ViewData["Title"] = "Modifier le cours";
+}
+
+<div class="container teacher-settings-page">
+    <div class="d-flex align-items-center mb-4">
+        <a asp-action="Index" class="btn btn-light rounded-pill shadow-sm me-3 px-3 py-2">
+            <i class="bi bi-arrow-left"></i>
+        </a>
+        <div>
+            <h2 class="settings-title mb-0">Modifier le cours</h2>
+            <p class="text-muted small mb-0">Mettez à jour votre contenu pédagogique</p>
+        </div>
+    </div>
+
+    <form asp-action="Edit" method="post" enctype="multipart/form-data">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="Id" />
+        <input type="hidden" asp-for="ExistingThumbnailPath" />
+        <input type="hidden" asp-for="ExistingFilePath" />
+
+        <div class="card settings-card">
+            <div class="card-body p-4">
+                <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        <label class="form-label fw-bold text-muted small text-uppercase">Titre du cours</label>
+                        <input asp-for="Title" class="form-control settings-input bg-light border-0" placeholder="Ex: Apprendre Java" />
+                        <span asp-validation-for="Title" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold text-muted small text-uppercase">Catégorie</label>
+                        <input asp-for="Category" class="form-control settings-input bg-light border-0" />
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold text-muted small text-uppercase">Niveau</label>
+                        <select asp-for="Level" class="form-control settings-input bg-light border-0">
+                            <option value="">-- Choisir --</option>
+                            <option>Débutant</option>
+                            <option>Intermédiaire</option>
+                            <option>Avancé</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-12 mb-3">
+                        <label class="form-label fw-bold text-muted small text-uppercase">Description</label>
+                        <textarea asp-for="Description" class="form-control settings-textarea bg-light border-0" rows="4"></textarea>
+                    </div>
+
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label fw-bold text-muted small text-uppercase">Changer l'image de couverture</label>
+                        @if (!string.IsNullOrEmpty(Model.ExistingThumbnailPath))
+                        {
+                            <div class="mb-2">
+                                <img src="@Model.ExistingThumbnailPath" class="rounded shadow-sm" style="height: 70px; object-fit: cover;" alt="Thumbnail" />
+                            </div>
+                        }
+                        <input asp-for="Thumbnail" type="file" class="form-control small" />
+                    </div>
+
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label fw-bold text-muted small text-uppercase">Changer le document</label>
+                        @if (!string.IsNullOrEmpty(Model.ExistingFilePath))
+                        {
+                            <div class="mb-2 small text-success">
+                                <i class="bi bi-file-earmark-check-fill"></i> Fichier actuel présent
+                            </div>
+                        }
+                        <input asp-for="CourseFile" type="file" class="form-control small" />
+                    </div>
+                </div>
+
+                <div class="border-top pt-3 text-end">
+                    <a asp-action="Index" class="btn btn-light rounded-pill px-4 me-2">Annuler</a>
+                    <button type="submit" class="btn save-btn px-4 rounded-pill">
+                        Enregistrer les modifications
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
