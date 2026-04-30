@@ -117,6 +117,7 @@
                     <div class="col-md-6 mb-4">
                         <label asp-for="ProfileImage" class="form-label settings-label">Profile Photo</label>
                         <input asp-for="ProfileImage" type="file" class="form-control settings-input" />
+
                         @if (!string.IsNullOrEmpty(Model.ExistingProfileImagePath))
                         {
                             <img src="@Model.ExistingProfileImagePath" class="preview-img mt-3" alt="Profile Preview" />
@@ -126,6 +127,7 @@
                     <div class="col-md-6 mb-4">
                         <label asp-for="CoverImage" class="form-label settings-label">Cover Photo</label>
                         <input asp-for="CoverImage" type="file" class="form-control settings-input" />
+
                         @if (!string.IsNullOrEmpty(Model.ExistingCoverImagePath))
                         {
                             <img src="@Model.ExistingCoverImagePath" class="preview-cover mt-3" alt="Cover Preview" />
@@ -175,13 +177,13 @@
                 <h3 class="settings-title mb-4">Account Notifications</h3>
 
                 <div class="notification-row">
-                    <span>When a new course-related update is available</span>
-                    <input asp-for="NotifyNewCourse" class="form-check-input notification-check" />
+                    <span>When students submit assignments</span>
+                    <input asp-for="NotifyStudentSubmission" class="form-check-input notification-check" />
                 </div>
 
                 <div class="notification-row">
-                    <span>When application status changes</span>
-                    <input asp-for="NotifyApplicationStatus" class="form-check-input notification-check" />
+                    <span>When students interact with my courses</span>
+                    <input asp-for="NotifyCourseActivity" class="form-check-input notification-check" />
                 </div>
 
                 <div class="notification-row">
@@ -190,7 +192,7 @@
                 </div>
 
                 <div class="notification-row border-bottom-0">
-                    <span>When you receive a new message</span>
+                    <span>When I receive a new message</span>
                     <input asp-for="NotifyMessages" class="form-check-input notification-check" />
                 </div>
 

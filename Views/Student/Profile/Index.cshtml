@@ -1,7 +1,10 @@
 ﻿@model Acadimy.ViewModels.Student.ProfileViewModel
 
 @{
+    bool isOwnProfile = ViewBag.IsOwnProfile != null && (bool)ViewBag.IsOwnProfile;
+
     Layout = "~/Views/Shared/LayoutStudent.cshtml";
+    ViewBag.HideNavbar = !isOwnProfile;
 
     var cover = string.IsNullOrEmpty(Model.CoverImagePath)
         ? "/images/default-cover.jpg"
@@ -13,6 +16,12 @@
 }
 
 <div class="student-profile-page">
+
+    <div class="mb-3">
+        <a href="javascript:history.back()" class="btn btn-light shadow-sm rounded-pill px-3">
+            <i class="bi bi-arrow-left"></i> Retour
+        </a>
+    </div>
 
     <div class="profile-cover-box">
         <img src="@cover" class="profile-cover-img" />
@@ -26,138 +35,197 @@
         <div class="profile-basic-info">
             <h2>@Model.FullName</h2>
             <p class="profile-subtitle">@Model.Filiere - @Model.Niveau</p>
-            <p class="profile-location"><i class="bi bi-geo-alt"></i> @Model.Location</p>
+            <p class="profile-location">
+                <i class="bi bi-geo-alt"></i> @Model.Location
+            </p>
         </div>
 
-        <div class="profile-action">
-            <a asp-controller="Settings" asp-action="Index" class="btn btn-success">
-                <i class="bi bi-pencil"></i> Edit Profile
-            </a>
-        </div>
+        @if (isOwnProfile)
+        {
+            <div class="profile-action">
+                <a asp-controller="Settings" asp-action="Index" class="btn btn-success rounded-pill px-4">
+                    <i class="bi bi-pencil"></i> Edit Profile
+                </a>
+            </div>
+        }
     </div>
 
     <div class="profile-content-section">
         <div class="row">
-
             <div class="col-lg-8">
+
                 <div class="card profile-card-box mb-4">
                     <div class="card-body p-4">
-                        <h3 class="profile-section-title">About</h3>
+                        <h4 class="profile-section-title">About</h4>
                         <p class="mb-0">@Model.Bio</p>
                     </div>
                 </div>
-
                 <div class="card profile-card-box mb-4">
-                    <div class="card-body p-4">
-                        <h3 class="profile-section-title">Create Post</h3>
-                        <form asp-controller="Posts" asp-action="Create" method="post" enctype="multipart/form-data">
-                            @Html.AntiForgeryToken()
-                            <textarea name="Content" class="form-control mb-3" placeholder="What's on your mind?" rows="3"></textarea>
-                            <input type="file" name="Image" class="form-control mb-3" />
-                            <button class="btn btn-success w-100">Publish</button>
-                        </form>
+    <div class="card-body p-4">
+        <h4 class="profile-section-title mb-4">Skills :</h4>
+
+        @if (Model.Skills != null && Model.Skills.Any())
+        {
+            <div class="row">
+                @foreach (var skill in Model.Skills)
+                {
+                    <div class="col-md-6 mb-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="skill-name">@skill.Name</span>
+                            <span class="skill-percent">@skill.Percentage%</span>
+                        </div>
+
+                        <div class="skill-bar">
+                            <div class="skill-progress" style="width:@skill.Percentage%"></div>
+                        </div>
                     </div>
-                </div>
+                }
+            </div>
+        }
+        else
+        {
+            <p class="text-muted mb-0">Aucune compétence ajoutée.</p>
+        }
+    </div>
+</div>
+                @if (isOwnProfile)
+                {
+                    <div class="card profile-card-box mb-4">
+                        <div class="card-body p-4">
+                            <h4 class="profile-section-title">Create Post</h4>
+
+                            <form asp-controller="Posts" asp-action="Create" method="post" enctype="multipart/form-data">
+                                @Html.AntiForgeryToken()
+
+                                <textarea name="Content" class="form-control mb-3" rows="3" placeholder="What's on your mind?"></textarea>
+                                <input type="file" name="Image" class="form-control mb-3" />
+
+                                <button type="submit" class="btn btn-success w-100 rounded-pill">Publish</button>
+                            </form>
+                        </div>
+                    </div>
+                }
 
                 @if (Model.Posts != null && Model.Posts.Any())
                 {
-                    @foreach (var post in Model.Posts)
+                    foreach (var post in Model.Posts)
                     {
                         <div class="fb-post-card mb-3">
-                            <div class="fb-post-header">
+
+                            <div class="fb-post-header d-flex justify-content-between align-items-start">
                                 <div class="fb-post-user">
-                                    <img src="@(string.IsNullOrEmpty(post.ProfileImagePath) ? "/images/default-user.png" : post.ProfileImagePath)" class="fb-post-avatar" />
+                                    <img src="@(string.IsNullOrEmpty(post.ProfileImagePath) ? "/images/default-user.png" : post.ProfileImagePath)"
+                                         class="fb-post-avatar" />
+
                                     <div>
                                         <div class="fb-post-name">@post.FullName</div>
                                         <div class="fb-post-date">@post.CreatedAt.ToString("dd MMM yyyy HH:mm")</div>
                                     </div>
                                 </div>
+
+                                @if (isOwnProfile)
+                                {
+                                    <div class="dropdown">
+                                        <button class="btn btn-light rounded-circle post-menu-btn" type="button" data-bs-toggle="dropdown">
+                                            <i class="bi bi-three-dots"></i>
+                                        </button>
+
+                                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3">
+                                            <li>
+                                                <form asp-controller="Posts" asp-action="Archive" method="post" class="m-0">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="postId" value="@post.Id" />
+                                                    <button type="submit" class="dropdown-item">
+                                                        <i class="bi bi-archive me-2"></i> Archive
+                                                    </button>
+                                                </form>
+                                            </li>
+
+                                            <li>
+                                                <form asp-controller="Posts" asp-action="Delete" method="post" class="m-0">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="postId" value="@post.Id" />
+                                                    <button type="submit" class="dropdown-item text-danger">
+                                                        <i class="bi bi-trash me-2"></i> Delete
+                                                    </button>
+                                                </form>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                }
                             </div>
+
                             <div class="fb-post-body">
-                                <p>@post.Content</p>
+                                @if (!string.IsNullOrWhiteSpace(post.Content))
+                                {
+                                    <p class="fb-post-text">@post.Content</p>
+                                }
+
                                 @if (!string.IsNullOrEmpty(post.ImagePath))
                                 {
                                     <img src="@post.ImagePath" class="fb-post-image" />
                                 }
                             </div>
+
                             <div class="fb-post-actions">
                                 <form asp-controller="Posts" asp-action="Like" method="post" class="m-0 flex-fill">
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="postId" value="@post.Id" />
-                                    <input type="hidden" name="returnTo" value="Profile" />
-                                    <button type="submit" class="fb-action-btn w-100">
-                                        @(post.IsLikedByCurrentUser ? "💙 Liked" : "👍 Like") (@post.LikesCount)
+                                    <input type="hidden" name="returnUrl" value="@Context.Request.Path" />
+
+                                    <button type="submit" class="fb-action-btn w-100 @(post.IsLikedByCurrentUser ? "liked" : "")">
+                                        <i class="bi @(post.IsLikedByCurrentUser ? "bi-heart-fill" : "bi-heart")"></i>
+                                        @post.LikesCount
                                     </button>
                                 </form>
+
                                 <button type="button" class="fb-action-btn flex-fill" onclick="toggleCommentBox('comment-@post.Id')">
-                                    💬 Comment (@post.Comments.Count)
+                                    <i class="bi bi-chat-dots"></i> @post.Comments.Count
                                 </button>
                             </div>
-                            <div class="fb-comment-box p-3" id="comment-@post.Id" style="display:none; background: #f8f9fa;">
+
+                            <div id="comment-@post.Id" class="fb-comment-box p-3" style="display:none;">
                                 <form asp-controller="Posts" asp-action="AddComment" method="post" class="mb-3">
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="PostId" value="@post.Id" />
-                                    <input type="hidden" name="returnTo" value="Profile" />
-                                    <input type="text" name="Content" class="form-control" placeholder="Write a comment..." />
+                                    <input type="hidden" name="returnUrl" value="@Context.Request.Path" />
+
+                                    <div class="d-flex gap-2">
+                                        <input name="Content" class="form-control rounded-pill" placeholder="Write a comment..." />
+                                        <button type="submit" class="btn btn-success rounded-pill">Send</button>
+                                    </div>
                                 </form>
-                                @foreach (var comment in post.Comments)
+
+                                @foreach (var c in post.Comments)
                                 {
-                                    <div class="d-flex gap-2 mb-2">
-                                        <img src="@(string.IsNullOrEmpty(comment.ProfileImagePath) ? "/images/default-user.png" : comment.ProfileImagePath)" style="width:30px; height:30px; border-radius:50%;" />
-                                        <div style="background:#eee; padding:5px 10px; border-radius:10px; font-size:0.9em;">
-                                            <b>@comment.FullName</b><br /> @comment.Content
-                                        </div>
+                                    <div class="fb-single-comment">
+                                        <b>@c.FullName</b>
+                                        <p class="mb-0">@c.Content</p>
                                     </div>
                                 }
                             </div>
+
                         </div>
                     }
+                }
+                else
+                {
+                    <div class="card profile-card-box">
+                        <div class="card-body text-center p-4">
+                            <p class="text-muted mb-0">No posts yet.</p>
+                        </div>
+                    </div>
                 }
             </div>
 
             <div class="col-lg-4">
-                <div class="card profile-card-box mb-4">
-                    <div class="card-body p-4">
-                        <h3 class="profile-section-title">Contact Information</h3>
-                        <ul class="list-unstyled">
-                            <li class="mb-2"><strong>Email:</strong> @Model.Email</li>
-                            <li class="mb-2"><strong>Phone:</strong> @Model.Phone</li>
-                            <li class="mb-2"><strong>Website:</strong> <a href="@Model.Website" target="_blank">@Model.Website</a></li>
-                            <li class="mb-2"><strong>Level:</strong> @Model.Niveau</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="card profile-card-box mb-4">
-                    <div class="card-body p-4">
-                        <h3 class="profile-section-title">Top Skill</h3>
-                        @if (!string.IsNullOrEmpty(Model.Skill))
-                        {
-                            <div class="mb-3">
-                                <div class="d-flex justify-content-between mb-1">
-                                    <span class="fw-bold">@Model.Skill</span>
-                                    <span class="text-success">@Model.SkillPercent%</span>
-                                </div>
-                                <div class="progress" style="height: 12px; border-radius: 10px;">
-                                    <div class="progress-bar bg-success"
-                                         role="progressbar"
-                                         style="width: @Model.SkillPercent%"
-                                         aria-valuenow="@Model.SkillPercent"
-                                         aria-valuemin="0"
-                                         aria-valuemax="100">
-                                    </div>
-                                </div>
-                            </div>
-                        }
-                        else
-                        {
-                            <p class="text-muted small italic">No skills added in settings.</p>
-                        }
-                        <a asp-controller="Settings" asp-action="Index" class="btn btn-sm btn-outline-secondary w-100 mt-2">Manage Skills</a>
-                    </div>
+                <div class="card profile-card-box p-4">
+                    <h4 class="profile-section-title">Contact</h4>
+                    <p><strong>Email:</strong> @Model.Email</p>
+                    <p><strong>Phone:</strong> @Model.Phone</p>
+                    <p><strong>Website:</strong> @Model.Website</p>
                 </div>
             </div>
-
         </div>
     </div>
 </div>
@@ -165,8 +233,9 @@
 @section Scripts {
     <script>
         function toggleCommentBox(id) {
-            var box = document.getElementById(id);
-            box.style.display = (box.style.display === "none") ? "block" : "none";
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.style.display = (el.style.display === "none" || el.style.display === "") ? "block" : "none";
         }
     </script>
 }

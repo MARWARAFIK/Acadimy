@@ -1,0 +1,43 @@
+﻿@using System.Security.Claims
+@model List<MessageThread>
+
+@{
+    Layout = User.IsInRole("Enseignant")
+        ? "~/Views/Shared/LayoutTeacher.cshtml"
+        : "~/Views/Shared/LayoutStudent.cshtml";
+
+    var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+}
+
+<div class="container mt-4">
+    <h2 class="mb-4">Messages</h2>
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="alert alert-info rounded-4">
+            Aucune conversation.
+        </div>
+    }
+    else
+    {
+        <div class="list-group shadow-sm rounded-4 overflow-hidden">
+            @foreach (var t in Model)
+            {
+                var otherId = t.User1Id == currentUserId ? t.User2Id : t.User1Id;
+                var lastMsg = t.Messages.OrderByDescending(m => m.SentAt).FirstOrDefault();
+
+                <a asp-controller="Messages"
+                   asp-action="Chat"
+                   asp-route-userId="@otherId"
+                   class="list-group-item list-group-item-action">
+
+                    <strong>Conversation</strong>
+
+                    <div class="text-muted small">
+                        @(lastMsg?.Content ?? "Aucun message")
+                    </div>
+                </a>
+            }
+        </div>
+    }
+</div>

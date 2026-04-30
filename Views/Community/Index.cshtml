@@ -1,0 +1,482 @@
+﻿@using Acadimy.Models.Community
+@using Microsoft.AspNetCore.Identity
+@using Acadimy.Models
+@inject UserManager<ApplicationUser> UserManager
+@model List<CommunityPost>
+
+@{
+    var currentUser = await UserManager.GetUserAsync(User);
+    var isTeacher = User.IsInRole("Teacher") || User.IsInRole("Enseignant");
+
+    Layout = isTeacher
+        ? "~/Views/Shared/LayoutTeacher.cshtml"
+        : "~/Views/Shared/LayoutStudent.cshtml";
+
+    ViewData["Title"] = "Community";
+}
+
+<div class="container mt-4">
+
+    <div class="card shadow-sm border-0 rounded-4 mb-4">
+        <div class="card-body">
+            <form asp-controller="Community" asp-action="Create" method="post" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+
+                <textarea name="content"
+                          class="form-control rounded-4 mb-3"
+                          rows="3"
+                          placeholder="Partager une idée, question ou ressource..."></textarea>
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <input type="file" name="image" class="form-control w-50" accept="image/*" />
+
+                    <button type="submit" class="btn btn-success rounded-pill px-4">
+                        <i class="bi bi-send"></i> Publier
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="alert alert-light border rounded-4 shadow-sm">
+            Aucun post pour le moment.
+        </div>
+    }
+    else
+    {
+        foreach (var post in Model)
+        {
+            var liked = currentUser != null && post.Likes.Any(l => l.UserId == currentUser.Id);
+
+            var fullName = ((post.User?.FirstName ?? "") + " " + (post.User?.LastName ?? "")).Trim();
+            if (string.IsNullOrWhiteSpace(fullName))
+            {
+                fullName = post.User?.UserName ?? "Utilisateur";
+            }
+
+            var postUserIsTeacher = post.User != null && await UserManager.IsInRoleAsync(post.User, "Enseignant");
+            var profileController = postUserIsTeacher ? "TeacherProfile" : "Profile";
+            var profileAction = postUserIsTeacher ? "ViewProfile" : "Index";
+
+            <div id="post-@post.Id" class="card post-card shadow-sm border-0 rounded-4 mb-4">
+
+                <a asp-controller="@profileController"
+                   asp-action="@profileAction"
+                   asp-route-id="@post.UserId"
+                   class="post-header p-3 text-decoration-none text-dark">
+
+                    <img src="@(string.IsNullOrEmpty(post.User?.ProfileImagePath) ? "/images/default-user.png" : post.User.ProfileImagePath)"
+                         class="post-avatar" />
+
+                    <div>
+                        <div class="post-name">@fullName</div>
+                        <small class="text-muted">
+                            @post.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+                        </small>
+                    </div>
+                </a>
+
+                <div class="px-3 pb-3">
+                    <p class="mb-2" style="white-space:pre-line;">@post.Content</p>
+
+                    @if (!string.IsNullOrWhiteSpace(post.ImagePath))
+                    {
+                        <div class="community-post-image-wrap">
+                            <img src="@post.ImagePath" class="community-post-image" />
+                        </div>
+                    }
+                </div>
+
+                <div class="d-flex align-items-center gap-4 border-top border-bottom py-2 px-3">
+
+                    <form class="m-0 ajax-like-form">
+                        @Html.AntiForgeryToken()
+
+                        <input type="hidden" name="postId" value="@post.Id" />
+
+                        <button type="button"
+                                class="btn btn-link text-decoration-none p-0 ajax-like-btn @(liked ? "text-danger fw-bold" : "text-muted")"
+                                data-post-id="@post.Id">
+                            <i class="bi @(liked ? "bi-heart-fill" : "bi-heart")"></i>
+                            Like (<span class="like-count">@post.Likes.Count</span>)
+                        </button>
+                    </form>
+
+                    <button class="btn btn-link text-decoration-none text-muted p-0"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#comments-@post.Id">
+                        <i class="bi bi-chat-dots"></i>
+                        Comments (<span id="comment-count-@post.Id">@post.Comments.Count(c => c.ParentCommentId == null)</span>)
+                    </button>
+                </div>
+
+                <div class="collapse show" id="comments-@post.Id">
+                    <div class="p-3">
+
+                        <form class="mb-3 ajax-comment-form" data-post-id="@post.Id">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="postId" value="@post.Id" />
+
+                            <input name="content"
+                                   class="form-control rounded-pill comment-input"
+                                   placeholder="Write a comment..." />
+                        </form>
+
+                        <div class="comments-list" id="comments-list-@post.Id">
+
+                            @foreach (var comment in post.Comments.Where(c => c.ParentCommentId == null).OrderByDescending(c => c.CreatedAt))
+                            {
+                                var commentName = ((comment.User?.FirstName ?? "") + " " + (comment.User?.LastName ?? "")).Trim();
+                                if (string.IsNullOrWhiteSpace(commentName))
+                                {
+                                    commentName = comment.User?.UserName ?? "Utilisateur";
+                                }
+
+                                var commentLiked = currentUser != null && comment.Likes.Any(l => l.UserId == currentUser.Id);
+
+                                <div class="d-flex mb-3">
+                                    <img src="@(string.IsNullOrEmpty(comment.User?.ProfileImagePath) ? "/images/default-user.png" : comment.User.ProfileImagePath)"
+                                         class="rounded-circle me-2"
+                                         style="width:38px;height:38px;object-fit:cover;" />
+
+                                    <div class="w-100">
+                                        <div class="bg-light rounded-4 p-3">
+                                            <div class="fw-bold small">@commentName</div>
+                                            <div>@comment.Content</div>
+                                        </div>
+
+                                        <div class="d-flex gap-3 ms-2 mt-1 small">
+
+                                            <form class="ajax-like-comment-form m-0">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="commentId" value="@comment.Id" />
+
+                                                <button type="button"
+                                                        class="btn btn-link p-0 text-decoration-none small ajax-like-comment-btn @(commentLiked ? "text-danger fw-bold" : "text-muted")"
+                                                        data-comment-id="@comment.Id">
+                                                    <i class="bi @(commentLiked ? "bi-heart-fill" : "bi-heart")"></i>
+                                                    Like (<span class="like-comment-count">@comment.Likes.Count</span>)
+                                                </button>
+                                            </form>
+
+                                            <button type="button"
+                                                    class="btn btn-link p-0 text-muted text-decoration-none small"
+                                                    data-bs-toggle="collapse"
+                                                    data-bs-target="#reply-@comment.Id">
+                                                Reply
+                                            </button>
+                                        </div>
+
+                                        <div class="collapse mt-2" id="reply-@comment.Id">
+                                            <form class="ajax-reply-form" data-comment-id="@comment.Id">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="commentId" value="@comment.Id" />
+
+                                                <input name="content"
+                                                       class="form-control form-control-sm rounded-pill reply-input"
+                                                       placeholder="Reply..." />
+                                            </form>
+                                        </div>
+
+                                        <div class="replies-list" id="replies-list-@comment.Id">
+
+                                            @foreach (var reply in post.Comments.Where(r => r.ParentCommentId == comment.Id).OrderBy(r => r.CreatedAt))
+                                            {
+                                                var replyName = ((reply.User?.FirstName ?? "") + " " + (reply.User?.LastName ?? "")).Trim();
+                                                if (string.IsNullOrWhiteSpace(replyName))
+                                                {
+                                                    replyName = reply.User?.UserName ?? "Utilisateur";
+                                                }
+
+                                                <div class="d-flex mt-2 ms-4">
+                                                    <img src="@(string.IsNullOrEmpty(reply.User?.ProfileImagePath) ? "/images/default-user.png" : reply.User.ProfileImagePath)"
+                                                         class="rounded-circle me-2"
+                                                         style="width:30px;height:30px;object-fit:cover;" />
+
+                                                    <div class="bg-light rounded-4 p-2 w-100">
+                                                        <span class="fw-bold small">@replyName</span>
+                                                        <span>@reply.Content</span>
+                                                    </div>
+                                                </div>
+                                            }
+
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        }
+    }
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            bindLikeButtons();
+            bindCommentForms();
+            bindReplyForms();
+            bindLikeCommentButtons();
+        });
+
+        function bindLikeButtons() {
+            document.querySelectorAll(".ajax-like-btn").forEach(function (button) {
+                if (button.dataset.bound === "true") return;
+                button.dataset.bound = "true";
+
+                button.addEventListener("click", async function () {
+                    const postId = this.dataset.postId;
+                    const form = this.closest("form");
+                    const token = form.querySelector('input[name="__RequestVerificationToken"]').value;
+
+                    const formData = new FormData();
+                    formData.append("postId", postId);
+                    formData.append("__RequestVerificationToken", token);
+
+                    const response = await fetch("/Community/LikeAjax", {
+                        method: "POST",
+                        body: formData
+                    });
+
+                    const result = await response.json();
+
+                    if (!result.success) {
+                        alert(result.message || "Erreur");
+                        return;
+                    }
+
+                    const icon = this.querySelector("i");
+                    const count = this.querySelector(".like-count");
+
+                    count.textContent = result.count;
+
+                    if (result.liked) {
+                        this.classList.remove("text-muted");
+                        this.classList.add("text-danger", "fw-bold");
+                        icon.classList.remove("bi-heart");
+                        icon.classList.add("bi-heart-fill");
+                    } else {
+                        this.classList.remove("text-danger", "fw-bold");
+                        this.classList.add("text-muted");
+                        icon.classList.remove("bi-heart-fill");
+                        icon.classList.add("bi-heart");
+                    }
+                });
+            });
+        }
+
+        function bindCommentForms() {
+            document.querySelectorAll(".ajax-comment-form").forEach(function (form) {
+                if (form.dataset.bound === "true") return;
+                form.dataset.bound = "true";
+
+                form.addEventListener("submit", async function (e) {
+                    e.preventDefault();
+
+                    const postId = this.dataset.postId;
+                    const input = this.querySelector(".comment-input");
+                    const content = input.value.trim();
+
+                    if (!content) return;
+
+                    const token = this.querySelector('input[name="__RequestVerificationToken"]').value;
+
+                    const formData = new FormData();
+                    formData.append("postId", postId);
+                    formData.append("content", content);
+                    formData.append("__RequestVerificationToken", token);
+
+                    const response = await fetch("/Community/CommentAjax", {
+                        method: "POST",
+                        body: formData
+                    });
+
+                    const result = await response.json();
+
+                    if (!result.success) {
+                        alert(result.message || "Erreur");
+                        return;
+                    }
+
+                    const list = document.getElementById("comments-list-" + postId);
+                    const count = document.getElementById("comment-count-" + postId);
+
+                    const html = `
+                        <div class="d-flex mb-3">
+                            <img src="${result.profileImage}"
+                                 class="rounded-circle me-2"
+                                 style="width:38px;height:38px;object-fit:cover;" />
+
+                            <div class="w-100">
+                                <div class="bg-light rounded-4 p-3">
+                                    <div class="fw-bold small">${escapeHtml(result.fullName)}</div>
+                                    <div>${escapeHtml(result.content)}</div>
+                                </div>
+
+                                <div class="d-flex gap-3 ms-2 mt-1 small">
+                                    <form class="ajax-like-comment-form m-0">
+                                        <input name="__RequestVerificationToken" type="hidden" value="${token}" />
+                                        <input type="hidden" name="commentId" value="${result.commentId}" />
+
+                                        <button type="button"
+                                                class="btn btn-link p-0 text-decoration-none small ajax-like-comment-btn text-muted"
+                                                data-comment-id="${result.commentId}">
+                                            <i class="bi bi-heart"></i>
+                                            Like (<span class="like-comment-count">0</span>)
+                                        </button>
+                                    </form>
+
+                                    <button type="button"
+                                            class="btn btn-link p-0 text-muted text-decoration-none small"
+                                            data-bs-toggle="collapse"
+                                            data-bs-target="#reply-${result.commentId}">
+                                        Reply
+                                    </button>
+                                </div>
+
+                                <div class="collapse mt-2" id="reply-${result.commentId}">
+                                    <form class="ajax-reply-form" data-comment-id="${result.commentId}">
+                                        <input name="__RequestVerificationToken" type="hidden" value="${token}" />
+                                        <input type="hidden" name="commentId" value="${result.commentId}" />
+
+                                        <input name="content"
+                                               class="form-control form-control-sm rounded-pill reply-input"
+                                               placeholder="Reply..." />
+                                    </form>
+                                </div>
+
+                                <div class="replies-list" id="replies-list-${result.commentId}"></div>
+                            </div>
+                        </div>
+                    `;
+
+                    list.insertAdjacentHTML("afterbegin", html);
+                    input.value = "";
+
+                    if (count) {
+                        count.textContent = parseInt(count.textContent || "0") + 1;
+                    }
+
+                    bindReplyForms();
+                    bindLikeCommentButtons();
+                });
+            });
+        }
+
+        function bindReplyForms() {
+            document.querySelectorAll(".ajax-reply-form").forEach(function (form) {
+                if (form.dataset.bound === "true") return;
+                form.dataset.bound = "true";
+
+                form.addEventListener("submit", async function (e) {
+                    e.preventDefault();
+
+                    const commentId = this.dataset.commentId;
+                    const input = this.querySelector(".reply-input");
+                    const content = input.value.trim();
+
+                    if (!content) return;
+
+                    const token = this.querySelector('input[name="__RequestVerificationToken"]').value;
+
+                    const formData = new FormData();
+                    formData.append("commentId", commentId);
+                    formData.append("content", content);
+                    formData.append("__RequestVerificationToken", token);
+
+                    const response = await fetch("/Community/ReplyAjax", {
+                        method: "POST",
+                        body: formData
+                    });
+
+                    const result = await response.json();
+
+                    if (!result.success) {
+                        alert(result.message || "Erreur");
+                        return;
+                    }
+
+                    const list = document.getElementById("replies-list-" + commentId);
+
+                    const html = `
+                        <div class="d-flex mt-2 ms-4">
+                            <img src="${result.profileImage}"
+                                 class="rounded-circle me-2"
+                                 style="width:30px;height:30px;object-fit:cover;" />
+
+                            <div class="bg-light rounded-4 p-2 w-100">
+                                <span class="fw-bold small">${escapeHtml(result.fullName)}</span>
+                                <span>${escapeHtml(result.content)}</span>
+                            </div>
+                        </div>
+                    `;
+
+                    if (list) {
+                        list.insertAdjacentHTML("beforeend", html);
+                    }
+
+                    input.value = "";
+                });
+            });
+        }
+
+        function bindLikeCommentButtons() {
+            document.querySelectorAll(".ajax-like-comment-btn").forEach(function (button) {
+                if (button.dataset.bound === "true") return;
+                button.dataset.bound = "true";
+
+                button.addEventListener("click", async function () {
+                    const commentId = this.dataset.commentId;
+                    const form = this.closest("form");
+                    const token = form.querySelector('input[name="__RequestVerificationToken"]').value;
+
+                    const formData = new FormData();
+                    formData.append("commentId", commentId);
+                    formData.append("__RequestVerificationToken", token);
+
+                    const response = await fetch("/Community/LikeCommentAjax", {
+                        method: "POST",
+                        body: formData
+                    });
+
+                    const result = await response.json();
+
+                    if (!result.success) {
+                        alert(result.message || "Erreur");
+                        return;
+                    }
+
+                    const icon = this.querySelector("i");
+                    const count = this.querySelector(".like-comment-count");
+
+                    count.textContent = result.count;
+
+                    if (result.liked) {
+                        this.classList.remove("text-muted");
+                        this.classList.add("text-danger", "fw-bold");
+                        icon.classList.remove("bi-heart");
+                        icon.classList.add("bi-heart-fill");
+                    } else {
+                        this.classList.remove("text-danger", "fw-bold");
+                        this.classList.add("text-muted");
+                        icon.classList.remove("bi-heart-fill");
+                        icon.classList.add("bi-heart");
+                    }
+                });
+            });
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement("div");
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+}

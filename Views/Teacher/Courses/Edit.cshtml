@@ -1,14 +1,17 @@
 ﻿@using Acadimy.ViewModels.Teacher
+@using Acadimy.Models.Teacher
 @model TeacherCourseViewModel
 
 @{
     Layout = "~/Views/Shared/LayoutTeacher.cshtml";
     ViewData["Title"] = "Modifier le cours";
+    var lessons = ViewBag.Lessons as List<CourseLesson> ?? new List<CourseLesson>();
 }
 
 <div class="container teacher-settings-page">
     <div class="d-flex align-items-center mb-4">
-        <a asp-action="Index" class="btn btn-light rounded-pill shadow-sm me-3 px-3 py-2">
+        <a asp-controller="TeacherCourses" asp-action="Index"
+           class="btn btn-light rounded-pill shadow-sm me-3 px-3 py-2">
             <i class="bi bi-arrow-left"></i>
         </a>
         <div>
@@ -17,68 +20,82 @@
         </div>
     </div>
 
-    <form asp-action="Edit" method="post" enctype="multipart/form-data">
+    <form asp-controller="TeacherCourses"
+          asp-action="Edit"
+          asp-route-id="@Model.Id"
+          method="post"
+          enctype="multipart/form-data">
+
         @Html.AntiForgeryToken()
+
         <input type="hidden" asp-for="Id" />
         <input type="hidden" asp-for="ExistingThumbnailPath" />
         <input type="hidden" asp-for="ExistingFilePath" />
 
-        <div class="card settings-card">
+        <div class="card settings-card mb-4">
             <div class="card-body p-4">
                 <div asp-validation-summary="All" class="text-danger mb-3"></div>
 
                 <div class="row">
                     <div class="col-md-12 mb-3">
-                        <label class="form-label fw-bold text-muted small text-uppercase">Titre du cours</label>
-                        <input asp-for="Title" class="form-control settings-input bg-light border-0" placeholder="Ex: Apprendre Java" />
+                        <label asp-for="Title" class="form-label fw-bold text-muted small text-uppercase">Titre du cours</label>
+                        <input asp-for="Title" class="form-control settings-input bg-light border-0" />
                         <span asp-validation-for="Title" class="text-danger small"></span>
                     </div>
 
                     <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold text-muted small text-uppercase">Catégorie</label>
+                        <label asp-for="Category" class="form-label fw-bold text-muted small text-uppercase">Catégorie</label>
                         <input asp-for="Category" class="form-control settings-input bg-light border-0" />
                     </div>
 
                     <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold text-muted small text-uppercase">Niveau</label>
+                        <label asp-for="Level" class="form-label fw-bold text-muted small text-uppercase">Niveau</label>
                         <select asp-for="Level" class="form-control settings-input bg-light border-0">
                             <option value="">-- Choisir --</option>
-                            <option>Débutant</option>
-                            <option>Intermédiaire</option>
-                            <option>Avancé</option>
+                            <option value="Débutant">Débutant</option>
+                            <option value="Intermédiaire">Intermédiaire</option>
+                            <option value="Avancé">Avancé</option>
                         </select>
                     </div>
 
                     <div class="col-md-12 mb-3">
-                        <label class="form-label fw-bold text-muted small text-uppercase">Description</label>
+                        <label asp-for="Description" class="form-label fw-bold text-muted small text-uppercase">Description</label>
                         <textarea asp-for="Description" class="form-control settings-textarea bg-light border-0" rows="4"></textarea>
                     </div>
 
                     <div class="col-md-6 mb-4">
-                        <label class="form-label fw-bold text-muted small text-uppercase">Changer l'image de couverture</label>
+                        <label asp-for="Thumbnail" class="form-label fw-bold text-muted small text-uppercase">Changer l'image</label>
+
                         @if (!string.IsNullOrEmpty(Model.ExistingThumbnailPath))
                         {
                             <div class="mb-2">
-                                <img src="@Model.ExistingThumbnailPath" class="rounded shadow-sm" style="height: 70px; object-fit: cover;" alt="Thumbnail" />
+                                <img src="@Model.ExistingThumbnailPath"
+                                     class="rounded shadow-sm"
+                                     style="height:70px;width:100px;object-fit:cover;" />
                             </div>
                         }
+
                         <input asp-for="Thumbnail" type="file" class="form-control small" />
                     </div>
 
                     <div class="col-md-6 mb-4">
-                        <label class="form-label fw-bold text-muted small text-uppercase">Changer le document</label>
+                        <label asp-for="CourseFile" class="form-label fw-bold text-muted small text-uppercase">Changer le document</label>
+
                         @if (!string.IsNullOrEmpty(Model.ExistingFilePath))
                         {
                             <div class="mb-2 small text-success">
                                 <i class="bi bi-file-earmark-check-fill"></i> Fichier actuel présent
                             </div>
                         }
+
                         <input asp-for="CourseFile" type="file" class="form-control small" />
                     </div>
                 </div>
 
                 <div class="border-top pt-3 text-end">
-                    <a asp-action="Index" class="btn btn-light rounded-pill px-4 me-2">Annuler</a>
+                    <a asp-controller="TeacherCourses" asp-action="Index"
+                       class="btn btn-light rounded-pill px-4 me-2">Annuler</a>
+
                     <button type="submit" class="btn save-btn px-4 rounded-pill">
                         Enregistrer les modifications
                     </button>
@@ -86,4 +103,78 @@
             </div>
         </div>
     </form>
+
+    <div class="card settings-card">
+        <div class="card-body p-4">
+            <h4 class="fw-bold mb-3">
+                <i class="bi bi-list-check text-success"></i> Lessons du cours
+            </h4>
+
+            <form asp-controller="TeacherCourses"
+                  asp-action="AddLesson"
+                  method="post"
+                  class="row g-3 mb-4">
+
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" name="courseId" value="@Model.Id" />
+
+                <div class="col-md-5">
+                    <input name="title"
+                           class="form-control settings-input bg-light border-0"
+                           placeholder="Titre de lesson" />
+                </div>
+
+                <div class="col-md-5">
+                    <input name="description"
+                           class="form-control settings-input bg-light border-0"
+                           placeholder="Description courte" />
+                </div>
+
+                <div class="col-md-2">
+                    <button type="submit" class="btn save-btn w-100 rounded-pill">
+                        Ajouter
+                    </button>
+                </div>
+            </form>
+
+            @if (lessons.Any())
+            {
+                <div class="list-group">
+                    @foreach (var lesson in lessons)
+                    {
+                        <div class="list-group-item d-flex justify-content-between align-items-center rounded-3 mb-2">
+                            <div>
+                                <strong>@lesson.Order. @lesson.Title</strong>
+                                <div class="text-muted small">@lesson.Description</div>
+                            </div>
+
+                            <form asp-controller="TeacherCourses"
+                                  asp-action="DeleteLesson"
+                                  method="post"
+                                  class="m-0">
+                                @Html.AntiForgeryToken()
+
+                                <input type="hidden" name="lessonId" value="@lesson.Id" />
+
+                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="text-muted text-center py-4">
+                    Aucune lesson pour ce cours.
+                </div>
+            }
+        </div>
+    </div>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

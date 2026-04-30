@@ -22,15 +22,26 @@ namespace Acadimy.Controllers.Student
             _context = context;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string? id)
         {
-            var user = await _userManager.GetUserAsync(User);
+            var currentUser = await _userManager.GetUserAsync(User);
 
-            if (user == null)
+            if (currentUser == null)
                 return RedirectToAction("Login", "Account");
 
+            var profileUser = string.IsNullOrWhiteSpace(id)
+                ? await _context.Users
+                    .Include(u => u.StudentSkills)
+                    .FirstOrDefaultAsync(u => u.Id == currentUser.Id)
+                : await _context.Users
+                    .Include(u => u.StudentSkills)
+                    .FirstOrDefaultAsync(u => u.Id == id);
+
+            if (profileUser == null)
+                return NotFound();
+
             var posts = await _context.StudentPosts
-                .Where(p => p.UserId == user.Id)
+                .Where(p => p.UserId == profileUser.Id && !p.IsArchived)
                 .Include(p => p.Likes)
                 .Include(p => p.Comments)
                     .ThenInclude(c => c.User)
@@ -38,15 +49,19 @@ namespace Acadimy.Controllers.Student
                 .Select(p => new PostItemViewModel
                 {
                     Id = p.Id,
+                    UserId = p.UserId,
                     Content = p.Content,
                     ImagePath = p.ImagePath,
                     CreatedAt = p.CreatedAt,
-                    FullName = (user.FirstName ?? "") + " " + (user.LastName ?? ""),
-                    ProfileImagePath = user.ProfileImagePath,
-                    Filiere = user.Filiere,
-                    Niveau = user.Niveau,
+
+                    FullName = ((profileUser.FirstName ?? "") + " " + (profileUser.LastName ?? "")).Trim(),
+                    ProfileImagePath = profileUser.ProfileImagePath,
+                    Filiere = profileUser.Filiere,
+                    Niveau = profileUser.Niveau,
+
                     LikesCount = p.Likes.Count,
-                    IsLikedByCurrentUser = p.Likes.Any(l => l.UserId == user.Id),
+                    IsLikedByCurrentUser = p.Likes.Any(l => l.UserId == currentUser.Id),
+
                     Comments = p.Comments
                         .OrderByDescending(c => c.CreatedAt)
                         .Select(c => new PostCommentItemViewModel
@@ -54,8 +69,10 @@ namespace Acadimy.Controllers.Student
                             Id = c.Id,
                             Content = c.Content,
                             CreatedAt = c.CreatedAt,
-                            FullName = (c.User!.FirstName ?? "") + " " + (c.User!.LastName ?? ""),
-                            ProfileImagePath = c.User.ProfileImagePath
+                            FullName = ((c.User!.FirstName ?? "") + " " + (c.User!.LastName ?? "")).Trim(),
+                            ProfileImagePath = c.User.ProfileImagePath,
+                            LikesCount = _context.StudentPostCommentLikes
+                                .Count(l => l.StudentPostCommentId == c.Id)
                         })
                         .ToList()
                 })
@@ -63,20 +80,31 @@ namespace Acadimy.Controllers.Student
 
             var model = new ProfileViewModel
             {
-                FullName = $"{user.FirstName} {user.LastName}",
-                Email = user.Email,
-                Phone = user.PhoneNumberCustom,
-                Location = user.Location,
-                Website = user.Website,
-                Bio = user.Bio,
-                Filiere = user.Filiere,
-                Niveau = user.Niveau,
-                ProfileImagePath = user.ProfileImagePath,
-                CoverImagePath = user.CoverImagePath,
-                Skill = user.Skill,
-                SkillPercent = user.SkillPercent,
+                FullName = $"{profileUser.FirstName} {profileUser.LastName}".Trim(),
+                Email = profileUser.Email,
+                Phone = profileUser.PhoneNumberCustom,
+                Location = profileUser.Location,
+                Website = profileUser.Website,
+                Bio = profileUser.Bio,
+                Filiere = profileUser.Filiere,
+                Niveau = profileUser.Niveau,
+                ProfileImagePath = profileUser.ProfileImagePath,
+                CoverImagePath = profileUser.CoverImagePath,
+
+                Skills = profileUser.StudentSkills
+                    .Select(s => new StudentSkillItemViewModel
+                    {
+                        Id = s.Id,
+                        Name = s.Name,
+                        Percentage = s.Percentage
+                    })
+                    .ToList(),
+
                 Posts = posts
             };
+
+            ViewBag.IsOwnProfile = profileUser.Id == currentUser.Id;
+            ViewBag.CurrentUserId = currentUser.Id;
 
             return View("~/Views/Student/Profile/Index.cshtml", model);
         }

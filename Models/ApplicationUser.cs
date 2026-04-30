@@ -1,8 +1,9 @@
 ﻿using Acadimy.Models.Teacher;
+using Acadimy.Models.Student;
 using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
 
-namespace Acadimy.Models
+namespace Acadimy.Models   // ❗ مهم بزاف
 {
     public class ApplicationUser : IdentityUser
     {
@@ -42,18 +43,29 @@ namespace Acadimy.Models
         public string? ProfileImagePath { get; set; }
         public string? CoverImagePath { get; set; }
 
-        // anciens champs - ممكن تخليهم مؤقتاً
+        // ancien skill (خليه مؤقتاً)
         [MaxLength(100)]
         public string? Skill { get; set; }
 
         public int SkillPercent { get; set; } = 0;
 
+        // Notifications
         public bool NotifyNewCourse { get; set; } = true;
         public bool NotifyApplicationStatus { get; set; } = true;
         public bool NotifyAnnouncement { get; set; } = true;
         public bool NotifyMessages { get; set; } = true;
+        public bool NotifyStudentSubmission { get; set; } = true;
+        public bool NotifyCourseActivity { get; set; } = true;
 
+        // Relations
         public ICollection<TeacherExpertise> TeacherExpertises { get; set; } = new List<TeacherExpertise>();
         public ICollection<TeacherEnrollment> TeacherEnrollments { get; set; } = new List<TeacherEnrollment>();
+        public ICollection<StudentSkill> StudentSkills { get; set; } = new List<StudentSkill>();
+
+        public bool NotifyAssignmentCorrection { get; set; } = true;
+        public bool NotifyNewLesson { get; set; } = true;
+
     }
+
+
 }

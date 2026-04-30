@@ -1,21 +1,23 @@
 ﻿@{
-    if (User.Identity.IsAuthenticated)
+    var isAuthenticated = User?.Identity?.IsAuthenticated ?? false;
+
+    if (isAuthenticated)
     {
-        if (User.IsInRole("Enseignant"))
+        if (User?.IsInRole("Enseignant") ?? false)
         {
             Layout = "~/Views/Shared/LayoutTeacher.cshtml";
         }
-        else if (User.IsInRole("Étudiant"))
+        else if (User?.IsInRole("Étudiant") ?? false)
         {
             Layout = "~/Views/Shared/LayoutStudent.cshtml";
         }
         else
         {
-            Layout = "_Layout";
+            Layout = "~/Views/Shared/_Layout.cshtml";
         }
     }
     else
     {
-        Layout = "_Layout";
+        Layout = "~/Views/Shared/_Layout.cshtml";
     }
 }

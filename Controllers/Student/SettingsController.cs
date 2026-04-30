@@ -1,8 +1,11 @@
-﻿using Acadimy.Models;
+﻿using Acadimy.Data;
+using Acadimy.Models;
+using Acadimy.Models.Student;
 using Acadimy.ViewModels.Student;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Acadimy.Controllers.Student
 {
@@ -11,19 +14,26 @@ namespace Acadimy.Controllers.Student
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IWebHostEnvironment _environment;
+        private readonly ApplicationDbContext _context;
 
         public SettingsController(
             UserManager<ApplicationUser> userManager,
-            IWebHostEnvironment environment)
+            IWebHostEnvironment environment,
+            ApplicationDbContext context)
         {
             _userManager = userManager;
             _environment = environment;
+            _context = context;
         }
 
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            var user = await _userManager.GetUserAsync(User);
+            var userId = _userManager.GetUserId(User);
+
+            var user = await _userManager.Users
+                .Include(u => u.StudentSkills)
+                .FirstOrDefaultAsync(u => u.Id == userId);
 
             if (user == null)
                 return RedirectToAction("Login", "Account");
@@ -39,14 +49,23 @@ namespace Acadimy.Controllers.Student
                 Bio = user.Bio,
                 Filiere = user.Filiere,
                 Niveau = user.Niveau,
+
                 ExistingProfileImagePath = user.ProfileImagePath,
                 ExistingCoverImagePath = user.CoverImagePath,
+
                 NotifyNewCourse = user.NotifyNewCourse,
                 NotifyApplicationStatus = user.NotifyApplicationStatus,
                 NotifyAnnouncement = user.NotifyAnnouncement,
                 NotifyMessages = user.NotifyMessages,
-                Skill = user.Skill,
-                SkillPercent = user.SkillPercent
+                NotifyAssignmentCorrection = user.NotifyAssignmentCorrection,
+                NotifyNewLesson = user.NotifyNewLesson,
+
+                Skills = user.StudentSkills.Select(s => new StudentSkillItemViewModel
+                {
+                    Id = s.Id,
+                    Name = s.Name,
+                    Percentage = s.Percentage
+                }).ToList()
             };
 
             return View("~/Views/Student/Settings/Index.cshtml", model);
@@ -56,17 +75,37 @@ namespace Acadimy.Controllers.Student
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Index(SettingsViewModel model)
         {
-            var user = await _userManager.GetUserAsync(User);
+            var userId = _userManager.GetUserId(User);
+
+            var user = await _userManager.Users
+                .Include(u => u.StudentSkills)
+                .FirstOrDefaultAsync(u => u.Id == userId);
 
             if (user == null)
                 return RedirectToAction("Login", "Account");
 
+            model.ExistingProfileImagePath = user.ProfileImagePath;
+            model.ExistingCoverImagePath = user.CoverImagePath;
+
+            model.Skills = model.Skills?
+                .Where(s => !string.IsNullOrWhiteSpace(s.Name))
+                .Select(s => new StudentSkillItemViewModel
+                {
+                    Id = s.Id,
+                    Name = s.Name!.Trim(),
+                    Percentage = Math.Clamp(s.Percentage, 0, 100)
+                })
+                .ToList() ?? new List<StudentSkillItemViewModel>();
+
+            foreach (var key in ModelState.Keys.Where(k => k.StartsWith("Skills[")).ToList())
+                ModelState.Remove(key);
+
+            ModelState.Remove(nameof(model.CurrentPassword));
+            ModelState.Remove(nameof(model.NewPassword));
+            ModelState.Remove(nameof(model.ConfirmNewPassword));
+
             if (!ModelState.IsValid)
-            {
-                model.ExistingProfileImagePath = user.ProfileImagePath;
-                model.ExistingCoverImagePath = user.CoverImagePath;
                 return View("~/Views/Student/Settings/Index.cshtml", model);
-            }
 
             user.FirstName = model.FirstName;
             user.LastName = model.LastName;
@@ -83,56 +122,40 @@ namespace Acadimy.Controllers.Student
             user.NotifyApplicationStatus = model.NotifyApplicationStatus;
             user.NotifyAnnouncement = model.NotifyAnnouncement;
             user.NotifyMessages = model.NotifyMessages;
-
-            user.Skill = model.Skill;
-            user.SkillPercent = model.SkillPercent;
+            user.NotifyAssignmentCorrection = model.NotifyAssignmentCorrection;
+            user.NotifyNewLesson = model.NotifyNewLesson;
 
             if (model.ProfileImage != null && model.ProfileImage.Length > 0)
             {
-                string profileFolder = Path.Combine(_environment.WebRootPath, "uploads", "profiles");
-                Directory.CreateDirectory(profileFolder);
+                var folder = Path.Combine(_environment.WebRootPath, "uploads", "profiles");
+                Directory.CreateDirectory(folder);
 
-                string profileFileName = Guid.NewGuid() + Path.GetExtension(model.ProfileImage.FileName);
-                string profileFilePath = Path.Combine(profileFolder, profileFileName);
+                var fileName = Guid.NewGuid() + Path.GetExtension(model.ProfileImage.FileName);
+                var filePath = Path.Combine(folder, fileName);
 
-                using (var stream = new FileStream(profileFilePath, FileMode.Create))
-                {
-                    await model.ProfileImage.CopyToAsync(stream);
-                }
+                await using var stream = new FileStream(filePath, FileMode.Create);
+                await model.ProfileImage.CopyToAsync(stream);
 
-                user.ProfileImagePath = "/uploads/profiles/" + profileFileName;
+                user.ProfileImagePath = "/uploads/profiles/" + fileName;
             }
 
             if (model.CoverImage != null && model.CoverImage.Length > 0)
             {
-                string coverFolder = Path.Combine(_environment.WebRootPath, "uploads", "covers");
-                Directory.CreateDirectory(coverFolder);
+                var folder = Path.Combine(_environment.WebRootPath, "uploads", "covers");
+                Directory.CreateDirectory(folder);
 
-                string coverFileName = Guid.NewGuid() + Path.GetExtension(model.CoverImage.FileName);
-                string coverFilePath = Path.Combine(coverFolder, coverFileName);
+                var fileName = Guid.NewGuid() + Path.GetExtension(model.CoverImage.FileName);
+                var filePath = Path.Combine(folder, fileName);
 
-                using (var stream = new FileStream(coverFilePath, FileMode.Create))
-                {
-                    await model.CoverImage.CopyToAsync(stream);
-                }
+                await using var stream = new FileStream(filePath, FileMode.Create);
+                await model.CoverImage.CopyToAsync(stream);
 
-                user.CoverImagePath = "/uploads/covers/" + coverFileName;
+                user.CoverImagePath = "/uploads/covers/" + fileName;
             }
 
-            var updateResult = await _userManager.UpdateAsync(user);
-
-            if (!updateResult.Succeeded)
-            {
-                foreach (var error in updateResult.Errors)
-                {
-                    ModelState.AddModelError("", error.Description);
-                }
-
-                model.ExistingProfileImagePath = user.ProfileImagePath;
-                model.ExistingCoverImagePath = user.CoverImagePath;
-                return View("~/Views/Student/Settings/Index.cshtml", model);
-            }
-
+            // Password optional:
+            // إذا كلشي عامر => نبدلو password
+            // إذا خاوي أو ناقص => نتجاهلو بلا error
             if (!string.IsNullOrWhiteSpace(model.CurrentPassword) &&
                 !string.IsNullOrWhiteSpace(model.NewPassword) &&
                 !string.IsNullOrWhiteSpace(model.ConfirmNewPassword))
@@ -145,25 +168,38 @@ namespace Acadimy.Controllers.Student
                 if (!passwordResult.Succeeded)
                 {
                     foreach (var error in passwordResult.Errors)
-                    {
                         ModelState.AddModelError("", error.Description);
-                    }
 
-                    model.ExistingProfileImagePath = user.ProfileImagePath;
-                    model.ExistingCoverImagePath = user.CoverImagePath;
                     return View("~/Views/Student/Settings/Index.cshtml", model);
                 }
             }
 
-            ViewBag.Message = "Settings updated successfully.";
-            model.ExistingProfileImagePath = user.ProfileImagePath;
-            model.ExistingCoverImagePath = user.CoverImagePath;
+            _context.StudentSkills.RemoveRange(user.StudentSkills);
 
-            model.CurrentPassword = "";
-            model.NewPassword = "";
-            model.ConfirmNewPassword = "";
+            foreach (var skill in model.Skills)
+            {
+                _context.StudentSkills.Add(new StudentSkill
+                {
+                    Name = skill.Name!,
+                    Percentage = skill.Percentage,
+                    UserId = user.Id
+                });
+            }
 
-            return View("~/Views/Student/Settings/Index.cshtml", model);
+            var result = await _userManager.UpdateAsync(user);
+
+            if (!result.Succeeded)
+            {
+                foreach (var error in result.Errors)
+                    ModelState.AddModelError("", error.Description);
+
+                return View("~/Views/Student/Settings/Index.cshtml", model);
+            }
+
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Settings updated successfully.";
+            return RedirectToAction(nameof(Index));
         }
     }
 }

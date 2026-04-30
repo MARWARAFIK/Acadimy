@@ -3,9 +3,9 @@ using Acadimy.Models;
 using Acadimy.Models.Teacher;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-
+using Acadimy.Services;
 var builder = WebApplication.CreateBuilder(args);
-
+builder.Services.AddScoped<NotificationService>();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 

@@ -17,8 +17,12 @@ namespace Acadimy.ViewModels.Student
         public string? ProfileImagePath { get; set; }
         public string? CoverImagePath { get; set; }
 
+
         public string? Skill { get; set; }
         public int SkillPercent { get; set; }
+
+        // ✅ الجديد (مهم بزاف)
+        public List<StudentSkillItemViewModel> Skills { get; set; } = new();
 
         public CreatePostViewModel NewPost { get; set; } = new();
         public List<PostItemViewModel> Posts { get; set; } = new();

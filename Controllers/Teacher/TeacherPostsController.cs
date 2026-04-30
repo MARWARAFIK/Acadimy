@@ -1,6 +1,7 @@
 ﻿using Acadimy.Data;
 using Acadimy.Models;
 using Acadimy.Models.Teacher;
+using Acadimy.Models.Community;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -30,9 +31,7 @@ namespace Acadimy.Controllers.Teacher
         public async Task<IActionResult> Create(string content, IFormFile? image)
         {
             var user = await _userManager.GetUserAsync(User);
-
-            if (user == null)
-                return RedirectToAction("Login", "Account");
+            if (user == null) return RedirectToAction("Login", "Account");
 
             if (string.IsNullOrWhiteSpace(content) && image == null)
                 return RedirectToAction("Index", "TeacherProfile");
@@ -42,29 +41,39 @@ namespace Acadimy.Controllers.Teacher
             if (image != null && image.Length > 0)
             {
                 var folder = Path.Combine(_environment.WebRootPath, "uploads", "teacher-posts");
+                Directory.CreateDirectory(folder);
 
-                if (!Directory.Exists(folder))
-                    Directory.CreateDirectory(folder);
+                var fileName = Guid.NewGuid() + Path.GetExtension(image.FileName);
+                var filePath = Path.Combine(folder, fileName);
 
-                var fileName = $"{Guid.NewGuid()}{Path.GetExtension(image.FileName)}";
-                var fullPath = Path.Combine(folder, fileName);
-
-                using var stream = new FileStream(fullPath, FileMode.Create);
+                await using var stream = new FileStream(filePath, FileMode.Create);
                 await image.CopyToAsync(stream);
 
                 imagePath = "/uploads/teacher-posts/" + fileName;
             }
 
-            var post = new TeacherPost
+            var teacherPost = new TeacherPost
             {
-                Content = content?.Trim() ?? "",
+                Content = content ?? string.Empty,
                 ImagePath = imagePath,
                 UserId = user.Id,
                 CreatedAt = DateTime.Now,
                 IsArchived = false
             };
 
-            _context.TeacherPosts.Add(post);
+            _context.TeacherPosts.Add(teacherPost);
+            await _context.SaveChangesAsync();
+
+            _context.CommunityPosts.Add(new CommunityPost
+            {
+                Content = teacherPost.Content,
+                ImagePath = teacherPost.ImagePath,
+                UserId = user.Id,
+                CreatedAt = teacherPost.CreatedAt,
+                OriginalPostType = "Teacher",
+                OriginalPostId = teacherPost.Id
+            });
+
             await _context.SaveChangesAsync();
 
             return RedirectToAction("Index", "TeacherProfile");
@@ -75,14 +84,12 @@ namespace Acadimy.Controllers.Teacher
         public async Task<IActionResult> Like(int postId, string? returnUrl = null)
         {
             var user = await _userManager.GetUserAsync(User);
+            if (user == null) return RedirectToAction("Login", "Account");
 
-            if (user == null)
-                return RedirectToAction("Login", "Account");
+            var existing = await _context.TeacherPostLikes
+                .FirstOrDefaultAsync(x => x.TeacherPostId == postId && x.UserId == user.Id);
 
-            var existingLike = await _context.TeacherPostLikes
-                .FirstOrDefaultAsync(l => l.TeacherPostId == postId && l.UserId == user.Id);
-
-            if (existingLike == null)
+            if (existing == null)
             {
                 _context.TeacherPostLikes.Add(new TeacherPostLike
                 {
@@ -92,15 +99,12 @@ namespace Acadimy.Controllers.Teacher
             }
             else
             {
-                _context.TeacherPostLikes.Remove(existingLike);
+                _context.TeacherPostLikes.Remove(existing);
             }
 
             await _context.SaveChangesAsync();
 
-            if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
-                return Redirect(returnUrl);
-
-            return RedirectToAction("Index", "TeacherProfile");
+            return SafeRedirect(returnUrl);
         }
 
         [HttpPost]
@@ -108,29 +112,23 @@ namespace Acadimy.Controllers.Teacher
         public async Task<IActionResult> AddComment(int postId, string content, string? returnUrl = null)
         {
             var user = await _userManager.GetUserAsync(User);
-
-            if (user == null)
-                return RedirectToAction("Login", "Account");
+            if (user == null) return RedirectToAction("Login", "Account");
 
             if (!string.IsNullOrWhiteSpace(content))
             {
-                var comment = new TeacherPostComment
+                _context.TeacherPostComments.Add(new TeacherPostComment
                 {
                     TeacherPostId = postId,
                     UserId = user.Id,
                     Content = content.Trim(),
                     CreatedAt = DateTime.Now,
                     ParentCommentId = null
-                };
+                });
 
-                _context.TeacherPostComments.Add(comment);
                 await _context.SaveChangesAsync();
             }
 
-            if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
-                return Redirect(returnUrl);
-
-            return RedirectToAction("Index", "TeacherProfile");
+            return SafeRedirect(returnUrl);
         }
 
         [HttpPost]
@@ -138,35 +136,26 @@ namespace Acadimy.Controllers.Teacher
         public async Task<IActionResult> ReplyComment(int postId, int parentCommentId, string content, string? returnUrl = null)
         {
             var user = await _userManager.GetUserAsync(User);
+            if (user == null) return RedirectToAction("Login", "Account");
 
-            if (user == null)
-                return RedirectToAction("Login", "Account");
+            var parentComment = await _context.TeacherPostComments
+                .FirstOrDefaultAsync(c => c.Id == parentCommentId && c.TeacherPostId == postId);
 
-            if (!string.IsNullOrWhiteSpace(content))
+            if (parentComment != null && !string.IsNullOrWhiteSpace(content))
             {
-                var parentComment = await _context.TeacherPostComments
-                    .FirstOrDefaultAsync(c => c.Id == parentCommentId && c.TeacherPostId == postId);
-
-                if (parentComment != null)
+                _context.TeacherPostComments.Add(new TeacherPostComment
                 {
-                    var reply = new TeacherPostComment
-                    {
-                        TeacherPostId = postId,
-                        ParentCommentId = parentCommentId,
-                        UserId = user.Id,
-                        Content = content.Trim(),
-                        CreatedAt = DateTime.Now
-                    };
+                    TeacherPostId = postId,
+                    ParentCommentId = parentCommentId,
+                    UserId = user.Id,
+                    Content = content.Trim(),
+                    CreatedAt = DateTime.Now
+                });
 
-                    _context.TeacherPostComments.Add(reply);
-                    await _context.SaveChangesAsync();
-                }
+                await _context.SaveChangesAsync();
             }
 
-            if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
-                return Redirect(returnUrl);
-
-            return RedirectToAction("Index", "TeacherProfile");
+            return SafeRedirect(returnUrl);
         }
 
         [HttpPost]
@@ -174,14 +163,12 @@ namespace Acadimy.Controllers.Teacher
         public async Task<IActionResult> LikeComment(int commentId, string? returnUrl = null)
         {
             var user = await _userManager.GetUserAsync(User);
+            if (user == null) return RedirectToAction("Login", "Account");
 
-            if (user == null)
-                return RedirectToAction("Login", "Account");
+            var existing = await _context.TeacherPostCommentLikes
+                .FirstOrDefaultAsync(x => x.TeacherPostCommentId == commentId && x.UserId == user.Id);
 
-            var existingLike = await _context.TeacherPostCommentLikes
-                .FirstOrDefaultAsync(l => l.TeacherPostCommentId == commentId && l.UserId == user.Id);
-
-            if (existingLike == null)
+            if (existing == null)
             {
                 _context.TeacherPostCommentLikes.Add(new TeacherPostCommentLike
                 {
@@ -191,100 +178,39 @@ namespace Acadimy.Controllers.Teacher
             }
             else
             {
-                _context.TeacherPostCommentLikes.Remove(existingLike);
+                _context.TeacherPostCommentLikes.Remove(existing);
             }
 
             await _context.SaveChangesAsync();
 
-            if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
-                return Redirect(returnUrl);
-
-            return RedirectToAction("Index", "TeacherProfile");
+            return SafeRedirect(returnUrl);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteComment(int commentId, string? returnUrl = null)
-        {
-            var currentUser = await _userManager.GetUserAsync(User);
-
-            if (currentUser == null)
-                return RedirectToAction("Login", "Account");
-
-            var comment = await _context.TeacherPostComments
-                .Include(c => c.TeacherPost)
-                .Include(c => c.Likes)
-                .FirstOrDefaultAsync(c => c.Id == commentId);
-
-            if (comment == null)
-            {
-                if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
-                    return Redirect(returnUrl);
-
-                return RedirectToAction("Index", "TeacherProfile");
-            }
-
-            bool isMyComment = comment.UserId == currentUser.Id;
-            bool isCommentOnMyPost = comment.TeacherPost != null && comment.TeacherPost.UserId == currentUser.Id;
-
-            if (!isMyComment && !isCommentOnMyPost)
-            {
-                if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
-                    return Redirect(returnUrl);
-
-                return RedirectToAction("Index", "TeacherProfile");
-            }
-
-            var replies = await _context.TeacherPostComments
-                .Where(c => c.ParentCommentId == comment.Id)
-                .Include(c => c.Likes)
-                .ToListAsync();
-
-            var replyLikes = replies.SelectMany(r => r.Likes).ToList();
-
-            _context.TeacherPostCommentLikes.RemoveRange(replyLikes);
-            _context.TeacherPostCommentLikes.RemoveRange(comment.Likes);
-            _context.TeacherPostComments.RemoveRange(replies);
-            _context.TeacherPostComments.Remove(comment);
-
-            await _context.SaveChangesAsync();
-
-            if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
-                return Redirect(returnUrl);
-
-            return RedirectToAction("Index", "TeacherProfile");
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Archive(int postId)
+        public async Task<IActionResult> Archive(int postId, string? returnUrl = null)
         {
             var user = await _userManager.GetUserAsync(User);
-
-            if (user == null)
-                return RedirectToAction("Login", "Account");
+            if (user == null) return RedirectToAction("Login", "Account");
 
             var post = await _context.TeacherPosts
                 .FirstOrDefaultAsync(p => p.Id == postId && p.UserId == user.Id);
 
-            if (post != null)
-            {
-                post.IsArchived = true;
-                await _context.SaveChangesAsync();
-            }
+            if (post == null)
+                return RedirectToAction("Index", "TeacherProfile");
 
-            return RedirectToAction("Index", "TeacherArchive");
+            post.IsArchived = true;
+            await _context.SaveChangesAsync();
+
+            return SafeRedirect(returnUrl);
         }
-
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Restore(int postId)
         {
             var user = await _userManager.GetUserAsync(User);
-
-            if (user == null)
-                return RedirectToAction("Login", "Account");
+            if (user == null) return RedirectToAction("Login", "Account");
 
             var post = await _context.TeacherPosts
                 .FirstOrDefaultAsync(p => p.Id == postId && p.UserId == user.Id);
@@ -303,30 +229,57 @@ namespace Acadimy.Controllers.Teacher
         public async Task<IActionResult> Delete(int postId)
         {
             var user = await _userManager.GetUserAsync(User);
-
-            if (user == null)
-                return RedirectToAction("Login", "Account");
+            if (user == null) return RedirectToAction("Login", "Account");
 
             var post = await _context.TeacherPosts
                 .Include(p => p.Likes)
                 .FirstOrDefaultAsync(p => p.Id == postId && p.UserId == user.Id);
 
-            if (post != null)
+            if (post == null)
+                return RedirectToAction("Index", "TeacherProfile");
+
+            var communityPosts = await _context.CommunityPosts
+                .Include(p => p.Likes)
+                .Where(p => p.OriginalPostType == "Teacher" && p.OriginalPostId == post.Id)
+                .ToListAsync();
+
+            foreach (var cp in communityPosts)
             {
-                var allComments = await _context.TeacherPostComments
-                    .Where(c => c.TeacherPostId == post.Id)
+                var comments = await _context.CommunityComments
+                    .Where(c => c.CommunityPostId == cp.Id)
                     .Include(c => c.Likes)
                     .ToListAsync();
 
-                var allCommentLikes = allComments.SelectMany(c => c.Likes).ToList();
+                var commentLikes = comments.SelectMany(c => c.Likes).ToList();
 
-                _context.TeacherPostCommentLikes.RemoveRange(allCommentLikes);
-                _context.TeacherPostComments.RemoveRange(allComments);
-                _context.TeacherPostLikes.RemoveRange(post.Likes);
-                _context.TeacherPosts.Remove(post);
-
-                await _context.SaveChangesAsync();
+                _context.CommunityCommentLikes.RemoveRange(commentLikes);
+                _context.CommunityComments.RemoveRange(comments);
+                _context.CommunityPostLikes.RemoveRange(cp.Likes);
             }
+
+            _context.CommunityPosts.RemoveRange(communityPosts);
+
+            var teacherComments = await _context.TeacherPostComments
+                .Where(c => c.TeacherPostId == post.Id)
+                .Include(c => c.Likes)
+                .ToListAsync();
+
+            var teacherCommentLikes = teacherComments.SelectMany(c => c.Likes).ToList();
+
+            _context.TeacherPostCommentLikes.RemoveRange(teacherCommentLikes);
+            _context.TeacherPostComments.RemoveRange(teacherComments);
+            _context.TeacherPostLikes.RemoveRange(post.Likes);
+            _context.TeacherPosts.Remove(post);
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("Index", "TeacherProfile");
+        }
+
+        private IActionResult SafeRedirect(string? returnUrl)
+        {
+            if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
+                return Redirect(returnUrl);
 
             return RedirectToAction("Index", "TeacherProfile");
         }

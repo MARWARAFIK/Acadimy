@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Acadimy.Models;
 
 namespace Acadimy.Models.Student
 {
@@ -8,19 +9,23 @@ namespace Acadimy.Models.Student
         public int Id { get; set; }
 
         [Required]
-        public string Content { get; set; } = "";
+        public string Content { get; set; } = string.Empty;
 
         public string? ImagePath { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         [Required]
-        public string UserId { get; set; } = "";
+        public string UserId { get; set; } = string.Empty;
 
-        [ForeignKey("UserId")]
-        public ApplicationUser? User { get; set; }
+        [ForeignKey(nameof(UserId))]
+        public ApplicationUser User { get; set; } = null!; // 🔥 مهم
 
-        public List<StudentPostLike> Likes { get; set; } = new();
-        public List<StudentPostComment> Comments { get; set; } = new();
+        public ICollection<StudentPostLike> Likes { get; set; } = new List<StudentPostLike>();
+        public ICollection<StudentPostComment> Comments { get; set; } = new List<StudentPostComment>();
+
+
+        public bool IsArchived { get; set; } = false;
+    
     }
 }

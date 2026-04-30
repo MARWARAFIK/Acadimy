@@ -1,52 +1,189 @@
 ﻿@model Acadimy.ViewModels.Teacher.TeacherStudentsPageViewModel
+
 @{
     Layout = "~/Views/Shared/LayoutTeacher.cshtml";
     ViewData["Title"] = "Students";
 }
 
-<h2>Gestion de mes étudiants</h2>
-<p>Consultez les étudiants inscrits à vos cours</p>
+<div class="teacher-students-page">
 
-@if (Model.Students != null && Model.Students.Any())
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Étudiant</th>
-                <th>Email</th>
-                <th>Cours</th>
-                <th>Niveau</th>
-                <th>Inscrit le</th>
-                <th>Progression</th>
-                <th>Statut</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var student in Model.Students)
+    <div class="teacher-students-header">
+        <div>
+            <h1>Gestion de mes étudiants</h1>
+            <p>La progression est calculée automatiquement selon les leçons terminées.</p>
+        </div>
+    </div>
+
+    <form asp-controller="TeacherStudents" asp-action="Index" method="get" class="teacher-filter-card">
+        <div class="filter-input">
+            <i class="bi bi-search"></i>
+            <input type="text" name="search" value="@Model.Search"
+                   placeholder="Chercher étudiant, email ou cours..." />
+        </div>
+
+        <select name="courseId">
+            <option value="">Tous les cours</option>
+            @foreach (var course in Model.Courses)
             {
-                <tr>
-                    <td>@student.FullName</td>
-                    <td>@student.Email</td>
-                    <td>@student.CourseTitle</td>
-                    <td>@student.Level</td>
-                    <td>@student.EnrolledAt.ToString("dd/MM/yyyy")</td>
-                    <td>@student.ProgressPercent%</td>
-                    <td>@student.Status</td>
-                    <td>
-                        <a asp-controller="TeacherStudents"
-                           asp-action="Details"
-                           asp-route-id="@student.EnrollmentId"
-                           class="btn btn-sm btn-success">
-                            Détails
-                        </a>
-                    </td>
-                </tr>
+                <option value="@course.Id" selected="@(Model.CourseId == course.Id)">
+                    @course.Title
+                </option>
             }
-        </tbody>
-    </table>
-}
-else
-{
-    <p>Vous n'avez aucun étudiant pour le moment.</p>
+        </select>
+
+        <button type="submit">
+            <i class="bi bi-funnel"></i> Filtrer
+        </button>
+    </form>
+
+    @if (Model.Students != null && Model.Students.Any())
+    {
+        <div class="teacher-table-card">
+            <table class="teacher-students-table fixed-students-table">
+                <thead>
+                    <tr>
+                        <th>Étudiant</th>
+                        <th>Cours</th>
+                        <th>Niveau</th>
+                        <th>Inscrit le</th>
+                        <th>Progression</th>
+                        <th>Statut</th>
+                        <th>Gestion</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var student in Model.Students)
+                    {
+                        var statusClass = student.Status == "Completed"
+                            ? "completed"
+                            : student.Status == "Paused"
+                                ? "paused"
+                                : "";
+
+                        <tr id="student-row-@student.EnrollmentId">
+                            <td class="student-col">
+                                <a asp-controller="Profile"
+                                   asp-action="Index"
+                                   asp-route-id="@student.StudentId"
+                                   class="student-mini-profile student-profile-link">
+
+                                    <img src="@(string.IsNullOrEmpty(student.ProfileImagePath) ? "/images/default-user.png" : student.ProfileImagePath)" />
+
+                                    <div>
+                                        <strong>@student.FullName</strong>
+                                        <small>@student.Email</small>
+                                    </div>
+                                </a>
+                            </td>
+
+                            <td class="course-col">@student.CourseTitle</td>
+                            <td>@student.Level</td>
+                            <td>@student.EnrolledAt.ToString("dd/MM/yyyy")</td>
+
+                            <td>
+                                <div class="progress-wrap">
+                                    <div class="progress">
+                                        <div class="progress-bar" style="width:@student.ProgressPercent%"></div>
+                                    </div>
+                                    <small>@student.ProgressPercent%</small>
+                                </div>
+                            </td>
+
+                            <td>
+                                <span class="status-badge @statusClass" id="status-badge-@student.EnrollmentId">
+                                    @student.Status
+                                </span>
+                            </td>
+
+                            <td>
+                                @if (student.Status != "Completed")
+                                {
+                                    <form class="pause-form" data-enrollment-id="@student.EnrollmentId">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="enrollmentId" value="@student.EnrollmentId" />
+
+                                        <button type="button"
+                                                class="btn rounded-pill px-3 pause-btn @(student.Status == "Paused" ? "btn-success" : "btn-warning")"
+                                                data-enrollment-id="@student.EnrollmentId">
+                                            @if (student.Status == "Paused")
+                                            {
+                                                <span><i class="bi bi-play-fill"></i> Resume</span>
+                                            }
+                                            else
+                                            {
+                                                <span><i class="bi bi-pause-fill"></i> Pause</span>
+                                            }
+                                        </button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Automatique</span>
+                                }
+                            </td>
+
+                            <td>
+                                <a asp-controller="TeacherStudents"
+                                   asp-action="Details"
+                                   asp-route-id="@student.EnrollmentId"
+                                   class="btn-student-action">
+                                    Détails
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            document.querySelectorAll(".pause-btn").forEach(function (button) {
+                button.addEventListener("click", async function () {
+                    const enrollmentId = this.dataset.enrollmentId;
+                    const form = this.closest("form");
+                    const token = form.querySelector('input[name="__RequestVerificationToken"]').value;
+
+                    const formData = new FormData();
+                    formData.append("enrollmentId", enrollmentId);
+                    formData.append("__RequestVerificationToken", token);
+
+                    this.disabled = true;
+
+                    const response = await fetch("/TeacherStudents/TogglePauseAjax", {
+                        method: "POST",
+                        body: formData
+                    });
+
+                    const result = await response.json();
+                    this.disabled = false;
+
+                    if (!result.success) {
+                        alert(result.message || "Erreur");
+                        return;
+                    }
+
+                    const badge = document.getElementById("status-badge-" + enrollmentId);
+                    badge.textContent = result.status;
+                    badge.classList.remove("completed", "paused");
+
+                    if (result.status === "Paused") {
+                        badge.classList.add("paused");
+                        this.classList.remove("btn-warning");
+                        this.classList.add("btn-success");
+                        this.innerHTML = '<i class="bi bi-play-fill"></i> Resume';
+                    } else {
+                        this.classList.remove("btn-success");
+                        this.classList.add("btn-warning");
+                        this.innerHTML = '<i class="bi bi-pause-fill"></i> Pause';
+                    }
+                });
+            });
+        });
+    </script>
 }

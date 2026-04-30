@@ -1,5 +1,6 @@
 ﻿using Acadimy.Data;
 using Acadimy.Models;
+using Acadimy.Services;
 using Acadimy.ViewModels.Teacher;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -14,13 +15,16 @@ namespace Acadimy.Controllers.Teacher
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly NotificationService _notificationService;
 
         public TeacherStudentsController(
             ApplicationDbContext context,
-            UserManager<ApplicationUser> userManager)
+            UserManager<ApplicationUser> userManager,
+            NotificationService notificationService)
         {
             _context = context;
             _userManager = userManager;
+            _notificationService = notificationService;
         }
 
         [HttpGet("")]
@@ -28,15 +32,14 @@ namespace Acadimy.Controllers.Teacher
         public async Task<IActionResult> Index(string? search, int? courseId)
         {
             var user = await _userManager.GetUserAsync(User);
-
-            if (user == null)
-                return RedirectToAction("Login", "Account");
+            if (user == null) return RedirectToAction("Login", "Account");
 
             var query = _context.TeacherEnrollments
                 .Include(e => e.Student)
                 .Include(e => e.TeacherCourse)
-                .Where(e => e.TeacherCourse != null && e.TeacherCourse.UserId == user.Id && !e.TeacherCourse.IsArchived)
-                .AsQueryable();
+                .Where(e => e.TeacherCourse != null
+                            && e.TeacherCourse.UserId == user.Id
+                            && !e.TeacherCourse.IsArchived);
 
             if (!string.IsNullOrWhiteSpace(search))
             {
@@ -50,11 +53,28 @@ namespace Acadimy.Controllers.Teacher
             }
 
             if (courseId.HasValue)
-            {
                 query = query.Where(e => e.TeacherCourseId == courseId.Value);
+
+            var enrollments = await query.ToListAsync();
+
+            foreach (var e in enrollments)
+            {
+                if (e.ProgressPercent >= 100)
+                {
+                    e.ProgressPercent = 100;
+                    e.IsCompleted = true;
+                    e.Status = "Completed";
+                }
+                else if (e.Status != "Paused")
+                {
+                    e.IsCompleted = false;
+                    e.Status = "Active";
+                }
             }
 
-            var students = await query
+            await _context.SaveChangesAsync();
+
+            var students = enrollments
                 .OrderByDescending(e => e.EnrolledAt)
                 .Select(e => new TeacherStudentViewModel
                 {
@@ -70,7 +90,7 @@ namespace Acadimy.Controllers.Teacher
                     ProgressPercent = e.ProgressPercent,
                     Status = e.Status
                 })
-                .ToListAsync();
+                .ToList();
 
             var teacherCourses = await _context.TeacherCourses
                 .Where(c => c.UserId == user.Id && !c.IsArchived)
@@ -97,18 +117,69 @@ namespace Acadimy.Controllers.Teacher
             return View("~/Views/Teacher/Students/Index.cshtml", model);
         }
 
+        [HttpPost("TogglePauseAjax")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> TogglePauseAjax(int enrollmentId)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+                return Json(new { success = false, message = "Not authenticated" });
+
+            var enrollment = await _context.TeacherEnrollments
+                .Include(e => e.Student)
+                .Include(e => e.TeacherCourse)
+                .FirstOrDefaultAsync(e =>
+                    e.Id == enrollmentId &&
+                    e.TeacherCourse != null &&
+                    e.TeacherCourse.UserId == user.Id);
+
+            if (enrollment == null)
+                return Json(new { success = false, message = "Enrollment not found" });
+
+            if (enrollment.ProgressPercent >= 100)
+            {
+                enrollment.Status = "Completed";
+                enrollment.IsCompleted = true;
+            }
+            else
+            {
+                enrollment.Status = enrollment.Status == "Paused" ? "Active" : "Paused";
+                enrollment.IsCompleted = false;
+            }
+
+            await _context.SaveChangesAsync();
+
+            if (enrollment.Student != null && enrollment.Student.NotifyApplicationStatus)
+            {
+                await _notificationService.SendAsync(
+                    enrollment.StudentId,
+                    "Statut du cours mis à jour",
+                    $"Votre statut dans le cours \"{enrollment.TeacherCourse?.Title}\" est maintenant {enrollment.Status}.",
+                    "CourseStatus",
+                    $"/StudentCourses/Details/{enrollment.TeacherCourseId}"
+                );
+            }
+
+            return Json(new
+            {
+                success = true,
+                status = enrollment.Status,
+                isCompleted = enrollment.Status == "Completed"
+            });
+        }
+
         [HttpGet("Details/{id:int}")]
         public async Task<IActionResult> Details(int id)
         {
             var user = await _userManager.GetUserAsync(User);
-
-            if (user == null)
-                return RedirectToAction("Login", "Account");
+            if (user == null) return RedirectToAction("Login", "Account");
 
             var student = await _context.TeacherEnrollments
                 .Include(e => e.Student)
                 .Include(e => e.TeacherCourse)
-                .Where(e => e.Id == id && e.TeacherCourse != null && e.TeacherCourse.UserId == user.Id)
+                .Where(e => e.Id == id
+                            && e.TeacherCourse != null
+                            && e.TeacherCourse.UserId == user.Id)
                 .Select(e => new TeacherStudentViewModel
                 {
                     EnrollmentId = e.Id,
@@ -125,8 +196,7 @@ namespace Acadimy.Controllers.Teacher
                 })
                 .FirstOrDefaultAsync();
 
-            if (student == null)
-                return NotFound();
+            if (student == null) return NotFound();
 
             return View("~/Views/Teacher/Students/Details.cshtml", student);
         }

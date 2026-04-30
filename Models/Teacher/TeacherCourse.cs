@@ -33,5 +33,7 @@ namespace Acadimy.Models.Teacher
         public ApplicationUser? User { get; set; }
 
         public ICollection<TeacherEnrollment> Enrollments { get; set; } = new List<TeacherEnrollment>();
+        public ICollection<CourseLesson> Lessons { get; set; } = new List<CourseLesson>();
+    
     }
 }

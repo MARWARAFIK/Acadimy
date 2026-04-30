@@ -1,0 +1,83 @@
+﻿@using Acadimy.ViewModels.Teacher
+@model TeacherAssignmentViewModel
+
+@{
+    Layout = "~/Views/Shared/LayoutTeacher.cshtml";
+    ViewData["Title"] = "Modifier assignment";
+}
+
+<div class="container teacher-settings-page">
+
+    <div class="d-flex align-items-center mb-4">
+        <a asp-action="Index" class="btn btn-light rounded-pill shadow-sm me-3 px-3 py-2">
+            <i class="bi bi-arrow-left"></i>
+        </a>
+
+        <div>
+            <h2 class="settings-title mb-0">Modifier assignment</h2>
+            <p class="text-muted small mb-0">Mettez à jour le devoir publié</p>
+        </div>
+    </div>
+
+    <div class="course-management-card p-4">
+        <form asp-action="Edit" asp-route-id="@Model.Id" method="post" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="ExistingFilePath" />
+
+            <div class="mb-3">
+                <label asp-for="Title" class="form-label fw-bold">Titre</label>
+                <input asp-for="Title" class="form-control" />
+                <span asp-validation-for="Title" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="TeacherCourseId" class="form-label fw-bold">Cours</label>
+                <select asp-for="TeacherCourseId" asp-items="ViewBag.Courses" class="form-select">
+                    <option value="">-- Choisir un cours --</option>
+                </select>
+                <span asp-validation-for="TeacherCourseId" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Deadline" class="form-label fw-bold">Deadline</label>
+                <input asp-for="Deadline" type="datetime-local" class="form-control" />
+                <span asp-validation-for="Deadline" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Description" class="form-label fw-bold">Description</label>
+                <textarea asp-for="Description" class="form-control" rows="5"></textarea>
+            </div>
+
+            <div class="mb-4">
+                <label asp-for="AssignmentFile" class="form-label fw-bold">Changer le fichier</label>
+                <input asp-for="AssignmentFile" type="file" class="form-control" />
+
+                @if (!string.IsNullOrEmpty(Model.ExistingFilePath))
+                {
+                    <div class="mt-2">
+                        <a href="@Model.ExistingFilePath" target="_blank" class="text-success text-decoration-none">
+                            <i class="bi bi-download me-1"></i> Télécharger le fichier actuel
+                        </a>
+                    </div>
+                }
+            </div>
+
+            <div class="d-flex justify-content-end gap-2">
+                <a asp-action="Index" class="btn btn-light rounded-pill px-4">
+                    Annuler
+                </a>
+
+                <button type="submit" class="btn-add-course border-0">
+                    <i class="bi bi-save me-2"></i> Modifier
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

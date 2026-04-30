@@ -22,5 +22,8 @@ namespace Acadimy.ViewModels.Teacher
 
         public bool IsArchived { get; set; }
         public DateTime CreatedAt { get; set; }
+
+
+        public string? LessonsText { get; set; }
     }
 }

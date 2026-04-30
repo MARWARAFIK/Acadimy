@@ -49,11 +49,14 @@ namespace Acadimy.Controllers.Teacher
                 Bio = user.Bio,
                 ExistingProfileImagePath = user.ProfileImagePath,
                 ExistingCoverImagePath = user.CoverImagePath,
-                NotifyNewCourse = user.NotifyNewCourse,
-                NotifyApplicationStatus = user.NotifyApplicationStatus,
+
+                NotifyStudentSubmission = user.NotifyStudentSubmission,
+                NotifyCourseActivity = user.NotifyCourseActivity,
                 NotifyAnnouncement = user.NotifyAnnouncement,
                 NotifyMessages = user.NotifyMessages,
+
                 ChangePassword = false,
+
                 Expertises = user.TeacherExpertises
                     .Select(e => new TeacherExpertiseItemViewModel
                     {
@@ -102,9 +105,7 @@ namespace Acadimy.Controllers.Teacher
                 .ToList();
 
             foreach (var key in expertiseKeys)
-            {
                 ModelState.Remove(key);
-            }
 
             if (!ModelState.IsValid)
                 return View("~/Views/Teacher/Settings/Index.cshtml", model);
@@ -143,8 +144,8 @@ namespace Acadimy.Controllers.Teacher
             user.Experience = model.Experience;
             user.Bio = model.Bio?.Trim();
 
-            user.NotifyNewCourse = model.NotifyNewCourse;
-            user.NotifyApplicationStatus = model.NotifyApplicationStatus;
+            user.NotifyStudentSubmission = model.NotifyStudentSubmission;
+            user.NotifyCourseActivity = model.NotifyCourseActivity;
             user.NotifyAnnouncement = model.NotifyAnnouncement;
             user.NotifyMessages = model.NotifyMessages;
 
@@ -175,14 +176,10 @@ namespace Acadimy.Controllers.Teacher
             }
 
             if (model.ProfileImage != null && model.ProfileImage.Length > 0)
-            {
                 user.ProfileImagePath = await SaveImageAsync(model.ProfileImage, "uploads/teachers/profiles");
-            }
 
             if (model.CoverImage != null && model.CoverImage.Length > 0)
-            {
                 user.CoverImagePath = await SaveImageAsync(model.CoverImage, "uploads/teachers/covers");
-            }
 
             if (model.ChangePassword)
             {
@@ -258,7 +255,7 @@ namespace Acadimy.Controllers.Teacher
             var fileName = $"{Guid.NewGuid()}{extension}";
             var fullPath = Path.Combine(uploadsFolder, fileName);
 
-            using var stream = new FileStream(fullPath, FileMode.Create);
+            await using var stream = new FileStream(fullPath, FileMode.Create);
             await file.CopyToAsync(stream);
 
             return "/" + folderPath.Replace("\\", "/") + "/" + fileName;

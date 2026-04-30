@@ -94,10 +94,22 @@ namespace Acadimy.Migrations
                     b.Property<bool>("NotifyApplicationStatus")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("NotifyAssignmentCorrection")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("NotifyCourseActivity")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("NotifyMessages")
                         .HasColumnType("bit");
 
                     b.Property<bool>("NotifyNewCourse")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("NotifyNewLesson")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("NotifyStudentSubmission")
                         .HasColumnType("bit");
 
                     b.Property<string>("PasswordHash")
@@ -154,6 +166,232 @@ namespace Acadimy.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("Acadimy.Models.Community.CommunityComment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CommunityPostId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("ParentCommentId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CommunityPostId");
+
+                    b.HasIndex("ParentCommentId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("CommunityComments");
+                });
+
+            modelBuilder.Entity("Acadimy.Models.Community.CommunityCommentLike", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CommunityCommentId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CommunityCommentId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("CommunityCommentLikes");
+                });
+
+            modelBuilder.Entity("Acadimy.Models.Community.CommunityPost", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ImagePath")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("OriginalPostId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("OriginalPostType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("CommunityPosts");
+                });
+
+            modelBuilder.Entity("Acadimy.Models.Community.CommunityPostLike", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CommunityPostId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("CommunityPostId", "UserId")
+                        .IsUnique();
+
+                    b.ToTable("CommunityPostLikes");
+                });
+
+            modelBuilder.Entity("Acadimy.Models.Messaging.Message", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("SenderId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("SentAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ThreadId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ThreadId");
+
+                    b.ToTable("Messages");
+                });
+
+            modelBuilder.Entity("Acadimy.Models.Messaging.MessageThread", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("User1Id")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("User2Id")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("User2Id");
+
+                    b.HasIndex("User1Id", "User2Id");
+
+                    b.ToTable("MessageThreads");
+                });
+
+            modelBuilder.Entity("Acadimy.Models.Notification", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Link")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Notifications");
+                });
+
             modelBuilder.Entity("Acadimy.Models.Student.StudentPost", b =>
                 {
                     b.Property<int>("Id")
@@ -171,6 +409,9 @@ namespace Acadimy.Migrations
 
                     b.Property<string>("ImagePath")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsArchived")
+                        .HasColumnType("bit");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -214,6 +455,33 @@ namespace Acadimy.Migrations
                     b.ToTable("StudentPostComments");
                 });
 
+            modelBuilder.Entity("Acadimy.Models.Student.StudentPostCommentLike", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("StudentPostCommentId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StudentPostCommentId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("StudentPostCommentLikes");
+                });
+
             modelBuilder.Entity("Acadimy.Models.Student.StudentPostLike", b =>
                 {
                     b.Property<int>("Id")
@@ -241,6 +509,33 @@ namespace Acadimy.Migrations
                     b.ToTable("StudentPostLikes");
                 });
 
+            modelBuilder.Entity("Acadimy.Models.Student.StudentSkill", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("Percentage")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("StudentSkills");
+                });
+
             modelBuilder.Entity("Acadimy.Models.Teacher.CourseCategory", b =>
                 {
                     b.Property<int>("Id")
@@ -258,6 +553,38 @@ namespace Acadimy.Migrations
                     b.ToTable("CourseCategories");
                 });
 
+            modelBuilder.Entity("Acadimy.Models.Teacher.CourseLesson", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TeacherCourseId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TeacherCourseId");
+
+                    b.ToTable("CourseLessons");
+                });
+
             modelBuilder.Entity("Acadimy.Models.Teacher.CourseLevel", b =>
                 {
                     b.Property<int>("Id")
@@ -273,6 +600,119 @@ namespace Acadimy.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("CourseLevels");
+                });
+
+            modelBuilder.Entity("Acadimy.Models.Teacher.StudentLessonProgress", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CompletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CourseLessonId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("StudentId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CourseLessonId");
+
+                    b.HasIndex("StudentId", "CourseLessonId")
+                        .IsUnique();
+
+                    b.ToTable("StudentLessonProgresses");
+                });
+
+            modelBuilder.Entity("Acadimy.Models.Teacher.TeacherAssignment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("Deadline")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FilePath")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<bool>("IsArchived")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("TeacherCourseId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TeacherCourseId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("TeacherAssignments");
+                });
+
+            modelBuilder.Entity("Acadimy.Models.Teacher.TeacherAssignmentSubmission", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Comment")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FilePath")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal?>("Grade")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<string>("StudentId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("SubmittedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("TeacherAssignmentId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TeacherFeedback")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StudentId");
+
+                    b.HasIndex("TeacherAssignmentId");
+
+                    b.ToTable("TeacherAssignmentSubmissions");
                 });
 
             modelBuilder.Entity("Acadimy.Models.Teacher.TeacherCourse", b =>
@@ -638,6 +1078,122 @@ namespace Acadimy.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("Acadimy.Models.Community.CommunityComment", b =>
+                {
+                    b.HasOne("Acadimy.Models.Community.CommunityPost", "Post")
+                        .WithMany("Comments")
+                        .HasForeignKey("CommunityPostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Acadimy.Models.Community.CommunityComment", "ParentComment")
+                        .WithMany("Replies")
+                        .HasForeignKey("ParentCommentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Acadimy.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ParentComment");
+
+                    b.Navigation("Post");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Acadimy.Models.Community.CommunityCommentLike", b =>
+                {
+                    b.HasOne("Acadimy.Models.Community.CommunityComment", "Comment")
+                        .WithMany("Likes")
+                        .HasForeignKey("CommunityCommentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Acadimy.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Comment");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Acadimy.Models.Community.CommunityPost", b =>
+                {
+                    b.HasOne("Acadimy.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Acadimy.Models.Community.CommunityPostLike", b =>
+                {
+                    b.HasOne("Acadimy.Models.Community.CommunityPost", "Post")
+                        .WithMany("Likes")
+                        .HasForeignKey("CommunityPostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Acadimy.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Post");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Acadimy.Models.Messaging.Message", b =>
+                {
+                    b.HasOne("Acadimy.Models.Messaging.MessageThread", "Thread")
+                        .WithMany("Messages")
+                        .HasForeignKey("ThreadId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Thread");
+                });
+
+            modelBuilder.Entity("Acadimy.Models.Messaging.MessageThread", b =>
+                {
+                    b.HasOne("Acadimy.Models.ApplicationUser", "User1")
+                        .WithMany()
+                        .HasForeignKey("User1Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Acadimy.Models.ApplicationUser", "User2")
+                        .WithMany()
+                        .HasForeignKey("User2Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("User1");
+
+                    b.Navigation("User2");
+                });
+
+            modelBuilder.Entity("Acadimy.Models.Notification", b =>
+                {
+                    b.HasOne("Acadimy.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Acadimy.Models.Student.StudentPost", b =>
                 {
                     b.HasOne("Acadimy.Models.ApplicationUser", "User")
@@ -668,6 +1224,25 @@ namespace Acadimy.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Acadimy.Models.Student.StudentPostCommentLike", b =>
+                {
+                    b.HasOne("Acadimy.Models.Student.StudentPostComment", "StudentPostComment")
+                        .WithMany()
+                        .HasForeignKey("StudentPostCommentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Acadimy.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("StudentPostComment");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Acadimy.Models.Student.StudentPostLike", b =>
                 {
                     b.HasOne("Acadimy.Models.Student.StudentPost", "StudentPost")
@@ -685,6 +1260,85 @@ namespace Acadimy.Migrations
                     b.Navigation("StudentPost");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Acadimy.Models.Student.StudentSkill", b =>
+                {
+                    b.HasOne("Acadimy.Models.ApplicationUser", "User")
+                        .WithMany("StudentSkills")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Acadimy.Models.Teacher.CourseLesson", b =>
+                {
+                    b.HasOne("Acadimy.Models.Teacher.TeacherCourse", "TeacherCourse")
+                        .WithMany("Lessons")
+                        .HasForeignKey("TeacherCourseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("TeacherCourse");
+                });
+
+            modelBuilder.Entity("Acadimy.Models.Teacher.StudentLessonProgress", b =>
+                {
+                    b.HasOne("Acadimy.Models.Teacher.CourseLesson", "CourseLesson")
+                        .WithMany()
+                        .HasForeignKey("CourseLessonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Acadimy.Models.ApplicationUser", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("CourseLesson");
+
+                    b.Navigation("Student");
+                });
+
+            modelBuilder.Entity("Acadimy.Models.Teacher.TeacherAssignment", b =>
+                {
+                    b.HasOne("Acadimy.Models.Teacher.TeacherCourse", "TeacherCourse")
+                        .WithMany()
+                        .HasForeignKey("TeacherCourseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Acadimy.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("TeacherCourse");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Acadimy.Models.Teacher.TeacherAssignmentSubmission", b =>
+                {
+                    b.HasOne("Acadimy.Models.ApplicationUser", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Acadimy.Models.Teacher.TeacherAssignment", "TeacherAssignment")
+                        .WithMany("Submissions")
+                        .HasForeignKey("TeacherAssignmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Student");
+
+                    b.Navigation("TeacherAssignment");
                 });
 
             modelBuilder.Entity("Acadimy.Models.Teacher.TeacherCourse", b =>
@@ -856,9 +1510,30 @@ namespace Acadimy.Migrations
 
             modelBuilder.Entity("Acadimy.Models.ApplicationUser", b =>
                 {
+                    b.Navigation("StudentSkills");
+
                     b.Navigation("TeacherEnrollments");
 
                     b.Navigation("TeacherExpertises");
+                });
+
+            modelBuilder.Entity("Acadimy.Models.Community.CommunityComment", b =>
+                {
+                    b.Navigation("Likes");
+
+                    b.Navigation("Replies");
+                });
+
+            modelBuilder.Entity("Acadimy.Models.Community.CommunityPost", b =>
+                {
+                    b.Navigation("Comments");
+
+                    b.Navigation("Likes");
+                });
+
+            modelBuilder.Entity("Acadimy.Models.Messaging.MessageThread", b =>
+                {
+                    b.Navigation("Messages");
                 });
 
             modelBuilder.Entity("Acadimy.Models.Student.StudentPost", b =>
@@ -868,9 +1543,16 @@ namespace Acadimy.Migrations
                     b.Navigation("Likes");
                 });
 
+            modelBuilder.Entity("Acadimy.Models.Teacher.TeacherAssignment", b =>
+                {
+                    b.Navigation("Submissions");
+                });
+
             modelBuilder.Entity("Acadimy.Models.Teacher.TeacherCourse", b =>
                 {
                     b.Navigation("Enrollments");
+
+                    b.Navigation("Lessons");
                 });
 
             modelBuilder.Entity("Acadimy.Models.Teacher.TeacherPost", b =>

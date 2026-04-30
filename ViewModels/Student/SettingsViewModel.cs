@@ -33,9 +33,9 @@ namespace Acadimy.ViewModels.Student
         public bool NotifyApplicationStatus { get; set; }
         public bool NotifyAnnouncement { get; set; }
         public bool NotifyMessages { get; set; }
-
-        public string? Skill { get; set; }
-        public int SkillPercent { get; set; }
+        public bool NotifyAssignmentCorrection { get; set; }
+        public bool NotifyNewLesson { get; set; }
+        public List<StudentSkillItemViewModel> Skills { get; set; } = new();
 
         [DataType(DataType.Password)]
         public string? CurrentPassword { get; set; }

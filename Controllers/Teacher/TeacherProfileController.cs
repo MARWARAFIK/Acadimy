@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Acadimy.Controllers.Teacher
 {
-    [Authorize(Roles = "Enseignant")]
+    [Authorize]
     public class TeacherProfileController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;

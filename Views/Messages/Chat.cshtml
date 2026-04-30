@@ -1,0 +1,50 @@
+﻿@using System.Security.Claims
+@model List<Message>
+
+@{
+    Layout = User.IsInRole("Enseignant")
+        ? "~/Views/Shared/LayoutTeacher.cshtml"
+        : "~/Views/Shared/LayoutStudent.cshtml";
+
+    var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    var threadId = Model?.FirstOrDefault()?.ThreadId ?? ViewBag.ThreadId;
+}
+
+<div class="container mt-4">
+    <h2 class="mb-4">Chat</h2>
+
+    <div class="card p-3 mb-3 rounded-4" style="height:420px; overflow-y:auto;">
+        @if (Model == null || !Model.Any())
+        {
+            <p class="text-muted">Aucun message pour le moment.</p>
+        }
+        else
+        {
+            foreach (var msg in Model)
+            {
+                var isMe = msg.SenderId == currentUserId;
+
+                <div class="mb-2 text-@(isMe ? "end" : "start")">
+                    <span class="badge bg-@(isMe ? "success" : "secondary") p-2">
+                        @msg.Content
+                    </span>
+
+                    <div class="small text-muted">
+                        @msg.SentAt.ToString("dd/MM HH:mm")
+                    </div>
+                </div>
+            }
+        }
+    </div>
+
+    <form asp-controller="Messages" asp-action="Send" method="post">
+        @Html.AntiForgeryToken()
+
+        <input type="hidden" name="threadId" value="@threadId" />
+
+        <div class="d-flex gap-2">
+            <input name="content" class="form-control rounded-pill" placeholder="Écrire un message..." />
+            <button type="submit" class="btn btn-success rounded-pill px-4">Send</button>
+        </div>
+    </form>
+</div>

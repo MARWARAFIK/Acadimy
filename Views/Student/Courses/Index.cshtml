@@ -1,0 +1,101 @@
+﻿@model List<Acadimy.Models.Teacher.TeacherCourse>
+
+@{
+    Layout = "~/Views/Shared/LayoutStudent.cshtml";
+    ViewData["Title"] = "Courses";
+    string? studentId = ViewBag.StudentId;
+}
+
+<div class="student-courses-page">
+    <div class="courses-top">
+        <h1>Courses recommandés</h1>
+        <p>Consultez les cours selon vos intérêts, votre filière et votre niveau.</p>
+    </div>
+
+    <form asp-controller="StudentCourses" asp-action="Index" method="get" class="course-search-box">
+        <i class="bi bi-search"></i>
+        <input type="text" name="search" value="@ViewBag.Search"
+               placeholder="Chercher un cours ou un enseignant..." />
+        <button type="submit">Rechercher</button>
+    </form>
+
+    <div class="row g-4 mt-2">
+        @if (Model.Any())
+        {
+            foreach (var course in Model)
+            {
+                bool joined = course.Enrollments.Any(e => e.StudentId == studentId);
+
+                <div class="col-md-4">
+                    <div class="student-course-card">
+                        <div class="course-image">
+                            @if (!string.IsNullOrEmpty(course.ThumbnailPath))
+                            {
+                                <img src="@course.ThumbnailPath" />
+                            }
+                            else
+                            {
+                                <div class="course-empty-img">
+                                    <i class="bi bi-journal-bookmark"></i>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="course-card-body">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="course-badge">@course.Category</span>
+
+                                @if (joined)
+                                {
+                                    <span class="joined-badge">Inscrit</span>
+                                }
+                            </div>
+
+                            <h4>@course.Title</h4>
+
+                            <p class="course-desc">
+                                @(string.IsNullOrWhiteSpace(course.Description)
+                                    ? "Aucune description disponible."
+                                    : course.Description)
+                            </p>
+
+                            <div class="teacher-mini">
+                                <img src="@(string.IsNullOrEmpty(course.User?.ProfileImagePath) ? "/images/default-user.png" : course.User.ProfileImagePath)" />
+                                <div>
+                                    <strong>@course.User?.FullName</strong>
+                                    <small>@course.User?.Specialite</small>
+                                </div>
+                            </div>
+
+                            <div class="course-actions">
+                                <a asp-controller="StudentCourses"
+                                   asp-action="Details"
+                                   asp-route-id="@course.Id"
+                                   class="btn-details">
+                                    Détails
+                                </a>
+
+                                <a asp-controller="TeacherProfile"
+                                   asp-action="ViewProfile"
+                                   asp-route-id="@course.UserId"
+                                   class="btn-teacher">
+                                    Prof
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12">
+                <div class="empty-courses">
+                    <i class="bi bi-search"></i>
+                    <h3>Aucun cours trouvé</h3>
+                    <p>Essayez un autre mot-clé.</p>
+                </div>
+            </div>
+        }
+    </div>
+</div>

@@ -19,5 +19,9 @@
         public bool IsLikedByCurrentUser { get; set; }
 
         public List<PostCommentItemViewModel> Comments { get; set; } = new();
+
+        public string UserId { get; set; } = string.Empty;
+       
+
     }
 }

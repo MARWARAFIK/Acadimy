@@ -1,0 +1,106 @@
+﻿@model List<Acadimy.ViewModels.Student.StudentAssignmentViewModel>
+
+@{
+    Layout = "~/Views/Shared/LayoutStudent.cshtml";
+    ViewData["Title"] = "Assignments";
+}
+
+<div class="student-courses-page">
+    <div class="courses-top">
+        <h1>Assignments</h1>
+        <p>Consultez les devoirs des cours auxquels vous êtes inscrit.</p>
+    </div>
+
+    <div class="course-management-card bg-white shadow-sm rounded-4 p-3">
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Titre</th>
+                        <th>Cours</th>
+                        <th>Deadline</th>
+                        <th>Status</th>
+                        <th>Note</th>
+                        <th class="text-end">Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <strong>@item.Title</strong>
+                                    <div class="small text-muted">
+                                        @(string.IsNullOrWhiteSpace(item.Description)
+                                            ? "Aucune description"
+                                            : item.Description)
+                                    </div>
+                                </td>
+
+                                <td>@item.CourseTitle</td>
+
+                                <td>
+                                    @if (item.Deadline < DateTime.Now)
+                                    {
+                                        <span class="badge bg-danger">
+                                            Expired - @item.Deadline.ToString("dd/MM/yyyy HH:mm")
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-success">
+                                            Open - @item.Deadline.ToString("dd/MM/yyyy HH:mm")
+                                        </span>
+                                    }
+                                </td>
+
+                                <td>
+                                    @if (item.IsSubmitted)
+                                    {
+                                        <span class="badge bg-success">Submitted</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning text-dark">Not submitted</span>
+                                    }
+                                </td>
+
+                                <td>
+                                    @if (item.Grade != null)
+                                    {
+                                        <span class="badge bg-primary">@item.Grade /20</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">---</span>
+                                    }
+                                </td>
+
+                                <td class="text-end">
+                                    <a asp-controller="StudentAssignments"
+                                       asp-action="Details"
+                                       asp-route-id="@item.Id"
+                                       class="btn btn-success btn-sm rounded-pill px-3">
+                                        Open
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-muted">
+                                <i class="bi bi-file-earmark-text fs-1 d-block mb-2"></i>
+                                Aucun assignment disponible.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

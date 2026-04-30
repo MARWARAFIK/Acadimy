@@ -1,0 +1,105 @@
+﻿@model List<Acadimy.Models.Teacher.TeacherEnrollment>
+
+@{
+    Layout = "~/Views/Shared/LayoutStudent.cshtml";
+    ViewData["Title"] = "Mes cours";
+}
+
+<div class="student-courses-page">
+    <div class="courses-top">
+        <h1>Mes cours</h1>
+        <p>Les cours auxquels vous êtes déjà inscrit.</p>
+    </div>
+
+    <div class="row g-4 mt-3">
+        @if (Model != null && Model.Any())
+        {
+            foreach (var enrollment in Model)
+            {
+                var course = enrollment.TeacherCourse;
+
+                if (course != null)
+                {
+                    <div class="col-md-4">
+                        <div class="student-course-card">
+
+                            <div class="course-image">
+                                @if (!string.IsNullOrEmpty(course.ThumbnailPath))
+                                {
+                                    <img src="@course.ThumbnailPath" />
+                                }
+                                else
+                                {
+                                    <div class="course-empty-img">
+                                        <i class="bi bi-journal-bookmark"></i>
+                                    </div>
+                                }
+                            </div>
+
+                            <div class="course-card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="course-badge">@course.Category</span>
+                                    <span class="joined-badge">@enrollment.Status</span>
+                                </div>
+
+                                <h4>@course.Title</h4>
+
+                                <p class="course-desc">
+                                    @(string.IsNullOrWhiteSpace(course.Description)
+                                        ? "Aucune description disponible."
+                                        : course.Description)
+                                </p>
+
+                                <div class="teacher-mini">
+                                    <img src="@(string.IsNullOrEmpty(course.User?.ProfileImagePath) ? "/images/default-user.png" : course.User.ProfileImagePath)" />
+                                    <div>
+                                        <strong>@course.User?.FullName</strong>
+                                        <small>@course.User?.Specialite</small>
+                                    </div>
+                                </div>
+
+                                <div class="mt-3">
+                                    <div class="d-flex justify-content-between">
+                                        <small class="fw-bold">Progression</small>
+                                        <small class="fw-bold">@enrollment.ProgressPercent%</small>
+                                    </div>
+
+                                    <div class="progress mt-2">
+                                        <div class="progress-bar" style="width:@enrollment.ProgressPercent%"></div>
+                                    </div>
+                                </div>
+
+                                <div class="course-actions mt-3">
+                                    <a asp-controller="StudentCourses"
+                                       asp-action="Details"
+                                       asp-route-id="@course.Id"
+                                       class="btn-details">
+                                        Continuer
+                                    </a>
+
+                                    <a asp-controller="TeacherProfile"
+                                       asp-action="ViewProfile"
+                                       asp-route-id="@course.UserId"
+                                       class="btn-teacher">
+                                        Prof
+                                    </a>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                }
+            }
+        }
+        else
+        {
+            <div class="col-12">
+                <div class="empty-courses">
+                    <i class="bi bi-journal-bookmark"></i>
+                    <h3>Aucun cours inscrit</h3>
+                    <p>Inscrivez-vous à un cours pour le voir ici.</p>
+                </div>
+            </div>
+        }
+    </div>
+</div>

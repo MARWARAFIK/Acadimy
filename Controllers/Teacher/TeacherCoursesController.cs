@@ -1,6 +1,7 @@
 ﻿using Acadimy.Data;
 using Acadimy.Models;
 using Acadimy.Models.Teacher;
+using Acadimy.Services;
 using Acadimy.ViewModels.Teacher;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -16,15 +17,18 @@ namespace Acadimy.Controllers.Teacher
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IWebHostEnvironment _environment;
+        private readonly NotificationService _notificationService;
 
         public TeacherCoursesController(
             ApplicationDbContext context,
             UserManager<ApplicationUser> userManager,
-            IWebHostEnvironment environment)
+            IWebHostEnvironment environment,
+            NotificationService notificationService)
         {
             _context = context;
             _userManager = userManager;
             _environment = environment;
+            _notificationService = notificationService;
         }
 
         [HttpGet("")]
@@ -32,9 +36,7 @@ namespace Acadimy.Controllers.Teacher
         public async Task<IActionResult> Index()
         {
             var user = await _userManager.GetUserAsync(User);
-
-            if (user == null)
-                return RedirectToAction("Login", "Account");
+            if (user == null) return RedirectToAction("Login", "Account");
 
             var courses = await _context.TeacherCourses
                 .Where(c => c.UserId == user.Id && !c.IsArchived)
@@ -67,9 +69,7 @@ namespace Acadimy.Controllers.Teacher
         public async Task<IActionResult> Create(TeacherCourseViewModel model)
         {
             var user = await _userManager.GetUserAsync(User);
-
-            if (user == null)
-                return RedirectToAction("Login", "Account");
+            if (user == null) return RedirectToAction("Login", "Account");
 
             if (!ModelState.IsValid)
                 return View("~/Views/Teacher/Courses/Create.cshtml", model);
@@ -79,36 +79,28 @@ namespace Acadimy.Controllers.Teacher
 
             if (model.Thumbnail != null && model.Thumbnail.Length > 0)
             {
-                var imageFolder = Path.Combine(_environment.WebRootPath, "uploads", "teacher-courses", "images");
+                var folder = Path.Combine(_environment.WebRootPath, "uploads", "teacher-courses", "images");
+                Directory.CreateDirectory(folder);
 
-                if (!Directory.Exists(imageFolder))
-                    Directory.CreateDirectory(imageFolder);
+                var fileName = $"{Guid.NewGuid()}{Path.GetExtension(model.Thumbnail.FileName)}";
+                var fullPath = Path.Combine(folder, fileName);
 
-                var imageName = $"{Guid.NewGuid()}{Path.GetExtension(model.Thumbnail.FileName)}";
-                var imageFullPath = Path.Combine(imageFolder, imageName);
+                await using var stream = new FileStream(fullPath, FileMode.Create);
+                await model.Thumbnail.CopyToAsync(stream);
 
-                using (var stream = new FileStream(imageFullPath, FileMode.Create))
-                {
-                    await model.Thumbnail.CopyToAsync(stream);
-                }
-
-                thumbnailPath = "/uploads/teacher-courses/images/" + imageName;
+                thumbnailPath = "/uploads/teacher-courses/images/" + fileName;
             }
 
             if (model.CourseFile != null && model.CourseFile.Length > 0)
             {
-                var fileFolder = Path.Combine(_environment.WebRootPath, "uploads", "teacher-courses", "files");
-
-                if (!Directory.Exists(fileFolder))
-                    Directory.CreateDirectory(fileFolder);
+                var folder = Path.Combine(_environment.WebRootPath, "uploads", "teacher-courses", "files");
+                Directory.CreateDirectory(folder);
 
                 var fileName = $"{Guid.NewGuid()}{Path.GetExtension(model.CourseFile.FileName)}";
-                var fileFullPath = Path.Combine(fileFolder, fileName);
+                var fullPath = Path.Combine(folder, fileName);
 
-                using (var stream = new FileStream(fileFullPath, FileMode.Create))
-                {
-                    await model.CourseFile.CopyToAsync(stream);
-                }
+                await using var stream = new FileStream(fullPath, FileMode.Create);
+                await model.CourseFile.CopyToAsync(stream);
 
                 filePath = "/uploads/teacher-courses/files/" + fileName;
             }
@@ -129,6 +121,8 @@ namespace Acadimy.Controllers.Teacher
             _context.TeacherCourses.Add(course);
             await _context.SaveChangesAsync();
 
+            await NotifyRelatedStudentsAboutCourse(course);
+
             return RedirectToAction(nameof(Index));
         }
 
@@ -136,15 +130,13 @@ namespace Acadimy.Controllers.Teacher
         public async Task<IActionResult> Edit(int id)
         {
             var user = await _userManager.GetUserAsync(User);
-
-            if (user == null)
-                return RedirectToAction("Login", "Account");
+            if (user == null) return RedirectToAction("Login", "Account");
 
             var course = await _context.TeacherCourses
+                .Include(c => c.Lessons)
                 .FirstOrDefaultAsync(c => c.Id == id && c.UserId == user.Id);
 
-            if (course == null)
-                return NotFound();
+            if (course == null) return NotFound();
 
             var model = new TeacherCourseViewModel
             {
@@ -159,23 +151,24 @@ namespace Acadimy.Controllers.Teacher
                 CreatedAt = course.CreatedAt
             };
 
+            ViewBag.Lessons = course.Lessons.OrderBy(l => l.Order).ToList();
+
             return View("~/Views/Teacher/Courses/Edit.cshtml", model);
         }
 
-        [HttpPost("Edit")]
+        [HttpPost("Edit/{id:int}")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(TeacherCourseViewModel model)
+        public async Task<IActionResult> Edit(int id, TeacherCourseViewModel model)
         {
-            var user = await _userManager.GetUserAsync(User);
+            if (id != model.Id) return NotFound();
 
-            if (user == null)
-                return RedirectToAction("Login", "Account");
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return RedirectToAction("Login", "Account");
 
             var course = await _context.TeacherCourses
-                .FirstOrDefaultAsync(c => c.Id == model.Id && c.UserId == user.Id);
+                .FirstOrDefaultAsync(c => c.Id == id && c.UserId == user.Id);
 
-            if (course == null)
-                return NotFound();
+            if (course == null) return NotFound();
 
             if (!ModelState.IsValid)
             {
@@ -191,36 +184,28 @@ namespace Acadimy.Controllers.Teacher
 
             if (model.Thumbnail != null && model.Thumbnail.Length > 0)
             {
-                var imageFolder = Path.Combine(_environment.WebRootPath, "uploads", "teacher-courses", "images");
+                var folder = Path.Combine(_environment.WebRootPath, "uploads", "teacher-courses", "images");
+                Directory.CreateDirectory(folder);
 
-                if (!Directory.Exists(imageFolder))
-                    Directory.CreateDirectory(imageFolder);
+                var fileName = $"{Guid.NewGuid()}{Path.GetExtension(model.Thumbnail.FileName)}";
+                var fullPath = Path.Combine(folder, fileName);
 
-                var imageName = $"{Guid.NewGuid()}{Path.GetExtension(model.Thumbnail.FileName)}";
-                var imageFullPath = Path.Combine(imageFolder, imageName);
+                await using var stream = new FileStream(fullPath, FileMode.Create);
+                await model.Thumbnail.CopyToAsync(stream);
 
-                using (var stream = new FileStream(imageFullPath, FileMode.Create))
-                {
-                    await model.Thumbnail.CopyToAsync(stream);
-                }
-
-                course.ThumbnailPath = "/uploads/teacher-courses/images/" + imageName;
+                course.ThumbnailPath = "/uploads/teacher-courses/images/" + fileName;
             }
 
             if (model.CourseFile != null && model.CourseFile.Length > 0)
             {
-                var fileFolder = Path.Combine(_environment.WebRootPath, "uploads", "teacher-courses", "files");
-
-                if (!Directory.Exists(fileFolder))
-                    Directory.CreateDirectory(fileFolder);
+                var folder = Path.Combine(_environment.WebRootPath, "uploads", "teacher-courses", "files");
+                Directory.CreateDirectory(folder);
 
                 var fileName = $"{Guid.NewGuid()}{Path.GetExtension(model.CourseFile.FileName)}";
-                var fileFullPath = Path.Combine(fileFolder, fileName);
+                var fullPath = Path.Combine(folder, fileName);
 
-                using (var stream = new FileStream(fileFullPath, FileMode.Create))
-                {
-                    await model.CourseFile.CopyToAsync(stream);
-                }
+                await using var stream = new FileStream(fullPath, FileMode.Create);
+                await model.CourseFile.CopyToAsync(stream);
 
                 course.FilePath = "/uploads/teacher-courses/files/" + fileName;
             }
@@ -230,14 +215,93 @@ namespace Acadimy.Controllers.Teacher
             return RedirectToAction(nameof(Index));
         }
 
+        [HttpPost("AddLesson")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddLesson(int courseId, string title, string? description)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+                return RedirectToAction("Login", "Account");
+
+            var course = await _context.TeacherCourses
+                .FirstOrDefaultAsync(c => c.Id == courseId && c.UserId == user.Id);
+
+            if (course == null)
+                return NotFound();
+
+            if (string.IsNullOrWhiteSpace(title))
+                return RedirectToAction(nameof(Edit), new { id = courseId });
+
+            int nextOrder = await _context.CourseLessons
+                .Where(l => l.TeacherCourseId == courseId)
+                .CountAsync() + 1;
+
+            var lesson = new CourseLesson
+            {
+                TeacherCourseId = courseId,
+                Title = title.Trim(),
+                Description = description?.Trim(),
+                Order = nextOrder,
+                CreatedAt = DateTime.Now
+            };
+
+            _context.CourseLessons.Add(lesson);
+            await _context.SaveChangesAsync();
+
+            var enrollments = await _context.TeacherEnrollments
+                .Include(e => e.Student)
+                .Where(e => e.TeacherCourseId == courseId)
+                .ToListAsync();
+
+            foreach (var enrollment in enrollments)
+            {
+                if (enrollment.Student != null && enrollment.Student.NotifyNewLesson)
+                {
+                    await _notificationService.SendAsync(
+                        enrollment.StudentId,
+                        "Nouvelle leçon ajoutée",
+                        $"Une nouvelle leçon a été ajoutée au cours \"{course.Title}\".",
+                        "Lesson",
+                        $"/StudentCourses/Details/{course.Id}"
+                    );
+                }
+            }
+
+            return RedirectToAction(nameof(Edit), new { id = courseId });
+        }
+
+        [HttpPost("DeleteLesson")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteLesson(int lessonId)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return RedirectToAction("Login", "Account");
+
+            var lesson = await _context.CourseLessons
+                .Include(l => l.TeacherCourse)
+                .FirstOrDefaultAsync(l =>
+                    l.Id == lessonId &&
+                    l.TeacherCourse != null &&
+                    l.TeacherCourse.UserId == user.Id);
+
+            if (lesson == null) return NotFound();
+
+            int courseId = lesson.TeacherCourseId;
+
+            _context.CourseLessons.Remove(lesson);
+            await _context.SaveChangesAsync();
+
+            await RecalculateAllEnrollmentsProgress(courseId);
+
+            return RedirectToAction(nameof(Edit), new { id = courseId });
+        }
+
         [HttpPost("Archive")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Archive(int id)
         {
             var user = await _userManager.GetUserAsync(User);
-
-            if (user == null)
-                return RedirectToAction("Login", "Account");
+            if (user == null) return RedirectToAction("Login", "Account");
 
             var course = await _context.TeacherCourses
                 .FirstOrDefaultAsync(c => c.Id == id && c.UserId == user.Id);
@@ -256,9 +320,7 @@ namespace Acadimy.Controllers.Teacher
         public async Task<IActionResult> Restore(int id)
         {
             var user = await _userManager.GetUserAsync(User);
-
-            if (user == null)
-                return RedirectToAction("Login", "Account");
+            if (user == null) return RedirectToAction("Login", "Account");
 
             var course = await _context.TeacherCourses
                 .FirstOrDefaultAsync(c => c.Id == id && c.UserId == user.Id);
@@ -277,9 +339,7 @@ namespace Acadimy.Controllers.Teacher
         public async Task<IActionResult> Delete(int id)
         {
             var user = await _userManager.GetUserAsync(User);
-
-            if (user == null)
-                return RedirectToAction("Login", "Account");
+            if (user == null) return RedirectToAction("Login", "Account");
 
             var course = await _context.TeacherCourses
                 .FirstOrDefaultAsync(c => c.Id == id && c.UserId == user.Id);
@@ -291,6 +351,74 @@ namespace Acadimy.Controllers.Teacher
             }
 
             return RedirectToAction(nameof(Index));
+        }
+
+        private async Task NotifyRelatedStudentsAboutCourse(TeacherCourse course)
+        {
+            var students = await _userManager.GetUsersInRoleAsync("Étudiant");
+
+            var relatedStudentIds = students
+                .Where(s => s.NotifyNewCourse)
+                .Where(s => IsCourseRelatedToStudent(course, s))
+                .Select(s => s.Id)
+                .ToList();
+
+            await _notificationService.SendToManyAsync(
+                relatedStudentIds,
+                "Nouveau cours recommandé",
+                $"Le cours \"{course.Title}\" correspond à votre profil.",
+                "Course",
+                $"/StudentCourses/Details/{course.Id}"
+            );
+        }
+
+        private bool IsCourseRelatedToStudent(TeacherCourse course, ApplicationUser student)
+        {
+            var filiere = student.Filiere?.ToLower() ?? "";
+            var niveau = student.Niveau?.ToLower() ?? "";
+            var skill = student.Skill?.ToLower() ?? "";
+
+            var title = course.Title.ToLower();
+            var category = course.Category?.ToLower() ?? "";
+            var level = course.Level?.ToLower() ?? "";
+            var description = course.Description?.ToLower() ?? "";
+
+            return
+                (!string.IsNullOrWhiteSpace(filiere) &&
+                 (title.Contains(filiere) || category.Contains(filiere) || description.Contains(filiere)))
+                ||
+                (!string.IsNullOrWhiteSpace(skill) &&
+                 (title.Contains(skill) || category.Contains(skill) || description.Contains(skill)))
+                ||
+                (!string.IsNullOrWhiteSpace(niveau) &&
+                 level.Contains(niveau));
+        }
+
+        private async Task RecalculateAllEnrollmentsProgress(int courseId)
+        {
+            var enrollments = await _context.TeacherEnrollments
+                .Where(e => e.TeacherCourseId == courseId)
+                .ToListAsync();
+
+            int totalLessons = await _context.CourseLessons
+                .CountAsync(l => l.TeacherCourseId == courseId);
+
+            foreach (var enrollment in enrollments)
+            {
+                int completedLessons = await _context.StudentLessonProgresses
+                    .CountAsync(p =>
+                        p.StudentId == enrollment.StudentId &&
+                        p.CourseLesson != null &&
+                        p.CourseLesson.TeacherCourseId == courseId);
+
+                int progress = totalLessons == 0 ? 0 : completedLessons * 100 / totalLessons;
+
+                enrollment.ProgressPercent = progress;
+                enrollment.IsCompleted = progress >= 100;
+                enrollment.Status = progress >= 100 ? "Completed" : "Active";
+            }
+
+            await _context.SaveChangesAsync();
         }
     }
 }

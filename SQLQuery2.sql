@@ -1,0 +1,11 @@
+﻿CREATE INDEX IX_TeacherAssignments_UserId 
+ON TeacherAssignments(UserId);
+
+CREATE INDEX IX_TeacherAssignments_TeacherCourseId 
+ON TeacherAssignments(TeacherCourseId);
+
+CREATE INDEX IX_TeacherAssignmentSubmissions_TeacherAssignmentId 
+ON TeacherAssignmentSubmissions(TeacherAssignmentId);
+
+CREATE INDEX IX_TeacherAssignmentSubmissions_StudentId 
+ON TeacherAssignmentSubmissions(StudentId);

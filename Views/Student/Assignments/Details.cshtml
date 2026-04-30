@@ -1,0 +1,135 @@
+﻿@model Acadimy.ViewModels.Student.SubmitAssignmentViewModel
+
+@{
+    Layout = "~/Views/Shared/LayoutStudent.cshtml";
+    ViewData["Title"] = "Assignment Details";
+}
+
+<div class="student-courses-page">
+
+    <div class="d-flex align-items-center mb-4">
+        <a asp-controller="StudentAssignments"
+           asp-action="Index"
+           class="btn btn-light rounded-pill shadow-sm me-3 px-3">
+            <i class="bi bi-arrow-left"></i>
+        </a>
+
+        <div>
+            <h1 class="mb-1">@Model.AssignmentTitle</h1>
+            <p class="text-muted mb-0">@Model.CourseTitle</p>
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success rounded-4">
+            @TempData["Success"]
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger rounded-4">
+            @TempData["Error"]
+        </div>
+    }
+
+    <div class="bg-white shadow-sm rounded-4 p-4 mb-4">
+        <h4>Détails du devoir</h4>
+
+        <p class="text-muted">
+            @(string.IsNullOrWhiteSpace(Model.Description)
+                ? "Aucune description."
+                : Model.Description)
+        </p>
+
+        <p>
+            <strong>Deadline:</strong>
+            @Model.Deadline.ToString("dd/MM/yyyy HH:mm")
+        </p>
+
+        @if (!string.IsNullOrEmpty(Model.AssignmentFilePath))
+        {
+            <a href="@Model.AssignmentFilePath"
+               target="_blank"
+               class="btn btn-outline-success rounded-pill">
+                <i class="bi bi-download me-1"></i>
+                Télécharger le fichier
+            </a>
+        }
+    </div>
+
+    <div class="bg-white shadow-sm rounded-4 p-4">
+        <h4>Envoyer votre solution</h4>
+
+        @if (!string.IsNullOrEmpty(Model.ExistingSubmissionFile))
+        {
+            <div class="alert alert-info rounded-4">
+                Vous avez déjà envoyé une solution.
+                <a href="@Model.ExistingSubmissionFile" target="_blank">
+                    Voir le fichier
+                </a>
+            </div>
+        }
+
+        @if (Model.Deadline < DateTime.Now)
+        {
+            <div class="alert alert-danger rounded-4">
+                Deadline dépassée. Vous ne pouvez plus envoyer une solution.
+            </div>
+        }
+        else
+        {
+            <form asp-controller="StudentAssignments"
+                  asp-action="Submit"
+                  method="post"
+                  enctype="multipart/form-data">
+
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" asp-for="AssignmentId" />
+
+                <div class="mb-3">
+                    <label asp-for="File" class="form-label fw-bold">Fichier solution</label>
+                    <input asp-for="File" type="file" class="form-control" />
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Comment" class="form-label fw-bold">Commentaire</label>
+                    <textarea asp-for="Comment"
+                              class="form-control"
+                              rows="4"
+                              placeholder="Écrivez un commentaire..."></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-success rounded-pill px-4">
+                    <i class="bi bi-send me-1"></i>
+                    Envoyer
+                </button>
+            </form>
+        }
+    </div>
+
+    @if (Model.Grade != null || !string.IsNullOrWhiteSpace(Model.TeacherFeedback))
+    {
+        <div class="bg-white shadow-sm rounded-4 p-4 mt-4">
+            <h4>Résultat</h4>
+
+            @if (Model.Grade != null)
+            {
+                <p>
+                    <strong>Note:</strong>
+                    <span class="badge bg-primary">@Model.Grade /20</span>
+                </p>
+            }
+
+            @if (!string.IsNullOrWhiteSpace(Model.TeacherFeedback))
+            {
+                <p>
+                    <strong>Feedback:</strong>
+                    @Model.TeacherFeedback
+                </p>
+            }
+        </div>
+    }
+</div>
