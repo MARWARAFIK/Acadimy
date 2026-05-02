@@ -1,0 +1,70 @@
+﻿@model IEnumerable<Acadimy.Models.Marketplace.ProjectPost>
+
+@{
+    ViewData["Title"] = "Projects";
+}
+
+<h2 class="fw-bold mb-4">Gestion des projets</h2>
+
+<form method="get" class="mb-3">
+    <div class="input-group">
+        <input type="text"
+               name="search"
+               value="@ViewBag.Search"
+               class="form-control"
+               placeholder="Rechercher par titre, étudiant, description..." />
+        <button class="btn btn-success">
+            <i class="bi bi-search"></i> Search
+        </button>
+    </div>
+</form>
+
+<div class="card admin-card">
+    <div class="card-body">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>Image</th>
+                    <th>Titre</th>
+                    <th>Étudiant</th>
+                    <th>Rating</th>
+                    <th>Commentaires</th>
+                    <th>Date</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (var p in Model)
+                {
+                    var avg = p.Ratings.Any() ? p.Ratings.Average(r => r.Value) : 0;
+                    var image = string.IsNullOrEmpty(p.ImagePath)
+                        ? "/images/default-cover.jpg"
+                        : p.ImagePath;
+
+                    <tr>
+                        <td>
+                            <img src="@image"
+                                 style="width:70px;height:50px;object-fit:cover;border-radius:10px;" />
+                        </td>
+                        <td>@p.Title</td>
+                        <td>@p.User?.FullName</td>
+                        <td>⭐ @avg.ToString("0.0")</td>
+                        <td>@p.Comments.Count</td>
+                        <td>@p.CreatedAt.ToString("dd/MM/yyyy")</td>
+                        <td>
+                            <form asp-action="DeleteProject" method="post"
+                                  onsubmit="return confirm('Supprimer ce projet ?');">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@p.Id" />
+                                <button class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-trash"></i> Supprimer
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

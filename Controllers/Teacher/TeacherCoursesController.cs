@@ -74,49 +74,7 @@ namespace Acadimy.Controllers.Teacher
             if (!ModelState.IsValid)
                 return View("~/Views/Teacher/Courses/Create.cshtml", model);
 
-            string? thumbnailPath = null;
-            string? filePath = null;
-
-            if (model.Thumbnail != null && model.Thumbnail.Length > 0)
-            {
-                var folder = Path.Combine(_environment.WebRootPath, "uploads", "teacher-courses", "images");
-                Directory.CreateDirectory(folder);
-
-                var fileName = $"{Guid.NewGuid()}{Path.GetExtension(model.Thumbnail.FileName)}";
-                var fullPath = Path.Combine(folder, fileName);
-
-                await using var stream = new FileStream(fullPath, FileMode.Create);
-                await model.Thumbnail.CopyToAsync(stream);
-
-                thumbnailPath = "/uploads/teacher-courses/images/" + fileName;
-            }
-
-            if (model.CourseFile != null && model.CourseFile.Length > 0)
-            {
-                var folder = Path.Combine(_environment.WebRootPath, "uploads", "teacher-courses", "files");
-                Directory.CreateDirectory(folder);
-
-                var fileName = $"{Guid.NewGuid()}{Path.GetExtension(model.CourseFile.FileName)}";
-                var fullPath = Path.Combine(folder, fileName);
-
-                await using var stream = new FileStream(fullPath, FileMode.Create);
-                await model.CourseFile.CopyToAsync(stream);
-
-                filePath = "/uploads/teacher-courses/files/" + fileName;
-            }
-
-            var course = new TeacherCourse
-            {
-                Title = model.Title.Trim(),
-                Category = model.Category?.Trim(),
-                Level = model.Level?.Trim(),
-                Description = model.Description?.Trim(),
-                ThumbnailPath = thumbnailPath,
-                FilePath = filePath,
-                UserId = user.Id,
-                CreatedAt = DateTime.Now,
-                IsArchived = false
-            };
+            var course = await BuildCourseFromModel(model, user.Id);
 
             _context.TeacherCourses.Add(course);
             await _context.SaveChangesAsync();
@@ -124,6 +82,48 @@ namespace Acadimy.Controllers.Teacher
             await NotifyRelatedStudentsAboutCourse(course);
 
             return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost("CreateAjax")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateAjax(TeacherCourseViewModel model)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+                return Json(new { success = false, message = "Not authenticated" });
+
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .ToList();
+
+                return Json(new { success = false, message = "Invalid data", errors });
+            }
+
+            var course = await BuildCourseFromModel(model, user.Id);
+
+            _context.TeacherCourses.Add(course);
+            await _context.SaveChangesAsync();
+
+            await NotifyRelatedStudentsAboutCourse(course);
+
+            return Json(new
+            {
+                success = true,
+                course = new
+                {
+                    id = course.Id,
+                    title = course.Title,
+                    category = course.Category,
+                    level = course.Level,
+                    description = course.Description,
+                    thumbnailPath = course.ThumbnailPath,
+                    filePath = course.FilePath,
+                    createdAt = course.CreatedAt.ToString("dd/MM/yyyy")
+                }
+            });
         }
 
         [HttpGet("Edit/{id:int}")]
@@ -183,32 +183,10 @@ namespace Acadimy.Controllers.Teacher
             course.Description = model.Description?.Trim();
 
             if (model.Thumbnail != null && model.Thumbnail.Length > 0)
-            {
-                var folder = Path.Combine(_environment.WebRootPath, "uploads", "teacher-courses", "images");
-                Directory.CreateDirectory(folder);
-
-                var fileName = $"{Guid.NewGuid()}{Path.GetExtension(model.Thumbnail.FileName)}";
-                var fullPath = Path.Combine(folder, fileName);
-
-                await using var stream = new FileStream(fullPath, FileMode.Create);
-                await model.Thumbnail.CopyToAsync(stream);
-
-                course.ThumbnailPath = "/uploads/teacher-courses/images/" + fileName;
-            }
+                course.ThumbnailPath = await SaveFile(model.Thumbnail, "uploads/teacher-courses/images");
 
             if (model.CourseFile != null && model.CourseFile.Length > 0)
-            {
-                var folder = Path.Combine(_environment.WebRootPath, "uploads", "teacher-courses", "files");
-                Directory.CreateDirectory(folder);
-
-                var fileName = $"{Guid.NewGuid()}{Path.GetExtension(model.CourseFile.FileName)}";
-                var fullPath = Path.Combine(folder, fileName);
-
-                await using var stream = new FileStream(fullPath, FileMode.Create);
-                await model.CourseFile.CopyToAsync(stream);
-
-                course.FilePath = "/uploads/teacher-courses/files/" + fileName;
-            }
+                course.FilePath = await SaveFile(model.CourseFile, "uploads/teacher-courses/files");
 
             await _context.SaveChangesAsync();
 
@@ -220,19 +198,17 @@ namespace Acadimy.Controllers.Teacher
         public async Task<IActionResult> AddLesson(int courseId, string title, string? description)
         {
             var user = await _userManager.GetUserAsync(User);
-            if (user == null)
-                return RedirectToAction("Login", "Account");
+            if (user == null) return RedirectToAction("Login", "Account");
 
             var course = await _context.TeacherCourses
                 .FirstOrDefaultAsync(c => c.Id == courseId && c.UserId == user.Id);
 
-            if (course == null)
-                return NotFound();
+            if (course == null) return NotFound();
 
             if (string.IsNullOrWhiteSpace(title))
                 return RedirectToAction(nameof(Edit), new { id = courseId });
 
-            int nextOrder = await _context.CourseLessons
+            var nextOrder = await _context.CourseLessons
                 .Where(l => l.TeacherCourseId == courseId)
                 .CountAsync() + 1;
 
@@ -286,7 +262,7 @@ namespace Acadimy.Controllers.Teacher
 
             if (lesson == null) return NotFound();
 
-            int courseId = lesson.TeacherCourseId;
+            var courseId = lesson.TeacherCourseId;
 
             _context.CourseLessons.Remove(lesson);
             await _context.SaveChangesAsync();
@@ -353,6 +329,45 @@ namespace Acadimy.Controllers.Teacher
             return RedirectToAction(nameof(Index));
         }
 
+        private async Task<TeacherCourse> BuildCourseFromModel(TeacherCourseViewModel model, string userId)
+        {
+            string? thumbnailPath = null;
+            string? filePath = null;
+
+            if (model.Thumbnail != null && model.Thumbnail.Length > 0)
+                thumbnailPath = await SaveFile(model.Thumbnail, "uploads/teacher-courses/images");
+
+            if (model.CourseFile != null && model.CourseFile.Length > 0)
+                filePath = await SaveFile(model.CourseFile, "uploads/teacher-courses/files");
+
+            return new TeacherCourse
+            {
+                Title = model.Title.Trim(),
+                Category = model.Category?.Trim(),
+                Level = model.Level?.Trim(),
+                Description = model.Description?.Trim(),
+                ThumbnailPath = thumbnailPath,
+                FilePath = filePath,
+                UserId = userId,
+                CreatedAt = DateTime.Now,
+                IsArchived = false
+            };
+        }
+
+        private async Task<string> SaveFile(IFormFile file, string folderPath)
+        {
+            var folder = Path.Combine(_environment.WebRootPath, folderPath);
+            Directory.CreateDirectory(folder);
+
+            var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
+            var fullPath = Path.Combine(folder, fileName);
+
+            await using var stream = new FileStream(fullPath, FileMode.Create);
+            await file.CopyToAsync(stream);
+
+            return "/" + folderPath.Replace("\\", "/") + "/" + fileName;
+        }
+
         private async Task NotifyRelatedStudentsAboutCourse(TeacherCourse course)
         {
             var students = await _userManager.GetUsersInRoleAsync("Étudiant");
@@ -400,22 +415,26 @@ namespace Acadimy.Controllers.Teacher
                 .Where(e => e.TeacherCourseId == courseId)
                 .ToListAsync();
 
-            int totalLessons = await _context.CourseLessons
+            var totalLessons = await _context.CourseLessons
                 .CountAsync(l => l.TeacherCourseId == courseId);
 
             foreach (var enrollment in enrollments)
             {
-                int completedLessons = await _context.StudentLessonProgresses
+                var completedLessons = await _context.StudentLessonProgresses
                     .CountAsync(p =>
                         p.StudentId == enrollment.StudentId &&
                         p.CourseLesson != null &&
                         p.CourseLesson.TeacherCourseId == courseId);
 
-                int progress = totalLessons == 0 ? 0 : completedLessons * 100 / totalLessons;
+                var progress = totalLessons == 0 ? 0 : completedLessons * 100 / totalLessons;
 
                 enrollment.ProgressPercent = progress;
                 enrollment.IsCompleted = progress >= 100;
-                enrollment.Status = progress >= 100 ? "Completed" : "Active";
+
+                if (progress >= 100)
+                    enrollment.Status = "Completed";
+                else if (enrollment.Status != "Paused")
+                    enrollment.Status = "Active";
             }
 
             await _context.SaveChangesAsync();

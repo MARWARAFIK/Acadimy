@@ -1,15 +1,23 @@
 using Acadimy.Data;
+using Acadimy.Hubs;
 using Acadimy.Models;
 using Acadimy.Models.Teacher;
+using Acadimy.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Acadimy.Services;
+
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddSingleton<OnlineUserTracker>();
+builder.Services.AddScoped<IAiAssistantService, AiAssistantService>();
+builder.Services.AddSignalR();
 builder.Services.AddScoped<NotificationService>();
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options => {
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+{
     options.Password.RequiredLength = 6;
     options.Password.RequireDigit = false;
     options.Password.RequireUppercase = false;
@@ -22,11 +30,14 @@ builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
 
-// Initialisation des rôles SQL
+// ================= SEED ROLES + ADMIN =================
 using (var scope = app.Services.CreateScope())
 {
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-    string[] roleNames = { "Enseignant", "Étudiant" };
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+
+    string[] roleNames = { "Admin", "Enseignant", "Étudiant" };
+
     foreach (var roleName in roleNames)
     {
         if (!await roleManager.RoleExistsAsync(roleName))
@@ -34,12 +45,44 @@ using (var scope = app.Services.CreateScope())
             await roleManager.CreateAsync(new IdentityRole(roleName));
         }
     }
+
+    string adminEmail = "admin@acadimy.com";
+    string adminPassword = "Admin@123";
+
+    var adminUser = await userManager.FindByEmailAsync(adminEmail);
+
+    if (adminUser == null)
+    {
+        adminUser = new ApplicationUser
+        {
+            UserName = adminEmail,
+            Email = adminEmail,
+            EmailConfirmed = true,
+            FirstName = "Admin",
+            LastName = "Acadimy"
+        };
+
+        var result = await userManager.CreateAsync(adminUser, adminPassword);
+
+        if (result.Succeeded)
+        {
+            await userManager.AddToRoleAsync(adminUser, "Admin");
+        }
+    }
+    else
+    {
+        if (!await userManager.IsInRoleAsync(adminUser, "Admin"))
+        {
+            await userManager.AddToRoleAsync(adminUser, "Admin");
+        }
+    }
 }
+
+// ================= SEED CATEGORIES =================
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-    // Ajout des catégories si la table est vide
     if (!context.CourseCategories.Any())
     {
         context.CourseCategories.AddRange(
@@ -50,7 +93,6 @@ using (var scope = app.Services.CreateScope())
         );
     }
 
-    // Ajout des niveaux si la table est vide
     if (!context.CourseLevels.Any())
     {
         context.CourseLevels.AddRange(
@@ -59,15 +101,19 @@ using (var scope = app.Services.CreateScope())
             new CourseLevel { Name = "Avancé" }
         );
     }
+
     context.SaveChanges();
 }
 
 app.UseStaticFiles();
 app.UseRouting();
+
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Route par défaut sur le Login
+app.MapHub<ChatHub>("/chatHub");
+app.MapHub<LiveClassHub>("/liveClassHub");
+
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Account}/{action=Login}/{id?}");

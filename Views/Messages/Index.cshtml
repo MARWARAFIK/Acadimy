@@ -1,4 +1,6 @@
 ﻿@using System.Security.Claims
+@using Acadimy.Models.Messaging
+@using Acadimy.Models.Teacher
 @model List<MessageThread>
 
 @{
@@ -7,37 +9,72 @@
         : "~/Views/Shared/LayoutStudent.cshtml";
 
     var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    var courseGroups = ViewBag.CourseGroups as List<TeacherCourse> ?? new();
 }
 
 <div class="container mt-4">
-    <h2 class="mb-4">Messages</h2>
+    <h2 class="mb-4 fw-bold">Messages</h2>
 
-    @if (Model == null || !Model.Any())
-    {
-        <div class="alert alert-info rounded-4">
-            Aucune conversation.
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="card rounded-4 border-0 shadow-sm">
+                <div class="card-body">
+                    <h4 class="mb-3">Conversations privées</h4>
+
+                    @if (Model == null || !Model.Any())
+                    {
+                        <div class="alert alert-info rounded-4">Aucune conversation.</div>
+                    }
+                    else
+                    {
+                        <div class="list-group">
+                            @foreach (var t in Model)
+                            {
+                                var otherId = t.User1Id == currentUserId ? t.User2Id : t.User1Id;
+                                var lastMsg = t.Messages.OrderByDescending(m => m.SentAt).FirstOrDefault();
+
+                                <a asp-controller="Messages"
+                                   asp-action="Chat"
+                                   asp-route-userId="@otherId"
+                                   class="list-group-item list-group-item-action rounded-3 mb-2">
+                                    <strong>Conversation</strong>
+                                    <div class="text-muted small">
+                                        @(lastMsg?.Content ?? lastMsg?.AttachmentFileName ?? "Aucun message")
+                                    </div>
+                                </a>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
         </div>
-    }
-    else
-    {
-        <div class="list-group shadow-sm rounded-4 overflow-hidden">
-            @foreach (var t in Model)
-            {
-                var otherId = t.User1Id == currentUserId ? t.User2Id : t.User1Id;
-                var lastMsg = t.Messages.OrderByDescending(m => m.SentAt).FirstOrDefault();
 
-                <a asp-controller="Messages"
-                   asp-action="Chat"
-                   asp-route-userId="@otherId"
-                   class="list-group-item list-group-item-action">
+        <div class="col-lg-6">
+            <div class="card rounded-4 border-0 shadow-sm">
+                <div class="card-body">
+                    <h4 class="mb-3">Groupes par cours</h4>
 
-                    <strong>Conversation</strong>
-
-                    <div class="text-muted small">
-                        @(lastMsg?.Content ?? "Aucun message")
-                    </div>
-                </a>
-            }
+                    @if (!courseGroups.Any())
+                    {
+                        <div class="alert alert-light border rounded-4">Aucun groupe disponible.</div>
+                    }
+                    else
+                    {
+                        <div class="list-group">
+                            @foreach (var course in courseGroups)
+                            {
+                                <a asp-controller="Messages"
+                                   asp-action="CourseGroup"
+                                   asp-route-courseId="@course.Id"
+                                   class="list-group-item list-group-item-action rounded-3 mb-2">
+                                    <strong>@course.Title</strong>
+                                    <div class="text-muted small">Discussion de groupe du cours</div>
+                                </a>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
         </div>
-    }
+    </div>
 </div>

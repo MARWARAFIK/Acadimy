@@ -1,0 +1,69 @@
+﻿@model IEnumerable<Acadimy.Models.Teacher.TeacherCourse>
+
+@{
+    ViewData["Title"] = "Courses";
+}
+
+<h2 class="fw-bold mb-4">Gestion des cours</h2>
+
+<form method="get" class="mb-3">
+    <div class="input-group">
+        <input type="text"
+               name="search"
+               value="@ViewBag.Search"
+               class="form-control"
+               placeholder="Rechercher par titre, enseignant, catégorie..." />
+        <button class="btn btn-success">
+            <i class="bi bi-search"></i> Search
+        </button>
+    </div>
+</form>
+
+<div class="card admin-card">
+    <div class="card-body">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>Image</th>
+                    <th>Titre</th>
+                    <th>Enseignant</th>
+                    <th>Catégorie</th>
+                    <th>Niveau</th>
+                    <th>Date</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (var c in Model)
+                {
+                    var image = string.IsNullOrEmpty(c.ThumbnailPath)
+                        ? "/images/default-cover.jpg"
+                        : c.ThumbnailPath;
+
+                    <tr>
+                        <td>
+                            <img src="@image"
+                                 style="width:70px;height:50px;object-fit:cover;border-radius:10px;" />
+                        </td>
+                        <td>@c.Title</td>
+                        <td>@c.User?.FullName</td>
+                        <td>@c.Category</td>
+                        <td>@c.Level</td>
+                        <td>@c.CreatedAt.ToString("dd/MM/yyyy")</td>
+                        <td>
+                            <form asp-action="DeleteCourse" method="post"
+                                  onsubmit="return confirm('Supprimer ce cours ?');">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@c.Id" />
+                                <button class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-trash"></i> Supprimer
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

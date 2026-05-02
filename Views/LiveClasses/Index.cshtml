@@ -1,0 +1,17 @@
+﻿@model List<Acadimy.Models.Live.LiveClass>
+
+<div class="container mt-4">
+    <h2>Live Classes</h2>
+
+    <a asp-action="Create" class="btn btn-success mb-3">+ Nouvelle classe</a>
+
+    @foreach (var c in Model)
+    {
+        <div class="card p-3 mb-2">
+            <h5>@c.Title</h5>
+            <a asp-action="Room" asp-route-id="@c.Id" class="btn btn-primary">
+                Join
+            </a>
+        </div>
+    }
+</div>

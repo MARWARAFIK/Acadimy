@@ -1,5 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using Acadimy.Models;
 
 namespace Acadimy.Models.Messaging
 {
@@ -14,10 +14,22 @@ namespace Acadimy.Models.Messaging
 
         public string SenderId { get; set; } = "";
 
+        [ForeignKey(nameof(SenderId))]
+        public ApplicationUser? Sender { get; set; }
+
         public string Content { get; set; } = "";
+
+        public string? AttachmentPath { get; set; }
+        public string? AttachmentFileName { get; set; }
+        public string? AttachmentContentType { get; set; }
+
+        public bool IsVoice { get; set; } = false;
 
         public DateTime SentAt { get; set; } = DateTime.Now;
 
         public bool IsRead { get; set; } = false;
+        public bool IsDeleted { get; set; } = false;
+        public bool IsEdited { get; set; } = false;
+        public DateTime? EditedAt { get; set; }
     }
 }

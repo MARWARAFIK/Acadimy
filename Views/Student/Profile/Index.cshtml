@@ -48,6 +48,17 @@
                 </a>
             </div>
         }
+        else
+        {
+            <div class="profile-action">
+                <a asp-controller="Messages"
+                   asp-action="Chat"
+                   asp-route-userId="@ViewBag.ProfileUserId"
+                   class="btn btn-success rounded-pill px-4">
+                    <i class="bi bi-chat-dots"></i> Message
+                </a>
+            </div>
+        }
     </div>
 
     <div class="profile-content-section">
@@ -57,37 +68,40 @@
                 <div class="card profile-card-box mb-4">
                     <div class="card-body p-4">
                         <h4 class="profile-section-title">About</h4>
-                        <p class="mb-0">@Model.Bio</p>
+                        <p class="mb-0">
+                            @(string.IsNullOrWhiteSpace(Model.Bio) ? "Aucune biographie disponible." : Model.Bio)
+                        </p>
                     </div>
                 </div>
+
                 <div class="card profile-card-box mb-4">
-    <div class="card-body p-4">
-        <h4 class="profile-section-title mb-4">Skills :</h4>
+                    <div class="card-body p-4">
+                        <h4 class="profile-section-title mb-4">Skills :</h4>
 
-        @if (Model.Skills != null && Model.Skills.Any())
-        {
-            <div class="row">
-                @foreach (var skill in Model.Skills)
-                {
-                    <div class="col-md-6 mb-4">
-                        <div class="d-flex justify-content-between mb-2">
-                            <span class="skill-name">@skill.Name</span>
-                            <span class="skill-percent">@skill.Percentage%</span>
-                        </div>
-
-                        <div class="skill-bar">
-                            <div class="skill-progress" style="width:@skill.Percentage%"></div>
-                        </div>
+                        @if (Model.Skills != null && Model.Skills.Any())
+                        {
+                            <div class="row">
+                                @foreach (var skill in Model.Skills)
+                                {
+                                    <div class="col-md-6 mb-4">
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span class="skill-name">@skill.Name</span>
+                                            <span class="skill-percent">@skill.Percentage%</span>
+                                        </div>
+                                        <div class="skill-bar">
+                                            <div class="skill-progress" style="width:@(skill.Percentage)%"></div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <p class="text-muted mb-0">Aucune compétence ajoutée.</p>
+                        }
                     </div>
-                }
-            </div>
-        }
-        else
-        {
-            <p class="text-muted mb-0">Aucune compétence ajoutée.</p>
-        }
-    </div>
-</div>
+                </div>
+
                 @if (isOwnProfile)
                 {
                     <div class="card profile-card-box mb-4">

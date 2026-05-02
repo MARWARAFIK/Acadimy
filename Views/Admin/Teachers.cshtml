@@ -1,0 +1,81 @@
+﻿@model IEnumerable<Acadimy.Models.ApplicationUser>
+
+@{
+    ViewData["Title"] = "Teachers";
+}
+
+<h2 class="fw-bold mb-4">Gestion des enseignants</h2>
+
+<form method="get" class="mb-3">
+    <div class="input-group">
+        <input type="text"
+               name="search"
+               value="@ViewBag.Search"
+               class="form-control"
+               placeholder="Rechercher par nom, email, spécialité, grade..." />
+        <button class="btn btn-success">
+            <i class="bi bi-search"></i> Search
+        </button>
+    </div>
+</form>
+
+<div class="card admin-card">
+    <div class="card-body">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>Nom</th>
+                    <th>Email</th>
+                    <th>Grade</th>
+                    <th>Spécialité</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (var user in Model)
+                {
+                    <tr>
+                        <td>@user.FullName</td>
+                        <td>@user.Email</td>
+                        <td>@user.Grade</td>
+                        <td>@user.Specialite</td>
+                        <td>
+                            @if (user.IsBlocked)
+                            {
+                                <span class="badge bg-danger">Blocked</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success">Active</span>
+                            }
+                        </td>
+                        <td class="d-flex gap-2">
+                            <form asp-action="ToggleBlockUser" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@user.Id" />
+                                <input type="hidden" name="returnAction" value="Teachers" />
+
+                                <button class="btn btn-sm @(user.IsBlocked ? "btn-outline-success" : "btn-outline-warning")">
+                                    @(user.IsBlocked ? "Unblock" : "Block")
+                                </button>
+                            </form>
+
+                            <form asp-action="DeleteUser" method="post"
+                                  onsubmit="return confirm('Supprimer cet enseignant ?');">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@user.Id" />
+                                <input type="hidden" name="returnAction" value="Teachers" />
+
+                                <button class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,148 @@
+﻿@model List<Acadimy.Models.Marketplace.ProjectPost>
+
+@{
+    Layout = "~/Views/Shared/LayoutStudent.cshtml";
+    ViewData["Title"] = "Top Projects";
+}
+
+<div class="container py-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">🏆 Top Projects</h2>
+            <p class="text-muted mb-0">
+                Classement des meilleurs projets publiés par les étudiants.
+            </p>
+        </div>
+
+        <a asp-controller="Marketplace" asp-action="Index" class="btn btn-outline-success rounded-pill">
+            <i class="bi bi-shop"></i> Marketplace
+        </a>
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        var rank = 1;
+
+        foreach (var project in Model)
+        {
+            var avg = project.Ratings.Any()
+                ? project.Ratings.Average(r => r.Value)
+                : 0;
+
+            var image = string.IsNullOrEmpty(project.ImagePath)
+                ? "/images/default-cover.jpg"
+                : project.ImagePath;
+
+            var authorImage = project.User != null && !string.IsNullOrEmpty(project.User.ProfileImagePath)
+                ? project.User.ProfileImagePath
+                : "/images/default-user.png";
+
+            <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
+                <div class="row g-0">
+
+                    <div class="col-md-4">
+                        <img src="@image"
+                             class="w-100 h-100"
+                             style="object-fit:cover; min-height:230px;"
+                             alt="@project.Title" />
+                    </div>
+
+                    <div class="col-md-8">
+                        <div class="card-body p-4">
+
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div>
+                                    <span class="badge bg-success rounded-pill px-3 py-2 mb-2">
+                                        #@rank
+                                    </span>
+
+                                    <h4 class="fw-bold mb-1">@project.Title</h4>
+
+                                    <div class="d-flex align-items-center gap-2 text-muted small">
+                                        <img src="@authorImage"
+                                             style="width:28px;height:28px;border-radius:50%;object-fit:cover;" />
+
+                                        <span>
+                                            @(project.User != null ? project.User.FullName : "Student")
+                                        </span>
+
+                                        <span>•</span>
+
+                                        <span>@project.CreatedAt.ToString("dd MMM yyyy")</span>
+                                    </div>
+                                </div>
+
+                                <div class="text-end">
+                                    <div class="fs-4 text-warning fw-bold">
+                                        ⭐ @avg.ToString("0.0")
+                                    </div>
+                                    <div class="small text-muted">
+                                        @project.Ratings.Count évaluation(s)
+                                    </div>
+                                </div>
+                            </div>
+
+                            <p class="text-muted">
+                                @(project.Description.Length > 220
+                                    ? project.Description.Substring(0, 220) + "..."
+                                    : project.Description)
+                            </p>
+
+                            <div class="d-flex flex-wrap gap-2 mb-3">
+                                <span class="badge bg-light text-dark border">
+                                    <i class="bi bi-chat-dots"></i>
+                                    @project.Comments.Count commentaire(s)
+                                </span>
+
+                                <span class="badge bg-light text-dark border">
+                                    <i class="bi bi-star"></i>
+                                    Score: @avg.ToString("0.0") / 5
+                                </span>
+                            </div>
+
+                            <div class="d-flex gap-2">
+                                <a asp-controller="Marketplace"
+                                   asp-action="Details"
+                                   asp-route-id="@project.Id"
+                                   class="btn btn-success rounded-pill px-4">
+                                    <i class="bi bi-eye"></i> Voir détails
+                                </a>
+
+                                @if (!string.IsNullOrEmpty(project.FilePath))
+                                {
+                                    <a href="@project.FilePath"
+                                       target="_blank"
+                                       class="btn btn-outline-secondary rounded-pill px-4">
+                                        <i class="bi bi-download"></i> Télécharger
+                                    </a>
+                                }
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            rank++;
+        }
+    }
+    else
+    {
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body text-center p-5">
+                <i class="bi bi-trophy text-warning" style="font-size:48px;"></i>
+                <h4 class="fw-bold mt-3">Aucun projet pour le moment</h4>
+                <p class="text-muted">
+                    Les projets publiés apparaîtront ici avec leur classement.
+                </p>
+
+                <a asp-controller="Marketplace" asp-action="Index" class="btn btn-success rounded-pill">
+                    Publier un projet
+                </a>
+            </div>
+        </div>
+    }
+
+</div>

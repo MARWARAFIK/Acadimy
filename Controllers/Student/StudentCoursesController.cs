@@ -132,6 +132,117 @@ namespace Acadimy.Controllers.Student
 
             return View("~/Views/Student/Courses/Details.cshtml", course);
         }
+        [HttpPost("JoinAjax/{id:int}")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> JoinAjax(int id)
+        {
+            var student = await _userManager.GetUserAsync(User);
+
+            if (student == null)
+                return Json(new { success = false, message = "Not authenticated" });
+
+            var course = await _context.TeacherCourses
+                .Include(c => c.User)
+                .FirstOrDefaultAsync(c => c.Id == id && !c.IsArchived);
+
+            if (course == null)
+                return Json(new { success = false, message = "Course not found" });
+
+            var exists = await _context.TeacherEnrollments
+                .AnyAsync(e => e.TeacherCourseId == id && e.StudentId == student.Id);
+
+            if (!exists)
+            {
+                _context.TeacherEnrollments.Add(new TeacherEnrollment
+                {
+                    TeacherCourseId = id,
+                    StudentId = student.Id,
+                    EnrolledAt = DateTime.Now,
+                    ProgressPercent = 0,
+                    IsCompleted = false,
+                    Status = "Active"
+                });
+
+                await _context.SaveChangesAsync();
+
+                if (course.User != null && course.User.NotifyCourseActivity)
+                {
+                    await _notificationService.SendAsync(
+                        course.User.Id,
+                        "Nouvel étudiant inscrit",
+                        $"{student.FullName} a rejoint votre cours \"{course.Title}\".",
+                        "Course",
+                        $"/TeacherStudents"
+                    );
+                }
+            }
+
+            return Json(new
+            {
+                success = true,
+                progress = 0,
+                status = "Active",
+                groupUrl = Url.Action("CourseGroup", "Messages", new { courseId = id })
+            });
+        }
+
+        [HttpPost("CompleteLessonAjax")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CompleteLessonAjax(int lessonId)
+        {
+            var student = await _userManager.GetUserAsync(User);
+
+            if (student == null)
+                return Json(new { success = false, message = "Not authenticated" });
+
+            var lesson = await _context.CourseLessons
+                .Include(l => l.TeacherCourse)
+                .FirstOrDefaultAsync(l => l.Id == lessonId);
+
+            if (lesson == null)
+                return Json(new { success = false, message = "Lesson not found" });
+
+            var enrollment = await _context.TeacherEnrollments
+                .FirstOrDefaultAsync(e =>
+                    e.StudentId == student.Id &&
+                    e.TeacherCourseId == lesson.TeacherCourseId);
+
+            if (enrollment == null)
+                return Json(new { success = false, message = "Vous devez vous inscrire d'abord." });
+
+            if (enrollment.Status == "Paused")
+                return Json(new { success = false, message = "Ce cours est en pause." });
+
+            var alreadyDone = await _context.StudentLessonProgresses
+                .AnyAsync(p => p.StudentId == student.Id && p.CourseLessonId == lessonId);
+
+            if (!alreadyDone)
+            {
+                _context.StudentLessonProgresses.Add(new StudentLessonProgress
+                {
+                    StudentId = student.Id,
+                    CourseLessonId = lessonId,
+                    CompletedAt = DateTime.Now
+                });
+
+                await _context.SaveChangesAsync();
+            }
+
+            await UpdateEnrollmentProgress(student.Id, lesson.TeacherCourseId);
+
+            var updatedEnrollment = await _context.TeacherEnrollments
+                .FirstOrDefaultAsync(e =>
+                    e.StudentId == student.Id &&
+                    e.TeacherCourseId == lesson.TeacherCourseId);
+
+            return Json(new
+            {
+                success = true,
+                lessonId = lesson.Id,
+                progress = updatedEnrollment?.ProgressPercent ?? 0,
+                status = updatedEnrollment?.Status ?? "Active"
+            });
+        }
 
         [HttpPost("Join/{id:int}")]
         [ValidateAntiForgeryToken]

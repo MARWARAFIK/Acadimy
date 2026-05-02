@@ -16,6 +16,8 @@
         <i class="bi bi-arrow-left"></i> Retour
     </a>
 
+    <div id="ajaxMessage"></div>
+
     <div class="course-details-card">
         <div class="details-cover">
             @if (!string.IsNullOrEmpty(Model.ThumbnailPath))
@@ -38,23 +40,20 @@
             <div class="details-meta">
                 <span><i class="bi bi-bar-chart"></i> @Model.Level</span>
                 <span><i class="bi bi-calendar"></i> @Model.CreatedAt.ToString("dd/MM/yyyy")</span>
-                <span><i class="bi bi-graph-up"></i> @progress%</span>
-                <span><i class="bi bi-info-circle"></i> @status</span>
+                <span><i class="bi bi-graph-up"></i> <span id="progressTextMeta">@progress%</span></span>
+                <span><i class="bi bi-info-circle"></i> <span id="statusText">@status</span></span>
             </div>
 
-            @if (isJoined)
-            {
-                <div class="big-progress-box mb-4">
-                    <div class="d-flex justify-content-between mb-2">
-                        <strong>Votre progression</strong>
-                        <strong>@progress%</strong>
-                    </div>
-
-                    <div class="progress">
-                        <div class="progress-bar" style="width:@progress%"></div>
-                    </div>
+            <div id="progressBox" class="big-progress-box mb-4" style="display:@(isJoined ? "block" : "none");">
+                <div class="d-flex justify-content-between mb-2">
+                    <strong>Votre progression</strong>
+                    <strong id="progressText">@progress%</strong>
                 </div>
-            }
+
+                <div class="progress">
+                    <div id="progressBar" class="progress-bar" style="width:@progress%"></div>
+                </div>
+            </div>
 
             <p class="details-desc">
                 @(string.IsNullOrWhiteSpace(Model.Description)
@@ -78,16 +77,13 @@
                 </a>
             </div>
 
-            <div class="details-buttons">
+            <div class="details-buttons" id="mainButtons">
                 @if (!isJoined)
                 {
-                    <form asp-controller="StudentCourses"
-                          asp-action="Join"
-                          asp-route-id="@Model.Id"
-                          method="post">
+                    <form id="joinCourseForm" class="m-0">
                         @Html.AntiForgeryToken()
 
-                        <button type="submit" class="btn-join">
+                        <button type="submit" id="joinBtn" class="btn-join">
                             <i class="bi bi-check-circle"></i> S'inscrire
                         </button>
                     </form>
@@ -104,6 +100,13 @@
                             <i class="bi bi-download"></i> Télécharger
                         </a>
                     }
+
+                    <a asp-controller="Messages"
+                       asp-action="CourseGroup"
+                       asp-route-courseId="@Model.Id"
+                       class="btn btn-success rounded-pill px-4">
+                        <i class="bi bi-chat-dots"></i> Rejoindre le groupe
+                    </a>
                 }
             </div>
 
@@ -115,45 +118,44 @@
 
             @if (Model.Lessons != null && Model.Lessons.Any())
             {
-                <div class="list-group">
+                <div class="list-group" id="lessonsList">
                     @foreach (var lesson in Model.Lessons.OrderBy(l => l.Order))
                     {
                         bool done = completedLessonIds.Contains(lesson.Id);
 
-                        <div class="list-group-item d-flex justify-content-between align-items-center rounded-3 mb-2">
+                        <div class="list-group-item d-flex justify-content-between align-items-center rounded-3 mb-2"
+                             id="lesson-item-@lesson.Id">
                             <div>
                                 <strong>@lesson.Order. @lesson.Title</strong>
                                 <div class="text-muted small">@lesson.Description</div>
                             </div>
 
-                            @if (isJoined)
-                            {
-                                if (done)
+                            <div id="lesson-action-@lesson.Id">
+                                @if (isJoined)
                                 {
-                                    <span class="badge bg-success rounded-pill px-3 py-2">
-                                        <i class="bi bi-check2-circle"></i> Terminé
-                                    </span>
+                                    if (done)
+                                    {
+                                        <span class="badge bg-success rounded-pill px-3 py-2">
+                                            <i class="bi bi-check2-circle"></i> Terminé
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <form class="complete-lesson-form m-0" data-lesson-id="@lesson.Id">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="lessonId" value="@lesson.Id" />
+
+                                            <button type="submit" class="btn btn-success btn-sm rounded-pill">
+                                                Terminer
+                                            </button>
+                                        </form>
+                                    }
                                 }
                                 else
                                 {
-                                    <form asp-controller="StudentCourses"
-                                          asp-action="CompleteLesson"
-                                          method="post"
-                                          class="m-0">
-                                        @Html.AntiForgeryToken()
-
-                                        <input type="hidden" name="lessonId" value="@lesson.Id" />
-
-                                        <button class="btn btn-success btn-sm rounded-pill">
-                                            Terminer
-                                        </button>
-                                    </form>
+                                    <span class="text-muted small not-joined-text">Inscrivez-vous pour commencer</span>
                                 }
-                            }
-                            else
-                            {
-                                <span class="text-muted small">Inscrivez-vous pour commencer</span>
-                            }
+                            </div>
                         </div>
                     }
                 </div>
@@ -167,3 +169,145 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        const courseId = @Model.Id;
+        const filePath = "@(Model.FilePath ?? "")";
+
+        function showMessage(type, text) {
+            const box = document.getElementById("ajaxMessage");
+            box.innerHTML = `
+                <div class="alert alert-${type} rounded-4">
+                    ${text}
+                </div>`;
+            setTimeout(() => box.innerHTML = "", 3000);
+        }
+
+        function updateProgress(progress, status) {
+            document.getElementById("progressBox").style.display = "block";
+            document.getElementById("progressText").textContent = progress + "%";
+            document.getElementById("progressTextMeta").textContent = progress + "%";
+            document.getElementById("statusText").textContent = status;
+            document.getElementById("progressBar").style.width = progress + "%";
+        }
+
+        function makeLessonsAvailable() {
+            document.querySelectorAll(".not-joined-text").forEach(el => {
+                const parent = el.closest("[id^='lesson-action-']");
+                const lessonId = parent.id.replace("lesson-action-", "");
+
+                parent.innerHTML = `
+                    <form class="complete-lesson-form m-0" data-lesson-id="${lessonId}">
+                        <input name="__RequestVerificationToken" type="hidden"
+                               value="${document.querySelector('input[name="__RequestVerificationToken"]').value}" />
+                        <input type="hidden" name="lessonId" value="${lessonId}" />
+                        <button type="submit" class="btn btn-success btn-sm rounded-pill">
+                            Terminer
+                        </button>
+                    </form>`;
+            });
+
+            bindCompleteLessonForms();
+        }
+
+        function renderJoinedButtons(groupUrl) {
+            let html = `
+                <button class="btn-joined" disabled>
+                    <i class="bi bi-check2-circle"></i> Déjà inscrit
+                </button>`;
+
+            if (filePath) {
+                html += `
+                    <a href="${filePath}" class="btn-download" download>
+                        <i class="bi bi-download"></i> Télécharger
+                    </a>`;
+            }
+
+            html += `
+                <a href="${groupUrl}" class="btn btn-success rounded-pill px-4">
+                    <i class="bi bi-chat-dots"></i> Rejoindre le groupe
+                </a>`;
+
+            document.getElementById("mainButtons").innerHTML = html;
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const joinForm = document.getElementById("joinCourseForm");
+
+            if (joinForm) {
+                joinForm.addEventListener("submit", async function (e) {
+                    e.preventDefault();
+
+                    const btn = document.getElementById("joinBtn");
+                    const formData = new FormData(joinForm);
+
+                    btn.disabled = true;
+                    btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Inscription...';
+
+                    const response = await fetch(`/StudentCourses/JoinAjax/${courseId}`, {
+                        method: "POST",
+                        body: formData
+                    });
+
+                    const result = await response.json();
+
+                    if (!result.success) {
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="bi bi-check-circle"></i> S’inscrire';
+                        showMessage("danger", result.message || "Erreur.");
+                        return;
+                    }
+
+                    updateProgress(result.progress, result.status);
+                    renderJoinedButtons(result.groupUrl);
+                    makeLessonsAvailable();
+                    showMessage("success", "Inscription réussie. Vous pouvez rejoindre le groupe.");
+                });
+            }
+
+            bindCompleteLessonForms();
+        });
+
+        function bindCompleteLessonForms() {
+            document.querySelectorAll(".complete-lesson-form").forEach(form => {
+                if (form.dataset.bound === "true") return;
+                form.dataset.bound = "true";
+
+                form.addEventListener("submit", async function (e) {
+                    e.preventDefault();
+
+                    const lessonId = form.dataset.lessonId;
+                    const btn = form.querySelector("button");
+                    const formData = new FormData(form);
+
+                    btn.disabled = true;
+                    btn.innerHTML = "En cours...";
+
+                    const response = await fetch("/StudentCourses/CompleteLessonAjax", {
+                        method: "POST",
+                        body: formData
+                    });
+
+                    const result = await response.json();
+
+                    if (!result.success) {
+                        btn.disabled = false;
+                        btn.innerHTML = "Terminer";
+                        showMessage("danger", result.message || "Erreur.");
+                        return;
+                    }
+
+                    updateProgress(result.progress, result.status);
+
+                    document.getElementById("lesson-action-" + lessonId).innerHTML = `
+                        <span class="badge bg-success rounded-pill px-3 py-2">
+                            <i class="bi bi-check2-circle"></i> Terminé
+                        </span>`;
+
+                    showMessage("success", "Lesson terminée.");
+                });
+            });
+        }
+    </script>
+}

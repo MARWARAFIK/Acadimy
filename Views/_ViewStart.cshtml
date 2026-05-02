@@ -3,7 +3,11 @@
 
     if (isAuthenticated)
     {
-        if (User?.IsInRole("Enseignant") ?? false)
+        if (User?.IsInRole("Admin") ?? false)
+        {
+            Layout = "~/Views/Shared/LayoutAdmin.cshtml";
+        }
+        else if (User?.IsInRole("Enseignant") ?? false)
         {
             Layout = "~/Views/Shared/LayoutTeacher.cshtml";
         }

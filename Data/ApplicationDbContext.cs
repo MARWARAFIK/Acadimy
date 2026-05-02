@@ -1,5 +1,7 @@
 ﻿using Acadimy.Models;
 using Acadimy.Models.Community;
+using Acadimy.Models.Live;
+using Acadimy.Models.Marketplace;
 using Acadimy.Models.Messaging;
 using Acadimy.Models.Student;
 using Acadimy.Models.Teacher;
@@ -45,11 +47,35 @@ namespace Acadimy.Data
         public DbSet<StudentSkill> StudentSkills { get; set; }
         public DbSet<MessageThread> MessageThreads { get; set; }
         public DbSet<Message> Messages { get; set; }
+        public DbSet<CourseGroupMessage> CourseGroupMessages { get; set; }
+        public DbSet<LiveClass> LiveClasses { get; set; }
+
+        public DbSet<ProjectPost> ProjectPosts { get; set; }
+        public DbSet<ProjectComment> ProjectComments { get; set; }
+        public DbSet<ProjectRating> ProjectRatings { get; set; }
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
 
             // ================= STUDENT =================
+            builder.Entity<Message>()
+    .HasOne(m => m.Sender)
+    .WithMany()
+    .HasForeignKey(m => m.SenderId)
+    .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<CourseGroupMessage>()
+                .HasOne(m => m.TeacherCourse)
+                .WithMany()
+                .HasForeignKey(m => m.TeacherCourseId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<CourseGroupMessage>()
+                .HasOne(m => m.Sender)
+                .WithMany()
+                .HasForeignKey(m => m.SenderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             builder.Entity<StudentSkill>()
      .HasOne(s => s.User)
      .WithMany(u => u.StudentSkills)

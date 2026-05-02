@@ -1,0 +1,74 @@
+﻿@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<h2 class="fw-bold mb-4">Dashboard Admin</h2>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="card admin-card p-4">
+            <h6 class="text-muted">Users</h6>
+            <h2 class="fw-bold">@ViewBag.UsersCount</h2>
+            <i class="bi bi-people text-success fs-2"></i>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card admin-card p-4">
+            <h6 class="text-muted">Students</h6>
+            <h2 class="fw-bold">@ViewBag.StudentsCount</h2>
+            <i class="bi bi-mortarboard text-success fs-2"></i>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card admin-card p-4">
+            <h6 class="text-muted">Teachers</h6>
+            <h2 class="fw-bold">@ViewBag.TeachersCount</h2>
+            <i class="bi bi-person-workspace text-success fs-2"></i>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card admin-card p-4">
+            <h6 class="text-muted">Courses</h6>
+            <h2 class="fw-bold">@ViewBag.CoursesCount</h2>
+            <i class="bi bi-journals text-success fs-2"></i>
+        </div>
+    </div>
+</div>
+
+<div class="card admin-card p-4">
+    <h5 class="fw-bold mb-3">Statistiques</h5>
+    <canvas id="adminChart" height="120"></canvas>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        const ctx = document.getElementById('adminChart');
+
+        new Chart(ctx, {
+        type: 'bar',
+        data: {
+        labels: ['Students', 'Teachers', 'Courses', 'Projects'],
+        datasets: [{
+        label: 'Total',
+        data: [
+        @ViewBag.StudentsCount,
+        @ViewBag.TeachersCount,
+        @ViewBag.CoursesCount,
+        @ViewBag.ProjectsCount
+        ]
+        }]
+        },
+        options: {
+        responsive: true,
+        plugins: {
+        legend: { display: false }
+        }
+        }
+        });
+    </script>
+}

@@ -728,3 +728,77 @@
         border-radius: 16px !important;
         display: block !important;
     }
+
+#ai-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 55px;
+    height: 55px;
+    background: #16a34a;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 9999;
+    font-size: 24px;
+}
+
+#ai-box {
+    position: fixed;
+    bottom: 85px;
+    right: 20px;
+    width: 320px;
+    height: 420px;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+    display: flex;
+    flex-direction: column;
+    z-index: 9999;
+}
+
+.ai-header {
+    background: #16a34a;
+    color: white;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.ai-messages {
+    flex: 1;
+    padding: 10px;
+    overflow-y: auto;
+}
+
+.ai-msg {
+    margin-bottom: 10px;
+}
+
+.ai-user {
+    text-align: right;
+}
+
+.ai-bot {
+    color: green;
+}
+
+.ai-input {
+    display: flex;
+}
+
+    .ai-input input {
+        flex: 1;
+        border: none;
+        padding: 10px;
+    }
+
+    .ai-input button {
+        background: #16a34a;
+        color: white;
+        border: none;
+        padding: 10px;
+    }

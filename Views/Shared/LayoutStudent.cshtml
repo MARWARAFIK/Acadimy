@@ -87,13 +87,18 @@
                         </li>
 
                         <li class="nav-item">
+                            <a class="nav-link" asp-controller="Marketplace" asp-action="Index">
+                                <i class="bi bi-shop"></i> Marketplace
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
                             <a class="nav-link" asp-controller="Community" asp-action="Index">Community</a>
                         </li>
 
                         <li class="nav-item">
-                            <a class="nav-link position-relative" asp-controller="Messages" asp-action="Index" title="Messages">
-                                <i class="bi bi-chat-dots"></i>
-                                Messages
+                            <a class="nav-link position-relative" asp-controller="Messages" asp-action="Index">
+                                <i class="bi bi-chat-dots"></i> Messages
 
                                 @if (unreadMessages > 0)
                                 {
@@ -104,15 +109,17 @@
                             </a>
                         </li>
 
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="LiveClasses" asp-action="Index">
+                                <i class="bi bi-camera-video"></i> Live Classes
+                            </a>
+                        </li>
+
                         @if (showNotifications)
                         {
                             <li class="nav-item">
-                                <a class="nav-link position-relative"
-                                   asp-controller="Notifications"
-                                   asp-action="Index"
-                                   title="Notifications">
+                                <a class="nav-link position-relative" asp-controller="Notifications" asp-action="Index">
                                     <i class="bi bi-bell"></i>
-                                    Notifications
 
                                     @if (unreadCount > 0)
                                     {
@@ -125,11 +132,7 @@
                         }
 
                         <li class="nav-item dropdown ms-lg-3">
-                            <a class="nav-link dropdown-toggle"
-                               href="#"
-                               role="button"
-                               data-bs-toggle="dropdown"
-                               aria-expanded="false">
+                            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
                                 <i class="bi bi-person-circle"></i>
                             </a>
 
@@ -167,7 +170,124 @@
         @RenderBody()
     </div>
 
+    <!-- AI BUTTON -->
+    <div id="ai-btn">
+        <i class="bi bi-robot"></i>
+    </div>
+
+    <!-- AI CHAT -->
+    <div id="ai-box" class="d-none">
+        <div class="ai-header">
+            <span>🤖 AI Assistant</span>
+            <span onclick="toggleAI()" style="cursor:pointer;">✖</span>
+        </div>
+
+        <div id="ai-messages" class="ai-messages">
+            <div class="ai-msg ai-bot">
+                Bonjour 👋 Je peux t’aider avec les cours, projets, résumés et corrections.
+            </div>
+        </div>
+
+        <div class="ai-input" style="flex-direction:column;">
+            <div style="display:flex;width:100%;">
+                <input type="text" id="ai-text" placeholder="Écris ta question..." />
+                <button type="button" onclick="sendAI()">
+                    <i class="bi bi-send"></i>
+                </button>
+            </div>
+
+            <input type="file" id="ai-file" class="form-control mt-2" />
+            <button type="button" onclick="uploadAIFile()" class="btn btn-sm btn-success mt-1">
+                📄 Upload & Analyze
+            </button>
+        </div>
+    </div>
+
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+        const btn = document.getElementById("ai-btn");
+        const box = document.getElementById("ai-box");
+
+        if (btn && box) {
+        btn.addEventListener("click", function () {
+        box.classList.toggle("d-none");
+        });
+        }
+
+        const input = document.getElementById("ai-text");
+        if (input) {
+        input.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") {
+        sendAI();
+        }
+        });
+        }
+        });
+
+        function toggleAI() {
+        const box = document.getElementById("ai-box");
+        if (box) box.classList.toggle("d-none");
+        }
+
+        async function sendAI() {
+        const input = document.getElementById("ai-text");
+        const chat = document.getElementById("ai-messages");
+
+        if (!input || !chat) return;
+
+        const msg = input.value.trim();
+        if (!msg) return;
+
+        chat.innerHTML += `<div class="ai-msg ai-user"><b>You:</b> ${msg}</div>`;
+        input.value = "";
+
+        try {
+        const response = await fetch("/AiAssistant/Ask", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: msg })
+        });
+
+        const data = await response.json();
+        chat.innerHTML += `<div class="ai-msg ai-bot"><b>AI:</b><br/>${data.answer}</div>`;
+        chat.scrollTop = chat.scrollHeight;
+        } catch {
+        chat.innerHTML += `<div class="ai-msg ai-bot text-danger">Erreur AI Assistant.</div>`;
+        }
+        }
+
+        async function uploadAIFile() {
+        const fileInput = document.getElementById("ai-file");
+        const chat = document.getElementById("ai-messages");
+
+        if (!fileInput || !chat || fileInput.files.length === 0) {
+        alert("Choisir un fichier");
+        return;
+        }
+
+        const formData = new FormData();
+        formData.append("file", fileInput.files[0]);
+
+        chat.innerHTML += `<div class="ai-msg ai-user">📄 Fichier envoyé...</div>`;
+
+        try {
+        const response = await fetch("/AiAssistant/Upload", {
+        method: "POST",
+        body: formData
+        });
+
+        const data = await response.json();
+        chat.innerHTML += `<div class="ai-msg ai-bot"><b>AI:</b><br/>${data.answer}</div>`;
+        chat.scrollTop = chat.scrollHeight;
+        fileInput.value = "";
+        } catch {
+        chat.innerHTML += `<div class="ai-msg ai-bot text-danger">Erreur upload fichier.</div>`;
+        }
+        }
+    </script>
+
     @await RenderSectionAsync("Scripts", required: false)
 
 </body>

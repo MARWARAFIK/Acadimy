@@ -1,0 +1,176 @@
+﻿@model Acadimy.Models.Live.LiveClass
+
+@{
+    var isOwner = ViewBag.IsOwner != null && (bool)ViewBag.IsOwner;
+}
+
+<div class="container mt-4">
+    <h3>Live Class: @Model.Title</h3>
+
+    <div class="d-flex gap-3 flex-wrap">
+        <video id="localVideo" autoplay muted playsinline
+               style="width:420px;height:240px;background:#111;border-radius:12px;"></video>
+
+        <video id="remoteVideo" autoplay playsinline
+               style="width:420px;height:240px;background:#111;border-radius:12px;"></video>
+    </div>
+
+    <div class="mt-3 d-flex gap-2">
+        <button id="startBtn" class="btn btn-success">Start Camera</button>
+        <button id="stopBtn" class="btn btn-danger">Stop Camera</button>
+
+        @if (isOwner)
+        {
+            <form asp-action="End" asp-route-id="@Model.Id" method="post" id="endLiveForm">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-dark">End Live</button>
+            </form>
+        }
+    </div>
+
+    <div id="liveStatus" class="text-muted small mt-2"></div>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+
+    <script>
+        const classId = "@ViewBag.ClassId";
+        const statusBox = document.getElementById("liveStatus");
+
+        let localStream = null;
+        let peerConnection = null;
+        let connection = null;
+
+        async function initSignalR() {
+        connection = new signalR.HubConnectionBuilder()
+        .withUrl("/liveClassHub")
+        .withAutomaticReconnect()
+        .build();
+
+        connection.on("ReceiveSignal", async function (data) {
+        await handleSignal(data);
+        });
+
+        await connection.start();
+        await connection.invoke("JoinClass", classId);
+
+        statusBox.innerText = "Connected to live";
+        }
+
+        function createPeerConnection() {
+        const pc = new RTCPeerConnection();
+
+        pc.ontrack = function (event) {
+        document.getElementById("remoteVideo").srcObject = event.streams[0];
+        };
+
+        pc.onicecandidate = function (event) {
+        if (event.candidate) {
+        connection.invoke("SendSignal", classId, {
+        candidate: event.candidate
+        });
+        }
+        };
+
+        return pc;
+        }
+
+        async function startCamera() {
+        try {
+        localStream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true
+        });
+
+        document.getElementById("localVideo").srcObject = localStream;
+
+        peerConnection = createPeerConnection();
+
+        localStream.getTracks().forEach(function (track) {
+        peerConnection.addTrack(track, localStream);
+        });
+
+        const offer = await peerConnection.createOffer();
+        await peerConnection.setLocalDescription(offer);
+
+        await connection.invoke("SendSignal", classId, {
+        offer: offer
+        });
+
+        statusBox.innerText = "Camera ON";
+        } catch (err) {
+        console.error(err);
+        alert("Camera error: " + err.message);
+        }
+        }
+
+        function stopCamera() {
+        if (localStream) {
+        localStream.getTracks().forEach(function (track) {
+        track.stop();
+        });
+
+        localStream = null;
+        }
+
+        document.getElementById("localVideo").srcObject = null;
+        document.getElementById("remoteVideo").srcObject = null;
+
+        if (peerConnection) {
+        peerConnection.close();
+        peerConnection = null;
+        }
+
+        statusBox.innerText = "Camera OFF";
+        }
+
+        async function handleSignal(data) {
+        if (data.offer) {
+        localStream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true
+        });
+
+        document.getElementById("localVideo").srcObject = localStream;
+
+        peerConnection = createPeerConnection();
+
+        localStream.getTracks().forEach(function (track) {
+        peerConnection.addTrack(track, localStream);
+        });
+
+        await peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
+
+        const answer = await peerConnection.createAnswer();
+        await peerConnection.setLocalDescription(answer);
+
+        await connection.invoke("SendSignal", classId, {
+        answer: answer
+        });
+        }
+
+        if (data.answer && peerConnection) {
+        await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
+        }
+
+        if (data.candidate && peerConnection) {
+        await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
+        }
+        }
+
+        document.addEventListener("DOMContentLoaded", async function () {
+        await initSignalR();
+
+        document.getElementById("startBtn").addEventListener("click", startCamera);
+        document.getElementById("stopBtn").addEventListener("click", stopCamera);
+
+        const endForm = document.getElementById("endLiveForm");
+        if (endForm) {
+        endForm.addEventListener("submit", function () {
+        stopCamera();
+        });
+        }
+        });
+    </script>
+}

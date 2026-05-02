@@ -105,7 +105,8 @@ namespace Acadimy.Controllers.Student
 
             ViewBag.IsOwnProfile = profileUser.Id == currentUser.Id;
             ViewBag.CurrentUserId = currentUser.Id;
-
+            ViewBag.ProfileUserId = profileUser.Id;
+           
             return View("~/Views/Student/Profile/Index.cshtml", model);
         }
     }

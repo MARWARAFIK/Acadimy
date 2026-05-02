@@ -65,7 +65,9 @@ namespace Acadimy.Models   // ❗ مهم بزاف
         public bool NotifyAssignmentCorrection { get; set; } = true;
         public bool NotifyNewLesson { get; set; } = true;
 
+        public bool IsBlocked { get; set; } = false;
     }
+
 
 
 }
