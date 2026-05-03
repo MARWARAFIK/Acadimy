@@ -119,20 +119,12 @@ namespace Acadimy.Controllers
         // POST: /Marketplace/Rate
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Rate(int projectId, int value, string? returnUrl = null)
+        public async Task<IActionResult> Rate(int projectId, int value)
         {
             var user = await _userManager.GetUserAsync(User);
 
             if (user == null)
                 return RedirectToAction("Login", "Account");
-
-            if (value < 1 || value > 5)
-                value = 1;
-
-            var projectExists = await _context.ProjectPosts.AnyAsync(p => p.Id == projectId);
-
-            if (!projectExists)
-                return NotFound();
 
             var existing = await _context.ProjectRatings
                 .FirstOrDefaultAsync(r => r.ProjectPostId == projectId && r.UserId == user.Id);
@@ -153,9 +145,110 @@ namespace Acadimy.Controllers
 
             await _context.SaveChangesAsync();
 
-            return SafeRedirect(returnUrl);
+            return RedirectToAction("Details", new { id = projectId });
+        }
+        [HttpGet]
+        public async Task<IActionResult> Edit(int id)
+        {
+            var user = await _userManager.GetUserAsync(User);
+
+            if (user == null)
+                return RedirectToAction("Login", "Account");
+
+            var project = await _context.ProjectPosts.FirstOrDefaultAsync(p => p.Id == id);
+
+            if (project == null)
+                return NotFound();
+
+            if (project.UserId != user.Id)
+                return Forbid();
+
+            return View(project);
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(
+            int id,
+            string title,
+            string description,
+            IFormFile? image,
+            IFormFile? file)
+        {
+            var user = await _userManager.GetUserAsync(User);
+
+            if (user == null)
+                return RedirectToAction("Login", "Account");
+
+            var project = await _context.ProjectPosts.FirstOrDefaultAsync(p => p.Id == id);
+
+            if (project == null)
+                return NotFound();
+
+            if (project.UserId != user.Id)
+                return Forbid();
+
+            project.Title = title.Trim();
+            project.Description = description.Trim();
+
+            var folder = Path.Combine(_env.WebRootPath, "uploads", "projects");
+            Directory.CreateDirectory(folder);
+
+            if (image != null && image.Length > 0)
+            {
+                var imageName = Guid.NewGuid() + Path.GetExtension(image.FileName);
+                var imageFullPath = Path.Combine(folder, imageName);
+
+                await using var stream = new FileStream(imageFullPath, FileMode.Create);
+                await image.CopyToAsync(stream);
+
+                project.ImagePath = "/uploads/projects/" + imageName;
+            }
+
+            if (file != null && file.Length > 0)
+            {
+                var fileName = Guid.NewGuid() + Path.GetExtension(file.FileName);
+                var fileFullPath = Path.Combine(folder, fileName);
+
+                await using var stream = new FileStream(fileFullPath, FileMode.Create);
+                await file.CopyToAsync(stream);
+
+                project.FilePath = "/uploads/projects/" + fileName;
+            }
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("Details", new { id = project.Id });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var user = await _userManager.GetUserAsync(User);
+
+            if (user == null)
+                return RedirectToAction("Login", "Account");
+
+            var project = await _context.ProjectPosts
+                .Include(p => p.Ratings)
+                .Include(p => p.Comments)
+                .FirstOrDefaultAsync(p => p.Id == id);
+
+            if (project == null)
+                return NotFound();
+
+            if (project.UserId != user.Id)
+                return Forbid();
+
+            _context.ProjectRatings.RemoveRange(project.Ratings);
+            _context.ProjectComments.RemoveRange(project.Comments);
+            _context.ProjectPosts.Remove(project);
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("Index");
+        }
         // POST: /Marketplace/AddComment
         [HttpPost]
         [ValidateAntiForgeryToken]

@@ -6,175 +6,152 @@
     ViewData["Title"] = "Archive";
 }
 
-<div class="container teacher-settings-page">
+<section class="teacher-white-page">
+    <div class="teacher-white-container">
 
-    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
-        <div>
-            <h2 class="settings-title mb-0">Archive</h2>
-            <p class="text-muted small mb-0">Retrouvez ici vos posts et cours archivés</p>
+        <!-- HEADER -->
+        <div class="teacher-page-header mb-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <span class="page-badge">ARCHIVE</span>
+                <h1>Archive</h1>
+                <p>Retrouvez vos cours et publications archivés</p>
+            </div>
+
+            <a asp-controller="TeacherProfile"
+               asp-action="Index"
+               class="btn btn-outline-secondary rounded-pill px-4">
+                <i class="bi bi-arrow-left me-2"></i> Retour
+            </a>
         </div>
 
-        <a asp-controller="TeacherProfile"
-           asp-action="Index"
-           class="btn btn-light rounded-pill shadow-sm px-4">
-            <i class="bi bi-arrow-left me-2"></i> Retour au profil
-        </a>
-    </div>
+        <!-- POSTS -->
+        <div class="card settings-card mb-4">
+            <div class="card-body p-4">
 
-    <!-- ARCHIVED POSTS -->
-    <div class="card settings-card mb-4">
-        <div class="card-body p-4">
-            <h3 class="profile-section-title mb-4">Archived Posts</h3>
+                <h3 class="profile-section-title mb-4">Posts archivés</h3>
 
-            @if (Model.ArchivedPosts != null && Model.ArchivedPosts.Any())
-            {
-                @foreach (var post in Model.ArchivedPosts)
+                @if (Model.ArchivedPosts != null && Model.ArchivedPosts.Any())
                 {
-                    <div class="fb-post-card mb-3">
-                        <div class="fb-post-header">
-                            <div class="fb-post-user">
-                                <img src="@(string.IsNullOrEmpty(post.ProfileImagePath) ? "/images/default-user.png" : post.ProfileImagePath)"
-                                     class="fb-post-avatar"
-                                     alt="Profile" />
+                    <div class="row">
+                        @foreach (var post in Model.ArchivedPosts)
+                        {
+                            <div class="col-md-6 mb-4">
+                                <div class="archive-post-card">
 
-                                <div>
-                                    <div class="fb-post-name">@post.FullName</div>
-                                    <div class="fb-post-date">@post.CreatedAt.ToString("dd MMM yyyy HH:mm")</div>
+                                    <div class="archive-post-header">
+                                        <img src="@(string.IsNullOrEmpty(post.ProfileImagePath) ? "/images/default-user.png" : post.ProfileImagePath)"
+                                             class="archive-avatar" />
+
+                                        <div>
+                                            <strong>@post.FullName</strong>
+                                            <div class="text-muted small">@post.CreatedAt.ToString("dd MMM yyyy")</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="archive-post-body">
+                                        <p>@post.Content</p>
+
+                                        @if (!string.IsNullOrEmpty(post.ImagePath))
+                                        {
+                                            <img src="@post.ImagePath" class="archive-post-img" />
+                                        }
+                                    </div>
+
+                                    <div class="d-flex gap-2 mt-3">
+                                        <form asp-controller="TeacherPosts" asp-action="Restore" method="post" class="w-50">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="postId" value="@post.Id" />
+
+                                            <button class="btn btn-outline-success w-100 rounded-pill">
+                                                Restore
+                                            </button>
+                                        </form>
+
+                                        <form asp-controller="TeacherPosts" asp-action="Delete" method="post" class="w-50">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="postId" value="@post.Id" />
+
+                                            <button class="btn btn-outline-danger w-100 rounded-pill">
+                                                Delete
+                                            </button>
+                                        </form>
+                                    </div>
+
                                 </div>
                             </div>
-                        </div>
-
-                        <div class="fb-post-body">
-                            @if (!string.IsNullOrWhiteSpace(post.Content))
-                            {
-                                <p class="fb-post-text">@post.Content</p>
-                            }
-
-                            @if (!string.IsNullOrEmpty(post.ImagePath))
-                            {
-                                <img src="@post.ImagePath" class="fb-post-image" alt="Post Image" />
-                            }
-                        </div>
-
-                        <div class="d-flex gap-2 mt-3">
-                            <form asp-controller="TeacherPosts"
-                                  asp-action="Restore"
-                                  method="post"
-                                  class="w-50">
-                                @Html.AntiForgeryToken()
-                                <input type="hidden" name="postId" value="@post.Id" />
-
-                                <button type="submit" class="btn btn-outline-success w-100 rounded-pill">
-                                    <i class="bi bi-arrow-counterclockwise me-1"></i> Restore
-                                </button>
-                            </form>
-
-                            <form asp-controller="TeacherPosts"
-                                  asp-action="Delete"
-                                  method="post"
-                                  class="w-50">
-                                @Html.AntiForgeryToken()
-                                <input type="hidden" name="postId" value="@post.Id" />
-
-                                <button type="submit" class="btn btn-outline-danger w-100 rounded-pill">
-                                    <i class="bi bi-trash me-1"></i> Delete
-                                </button>
-                            </form>
-                        </div>
+                        }
                     </div>
                 }
-            }
-            else
-            {
-                <p class="text-muted mb-0">Aucun post archivé.</p>
-            }
+                else
+                {
+                    <p class="text-muted">Aucun post archivé.</p>
+                }
+
+            </div>
         </div>
-    </div>
 
-    <!-- ARCHIVED COURSES -->
-    <div class="card settings-card">
-        <div class="card-body p-4">
-            <h3 class="profile-section-title mb-4">Archived Courses</h3>
+        <!-- COURSES -->
+        <div class="card settings-card">
+            <div class="card-body p-4">
 
-            @if (Model.ArchivedCourses != null && Model.ArchivedCourses.Any())
-            {
-                <div class="table-responsive">
-                    <table class="table acadimy-table mb-0 align-middle">
-                        <thead>
-                            <tr>
-                                <th>Image</th>
-                                <th>Titre</th>
-                                <th>Catégorie</th>
-                                <th>Niveau</th>
-                                <th>Date</th>
-                                <th class="text-end">Actions</th>
-                            </tr>
-                        </thead>
+                <h3 class="profile-section-title mb-4">Cours archivés</h3>
 
-                        <tbody>
-                            @foreach (var item in Model.ArchivedCourses)
-                            {
-                                <tr>
-                                    <td>
-                                        <div class="rounded shadow-sm bg-light d-flex align-items-center justify-content-center"
-                                             style="width: 65px; height: 42px; overflow: hidden; border: 1px solid #eee;">
-                                            @if (!string.IsNullOrEmpty(item.ExistingThumbnailPath))
-                                            {
-                                                <img src="@item.ExistingThumbnailPath"
-                                                     style="width: 100%; height: 100%; object-fit: cover;"
-                                                     alt="Course Image" />
-                                            }
-                                            else
-                                            {
-                                                <i class="bi bi-image text-secondary"></i>
-                                            }
-                                        </div>
-                                    </td>
+                @if (Model.ArchivedCourses != null && Model.ArchivedCourses.Any())
+                {
+                    <div class="row">
+                        @foreach (var item in Model.ArchivedCourses)
+                        {
+                            <div class="col-md-4 mb-4">
+                                <div class="archive-course-card">
 
-                                    <td class="fw-bold text-dark">@item.Title</td>
+                                    <img src="@(string.IsNullOrEmpty(item.ExistingThumbnailPath) ? "/images/default-course.jpg" : item.ExistingThumbnailPath)"
+                                         class="archive-course-img" />
 
-                                    <td>
-                                        <span class="badge-cat">@(string.IsNullOrWhiteSpace(item.Category) ? "N/A" : item.Category)</span>
-                                    </td>
+                                    <div class="p-3">
 
-                                    <td>
-                                        <span class="badge-lvl">@(string.IsNullOrWhiteSpace(item.Level) ? "N/A" : item.Level)</span>
-                                    </td>
+                                        <span class="badge-cat">@item.Category</span>
 
-                                    <td class="text-muted small">
-                                        @item.CreatedAt.ToString("dd MMM yyyy")
-                                    </td>
+                                        <h5 class="mt-2">@item.Title</h5>
 
-                                    <td class="text-end">
-                                        <div class="action-group">
-                                            <form asp-controller="TeacherCourses" asp-action="Restore" method="post" class="m-0">
+                                        <small class="text-muted">
+                                            @item.CreatedAt.ToString("dd MMM yyyy")
+                                        </small>
+
+                                        <div class="d-flex justify-content-between mt-3">
+
+                                            <form asp-controller="TeacherCourses" asp-action="Restore" method="post">
                                                 @Html.AntiForgeryToken()
                                                 <input type="hidden" name="id" value="@item.Id" />
-                                                <button type="submit" class="btn-action-restore" title="Restaurer">
+
+                                                <button class="btn-action-restore">
                                                     <i class="bi bi-arrow-counterclockwise"></i>
                                                 </button>
                                             </form>
 
-                                            <form asp-controller="TeacherCourses" asp-action="Delete" method="post" class="m-0">
+                                            <form asp-controller="TeacherCourses" asp-action="Delete" method="post">
                                                 @Html.AntiForgeryToken()
                                                 <input type="hidden" name="id" value="@item.Id" />
-                                                <button type="submit" class="btn-action-delete" title="Supprimer">
-                                                    <i class="bi bi-trash-fill"></i>
+
+                                                <button class="btn-action-delete">
+                                                    <i class="bi bi-trash"></i>
                                                 </button>
                                             </form>
-                                        </div>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            }
-            else
-            {
-                <p class="text-muted mb-0">Aucun cours archivé.</p>
-            }
-        </div>
-    </div>
 
-</div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted">Aucun cours archivé.</p>
+                }
+
+            </div>
+        </div>
+
+    </div>
+</section>

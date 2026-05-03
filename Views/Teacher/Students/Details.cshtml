@@ -3,106 +3,147 @@
 @{
     Layout = "~/Views/Shared/LayoutTeacher.cshtml";
     ViewData["Title"] = "Détails étudiant";
+
+    var statusClass = Model.Status == "Completed"
+        ? "completed"
+        : Model.Status == "Paused"
+            ? "paused"
+            : "";
 }
 
-<div class="teacher-student-details-page">
+<section class="teacher-form-page">
+    <div class="teacher-form-container">
 
-    <a asp-controller="TeacherStudents" asp-action="Index" class="btn btn-light rounded-pill mb-3">
-        <i class="bi bi-arrow-left"></i> Retour
-    </a>
-
-    <div class="student-details-card">
-
-        <div class="student-details-header">
-            <img src="@(string.IsNullOrEmpty(Model.ProfileImagePath) ? "/images/default-user.png" : Model.ProfileImagePath)" />
-
-            <div>
-                <h1>@Model.FullName</h1>
-                <p>@Model.Email</p>
-            </div>
-
-            <span class="status-badge @(Model.Status == "Completed" ? "completed" : "")">
-                @Model.Status
-            </span>
-        </div>
-
-        <div class="student-details-grid">
-            <div class="detail-box">
-                <i class="bi bi-journal-bookmark"></i>
-                <span>Cours</span>
-                <strong>@Model.CourseTitle</strong>
-            </div>
-
-            <div class="detail-box">
-                <i class="bi bi-bar-chart"></i>
-                <span>Niveau</span>
-                <strong>@Model.Level</strong>
-            </div>
-
-            <div class="detail-box">
-                <i class="bi bi-calendar"></i>
-                <span>Inscrit le</span>
-                <strong>@Model.EnrolledAt.ToString("dd/MM/yyyy")</strong>
-            </div>
-
-            <div class="detail-box">
-                <i class="bi bi-graph-up"></i>
-                <span>Progression</span>
-                <strong>@Model.ProgressPercent%</strong>
-            </div>
-        </div>
-
-        <div class="big-progress-box">
-            <div class="d-flex justify-content-between mb-2">
-                <strong>Progression du cours</strong>
-                <strong>@Model.ProgressPercent%</strong>
-            </div>
-
-            <div class="progress">
-                <div class="progress-bar" style="width:@Model.ProgressPercent%"></div>
-            </div>
-        </div>
-
-        <form asp-controller="TeacherStudents"
-              asp-action="UpdateProgress"
-              method="post"
-              class="details-progress-form">
-
-            @Html.AntiForgeryToken()
-
-            <input type="hidden" name="enrollmentId" value="@Model.EnrollmentId" />
-
-            <div>
-                <label>Progression %</label>
-                <input type="number"
-                       name="progressPercent"
-                       min="0"
-                       max="100"
-                       value="@Model.ProgressPercent" />
-            </div>
-
-            <div>
-                <label>Statut</label>
-                <select name="status">
-                    <option value="Active" selected="@(Model.Status == "Active")">Active</option>
-                    <option value="Paused" selected="@(Model.Status == "Paused")">Paused</option>
-                    <option value="Completed" selected="@(Model.Status == "Completed")">Completed</option>
-                </select>
-            </div>
-
-            <button type="submit">
-                <i class="bi bi-save"></i> Enregistrer
-            </button>
-        </form>
-
-        <div class="mt-4">
-            <a asp-controller="Profile"
-               asp-action="ViewProfile"
-               asp-route-id="@Model.StudentId"
-               class="btn btn-outline-success rounded-pill px-4">
-                <i class="bi bi-person"></i> Voir profile étudiant
+        <div class="teacher-form-header">
+            <a asp-controller="TeacherStudents" asp-action="Index" class="teacher-back-btn">
+                <i class="bi bi-arrow-left"></i>
             </a>
+
+            <div>
+                <span class="teacher-form-badge">STUDENT DETAILS</span>
+                <h1>Détails étudiant</h1>
+                <p>Suivi individuel de la progression.</p>
+            </div>
         </div>
 
+        <div class="teacher-form-card student-details-modern">
+
+            <div class="student-details-modern-header">
+                <img src="@(string.IsNullOrEmpty(Model.ProfileImagePath) ? "/images/default-user.png" : Model.ProfileImagePath)"
+                     alt="Student" />
+
+                <div>
+                    <h2>@Model.FullName</h2>
+                    <p>@Model.Email</p>
+                </div>
+
+                <span class="status-badge @statusClass">
+                    @Model.Status
+                </span>
+            </div>
+
+            <div class="student-details-modern-grid">
+                <div class="detail-box">
+                    <i class="bi bi-journal-bookmark"></i>
+                    <span>Cours</span>
+                    <strong>@Model.CourseTitle</strong>
+                </div>
+
+                <div class="detail-box">
+                    <i class="bi bi-bar-chart"></i>
+                    <span>Niveau</span>
+                    <strong>@Model.Level</strong>
+                </div>
+
+                <div class="detail-box">
+                    <i class="bi bi-calendar"></i>
+                    <span>Inscrit le</span>
+                    <strong>@Model.EnrolledAt.ToString("dd/MM/yyyy")</strong>
+                </div>
+
+                <div class="detail-box">
+                    <i class="bi bi-graph-up"></i>
+                    <span>Progression</span>
+                    <strong>@Model.ProgressPercent%</strong>
+                </div>
+            </div>
+
+            <div class="big-progress-box">
+                <div class="d-flex justify-content-between mb-2">
+                    <strong>Progression du cours</strong>
+                    <strong>@Model.ProgressPercent%</strong>
+                </div>
+
+                <div class="progress">
+                    <div class="progress-bar" style="width:@(Model.ProgressPercent)%"></div>
+                </div>
+            </div>
+
+            <form asp-controller="TeacherStudents"
+                  asp-action="UpdateProgress"
+                  method="post"
+                  class="details-progress-form-modern">
+
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" name="enrollmentId" value="@Model.EnrollmentId" />
+
+                <div>
+                    <label>Progression %</label>
+                    <input type="number"
+                           name="progressPercent"
+                           min="0"
+                           max="100"
+                           value="@Model.ProgressPercent"
+                           class="form-control teacher-input" />
+                </div>
+
+                <div>
+                    <label>Statut</label>
+                    <select name="status" class="form-control teacher-input">
+                        @if (Model.Status == "Active")
+                        {
+                            <option value="Active" selected>Active</option>
+                        }
+                        else
+                        {
+                            <option value="Active">Active</option>
+                        }
+
+                        @if (Model.Status == "Paused")
+                        {
+                            <option value="Paused" selected>Paused</option>
+                        }
+                        else
+                        {
+                            <option value="Paused">Paused</option>
+                        }
+
+                        @if (Model.Status == "Completed")
+                        {
+                            <option value="Completed" selected>Completed</option>
+                        }
+                        else
+                        {
+                            <option value="Completed">Completed</option>
+                        }
+                    </select>
+                </div>
+
+                <button type="submit" class="teacher-btn-save">
+                    <i class="bi bi-save"></i> Enregistrer
+                </button>
+            </form>
+
+            <div class="mt-4">
+                <a asp-controller="Profile"
+                   asp-action="Index"
+                   asp-route-id="@Model.StudentId"
+                   class="btn-acadimy-outline">
+                    <i class="bi bi-person"></i> Voir profile étudiant
+                </a>
+            </div>
+
+        </div>
     </div>
-</div>
+</section>

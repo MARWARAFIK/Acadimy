@@ -25,17 +25,9 @@
             <form asp-controller="Marketplace" asp-action="Create" method="post" enctype="multipart/form-data">
                 @Html.AntiForgeryToken()
 
-                <input type="text"
-                       name="title"
-                       class="form-control mb-3"
-                       placeholder="Titre du projet"
-                       required />
+                <input type="text" name="title" class="form-control mb-3" placeholder="Titre du projet" required />
 
-                <textarea name="description"
-                          class="form-control mb-3"
-                          rows="4"
-                          placeholder="Description du projet"
-                          required></textarea>
+                <textarea name="description" class="form-control mb-3" rows="4" placeholder="Description du projet" required></textarea>
 
                 <label class="form-label">Image du projet</label>
                 <input type="file" name="image" class="form-control mb-3" accept="image/*" />
@@ -50,26 +42,25 @@
         </div>
     </div>
 
-    @if (Model != null && Model.Any())
+    @if (Model != null && Model.Count > 0)
     {
         foreach (var project in Model)
         {
-            var avg = project.Ratings.Any()
-                ? project.Ratings.Average(r => r.Value)
-                : 0;
+            var ratings = project.Ratings ?? new List<Acadimy.Models.Marketplace.ProjectRating>();
+            var comments = project.Comments ?? new List<Acadimy.Models.Marketplace.ProjectComment>();
 
-            var image = string.IsNullOrEmpty(project.ImagePath)
+            var avg = ratings.Count > 0 ? ratings.Average(r => r.Value) : 0;
+
+            var image = string.IsNullOrWhiteSpace(project.ImagePath)
                 ? "/images/default-cover.jpg"
                 : project.ImagePath;
 
-            var authorImage = project.User != null && !string.IsNullOrEmpty(project.User.ProfileImagePath)
+            var authorImage = project.User != null && !string.IsNullOrWhiteSpace(project.User.ProfileImagePath)
                 ? project.User.ProfileImagePath
                 : "/images/default-user.png";
 
             <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
-                <img src="@image"
-                     class="w-100"
-                     style="max-height:280px;object-fit:cover;" />
+                <img src="@image" class="w-100" style="max-height:280px;object-fit:cover;" />
 
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-start mb-3">
@@ -77,9 +68,7 @@
                             <h4 class="fw-bold mb-1">@project.Title</h4>
 
                             <div class="d-flex align-items-center gap-2 text-muted small">
-                                <img src="@authorImage"
-                                     style="width:28px;height:28px;border-radius:50%;object-fit:cover;" />
-
+                                <img src="@authorImage" style="width:28px;height:28px;border-radius:50%;object-fit:cover;" />
                                 <span>@(project.User != null ? project.User.FullName : "Student")</span>
                                 <span>•</span>
                                 <span>@project.CreatedAt.ToString("dd MMM yyyy")</span>
@@ -88,55 +77,43 @@
 
                         <div class="text-end">
                             <div class="text-warning fw-bold fs-5">⭐ @avg.ToString("0.0")</div>
-                            <small class="text-muted">@project.Ratings.Count vote(s)</small>
+                            <small class="text-muted">@ratings.Count vote(s)</small>
                         </div>
                     </div>
 
                     <p class="text-muted">
-                        @(project.Description.Length > 180
+                        @(project.Description != null && project.Description.Length > 180
                             ? project.Description.Substring(0, 180) + "..."
                             : project.Description)
                     </p>
 
                     <div class="d-flex flex-wrap gap-2 mb-3">
                         <span class="badge bg-light text-dark border">
-                            <i class="bi bi-chat-dots"></i> @project.Comments.Count commentaire(s)
+                            <i class="bi bi-chat-dots"></i> @comments.Count commentaire(s)
                         </span>
                     </div>
 
-                    <form asp-controller="Marketplace"
-                          asp-action="Rate"
-                          method="post"
-                          class="mb-3 d-flex gap-1">
+                    <form asp-controller="Marketplace" asp-action="Rate" method="post" class="mb-3 d-flex gap-1">
                         @Html.AntiForgeryToken()
 
                         <input type="hidden" name="projectId" value="@project.Id" />
-                        <input type="hidden" name="returnUrl" value="@Context.Request.Path" />
 
                         @for (int i = 1; i <= 5; i++)
                         {
-                            <button type="submit"
-                                    name="value"
-                                    value="@i"
-                                    class="btn btn-sm btn-outline-warning">
+                            <button type="submit" name="value" value="@i" class="btn btn-sm btn-outline-warning">
                                 ★
                             </button>
                         }
                     </form>
 
-                    <div class="d-flex gap-2">
-                        <a asp-controller="Marketplace"
-                           asp-action="Details"
-                           asp-route-id="@project.Id"
-                           class="btn btn-success rounded-pill px-4">
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a asp-controller="Marketplace" asp-action="Details" asp-route-id="@project.Id" class="btn btn-success rounded-pill px-4">
                             <i class="bi bi-eye"></i> Details
                         </a>
 
-                        @if (!string.IsNullOrEmpty(project.FilePath))
+                        @if (!string.IsNullOrWhiteSpace(project.FilePath))
                         {
-                            <a href="@project.FilePath"
-                               target="_blank"
-                               class="btn btn-outline-secondary rounded-pill px-4">
+                            <a href="@project.FilePath" target="_blank" class="btn btn-outline-secondary rounded-pill px-4">
                                 <i class="bi bi-download"></i> Télécharger
                             </a>
                         }
@@ -155,5 +132,4 @@
             </div>
         </div>
     }
-
 </div>

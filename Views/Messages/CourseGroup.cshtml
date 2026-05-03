@@ -3,82 +3,103 @@
 @model List<CourseGroupMessage>
 
 @{
-    Layout = User.IsInRole("Enseignant")
+    var isTeacher = User.IsInRole("Enseignant") || User.IsInRole("Teacher");
+
+    Layout = isTeacher
         ? "~/Views/Shared/LayoutTeacher.cshtml"
         : "~/Views/Shared/LayoutStudent.cshtml";
+
+    ViewData["Title"] = "Groupe";
 
     var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
     var course = ViewBag.Course as Acadimy.Models.Teacher.TeacherCourse;
 }
 
-<div class="container mt-4">
-    <h2 class="mb-1 fw-bold">@course?.Title</h2>
-    <p class="text-muted mb-4">Groupe de discussion du cours</p>
+<section class="messages-page">
+    <div class="chat-wrapper">
 
-    <div class="card p-3 mb-3 rounded-4 border-0 shadow-sm" style="height:500px; overflow-y:auto;">
-        @if (Model == null || !Model.Any())
-        {
-            <p class="text-muted">Aucun message dans ce groupe.</p>
-        }
-        else
-        {
-            foreach (var msg in Model)
+        <div class="chat-header-card">
+            <a asp-controller="Messages" asp-action="Index" class="chat-back">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+
+            <div>
+                <span>COURSE GROUP</span>
+                <h1>@course?.Title</h1>
+                <p>Groupe de discussion du cours</p>
+            </div>
+        </div>
+
+        <div class="group-chat-box">
+            @if (Model == null || !Model.Any())
             {
-                var isMe = msg.SenderId == currentUserId;
-
-                <div class="mb-3 text-@(isMe ? "end" : "start")">
-                    <div class="small fw-bold mb-1">
-                        @(msg.Sender?.FullName ?? "Utilisateur")
-                    </div>
-
-                    <div class="d-inline-block p-3 rounded-4 @(isMe ? "bg-success text-white" : "bg-light text-dark")" style="max-width:70%;">
-                        @if (!string.IsNullOrWhiteSpace(msg.Content))
-                        {
-                            <div>@msg.Content</div>
-                        }
-
-                        @if (!string.IsNullOrWhiteSpace(msg.AttachmentPath))
-                        {
-                            if (msg.AttachmentContentType?.StartsWith("image/") == true)
-                            {
-                                <img src="@msg.AttachmentPath" class="rounded-3 mt-2" style="max-width:260px;max-height:220px;object-fit:cover;" />
-                            }
-                            else if (msg.AttachmentContentType?.StartsWith("audio/") == true)
-                            {
-                                <audio controls class="mt-2">
-                                    <source src="@msg.AttachmentPath" type="@msg.AttachmentContentType" />
-                                </audio>
-                            }
-                            else
-                            {
-                                <div class="mt-2">
-                                    <a href="@msg.AttachmentPath" target="_blank" class="btn btn-sm btn-light rounded-pill">
-                                        <i class="bi bi-paperclip"></i> @msg.AttachmentFileName
-                                    </a>
-                                </div>
-                            }
-                        }
-                    </div>
-
-                    <div class="small text-muted mt-1">
-                        @msg.SentAt.ToString("dd/MM HH:mm")
-                    </div>
+                <div class="messages-empty">
+                    <i class="bi bi-chat-square-dots"></i>
+                    <p>Aucun message dans ce groupe.</p>
                 </div>
             }
-        }
-    </div>
+            else
+            {
+                foreach (var msg in Model)
+                {
+                    var isMe = msg.SenderId == currentUserId;
 
-    <form asp-controller="Messages" asp-action="SendCourseGroup" method="post" enctype="multipart/form-data">
-        @Html.AntiForgeryToken()
-        <input type="hidden" name="courseId" value="@course?.Id" />
+                    <div class="group-message-row @(isMe ? "me" : "other")">
+                        <div class="group-sender">
+                            @(msg.Sender?.FullName ?? "Utilisateur")
+                        </div>
 
-        <div class="d-flex gap-2 align-items-center">
-            <input name="content" class="form-control rounded-pill" placeholder="Écrire dans le groupe..." />
-            <input name="attachment" type="file" class="form-control" style="max-width:260px;"
-                   accept="image/*,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,audio/*" />
-            <button type="submit" class="btn btn-success rounded-pill px-4">
-                Send
-            </button>
+                        <div class="group-bubble @(isMe ? "me" : "other")">
+                            @if (!string.IsNullOrWhiteSpace(msg.Content))
+                            {
+                                <div>@msg.Content</div>
+                            }
+
+                            @if (!string.IsNullOrWhiteSpace(msg.AttachmentPath))
+                            {
+                                if (msg.AttachmentContentType?.StartsWith("image/") == true)
+                                {
+                                    <img src="@msg.AttachmentPath" class="group-chat-img" />
+                                }
+                                else if (msg.AttachmentContentType?.StartsWith("audio/") == true)
+                                {
+                                    <audio controls class="group-chat-audio">
+                                        <source src="@msg.AttachmentPath" type="@msg.AttachmentContentType" />
+                                    </audio>
+                                }
+                                else
+                                {
+                                    <a href="@msg.AttachmentPath" target="_blank" class="file-link">
+                                        <i class="bi bi-paperclip"></i> @msg.AttachmentFileName
+                                    </a>
+                                }
+                            }
+                        </div>
+
+                        <div class="group-time">
+                            @msg.SentAt.ToString("dd/MM HH:mm")
+                        </div>
+                    </div>
+                }
+            }
         </div>
-    </form>
-</div>
+
+        <form asp-controller="Messages" asp-action="SendCourseGroup" method="post" enctype="multipart/form-data" class="group-send-form">
+            @Html.AntiForgeryToken()
+
+            <input type="hidden" name="courseId" value="@course?.Id" />
+
+            <input name="content" class="group-input" placeholder="Écrire dans le groupe..." />
+
+            <input name="attachment"
+                   type="file"
+                   class="group-file"
+                   accept="image/*,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,audio/*" />
+
+            <button type="submit" class="group-send-btn">
+                <i class="bi bi-send"></i>
+            </button>
+        </form>
+
+    </div>
+</section>

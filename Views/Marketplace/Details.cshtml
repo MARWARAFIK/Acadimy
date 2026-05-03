@@ -4,71 +4,105 @@
     Layout = "~/Views/Shared/LayoutStudent.cshtml";
     ViewData["Title"] = "Project Details";
 
-    var avg = Model.Ratings.Any()
-        ? Model.Ratings.Average(r => r.Value)
-        : 0;
+    var ratings = Model.Ratings ?? new List<Acadimy.Models.Marketplace.ProjectRating>();
+    var comments = Model.Comments ?? new List<Acadimy.Models.Marketplace.ProjectComment>();
 
-    var image = string.IsNullOrEmpty(Model.ImagePath)
+    var avg = ratings.Count > 0 ? ratings.Average(r => r.Value) : 0;
+
+    var image = string.IsNullOrWhiteSpace(Model.ImagePath)
         ? "/images/default-cover.jpg"
         : Model.ImagePath;
 
-    var authorImage = Model.User != null && !string.IsNullOrEmpty(Model.User.ProfileImagePath)
+    var authorImage = Model.User != null && !string.IsNullOrWhiteSpace(Model.User.ProfileImagePath)
         ? Model.User.ProfileImagePath
         : "/images/default-user.png";
 }
 
 <div class="container py-4">
 
-    <!-- HEADER -->
+    <!-- BACK BUTTON -->
+    <div class="mb-4">
+        <a href="javascript:history.back()" class="btn btn-outline-success rounded-pill px-4">
+            <i class="bi bi-arrow-left"></i> Retour
+        </a>
+    </div>
+
+    <!-- PROJECT HEADER -->
     <div class="card shadow-sm border-0 rounded-4 mb-4 overflow-hidden">
         <img src="@image" class="w-100" style="max-height:350px; object-fit:cover;" />
 
         <div class="card-body p-4">
 
-            <h2 class="fw-bold mb-2">@Model.Title</h2>
+            <div class="d-flex justify-content-between gap-3 flex-wrap">
+                <div>
+                    <h2 class="fw-bold mb-2">@Model.Title</h2>
 
-            <div class="d-flex align-items-center gap-2 text-muted mb-3">
-                <img src="@authorImage"
-                     style="width:32px;height:32px;border-radius:50%;" />
+                    <div class="d-flex align-items-center gap-2 text-muted mb-3">
+                        <img src="@authorImage"
+                             style="width:32px;height:32px;border-radius:50%;object-fit:cover;" />
 
-                <span>@Model.User?.FullName</span>
-                <span>•</span>
-                <span>@Model.CreatedAt.ToString("dd MMM yyyy")</span>
+                        <span>@(Model.User != null ? Model.User.FullName : "Student")</span>
+                        <span>•</span>
+                        <span>@Model.CreatedAt.ToString("dd MMM yyyy")</span>
+                    </div>
+                </div>
+
+                <div class="text-end">
+                    <span class="badge bg-warning text-dark rounded-pill px-3 py-2">
+                        ⭐ @avg.ToString("0.0")
+                    </span>
+                    <div class="text-muted small mt-1">@ratings.Count votes</div>
+                </div>
             </div>
 
-            <div class="d-flex align-items-center gap-3 mb-3">
-                <span class="badge bg-warning text-dark">
-                    ⭐ @avg.ToString("0.0")
-                </span>
+            <p class="text-muted mt-3">@Model.Description</p>
 
-                <span class="text-muted small">
-                    @Model.Ratings.Count votes
-                </span>
-            </div>
+            <div class="d-flex gap-2 flex-wrap mt-4">
 
-            <p class="text-muted">@Model.Description</p>
+                @if (!string.IsNullOrWhiteSpace(Model.FilePath))
+                {
+                    <a href="@Model.FilePath"
+                       target="_blank"
+                       class="btn btn-outline-success rounded-pill px-4">
+                        <i class="bi bi-download"></i> Télécharger le projet
+                    </a>
+                }
 
-            @if (!string.IsNullOrEmpty(Model.FilePath))
-            {
-                <a href="@Model.FilePath"
-                   target="_blank"
-                   class="btn btn-outline-success rounded-pill">
-                    <i class="bi bi-download"></i> Télécharger le projet
+                <a asp-controller="Marketplace"
+                   asp-action="Edit"
+                   asp-route-id="@Model.Id"
+                   class="btn btn-outline-secondary rounded-pill px-4">
+                    <i class="bi bi-pencil"></i> Modifier
                 </a>
-            }
+
+                <form asp-controller="Marketplace"
+                      asp-action="Delete"
+                      asp-route-id="@Model.Id"
+                      method="post"
+                      onsubmit="return confirm('Supprimer ce projet ?');">
+                    @Html.AntiForgeryToken()
+
+                    <button type="submit" class="btn btn-outline-danger rounded-pill px-4">
+                        <i class="bi bi-trash"></i> Supprimer
+                    </button>
+                </form>
+
+            </div>
         </div>
     </div>
 
-    <!-- ⭐ RATING -->
+    <!-- RATING -->
     <div class="card shadow-sm border-0 rounded-4 mb-4">
         <div class="card-body p-4">
             <h5 class="fw-bold mb-3">⭐ Évaluer ce projet</h5>
 
-            <form asp-action="Rate" method="post" class="d-flex gap-2">
+            <form asp-controller="Marketplace"
+                  asp-action="Rate"
+                  method="post"
+                  class="d-flex gap-2 flex-wrap">
                 @Html.AntiForgeryToken()
 
                 <input type="hidden" name="projectId" value="@Model.Id" />
-                <input type="hidden" name="returnUrl" value="@Context.Request.Path" />
 
                 @for (int i = 1; i <= 5; i++)
                 {
@@ -83,16 +117,18 @@
         </div>
     </div>
 
-    <!-- 💬 COMMENTS -->
+    <!-- COMMENTS -->
     <div class="card shadow-sm border-0 rounded-4">
         <div class="card-body p-4">
 
             <h5 class="fw-bold mb-3">
-                💬 Commentaires (@Model.Comments.Count)
+                💬 Commentaires (@comments.Count)
             </h5>
 
-            <!-- ADD COMMENT -->
-            <form asp-action="AddComment" method="post" class="mb-4">
+            <form asp-controller="Marketplace"
+                  asp-action="AddComment"
+                  method="post"
+                  class="mb-4">
                 @Html.AntiForgeryToken()
 
                 <input type="hidden" name="projectId" value="@Model.Id" />
@@ -104,29 +140,27 @@
                            class="form-control"
                            placeholder="Write a comment..." />
 
-                    <button class="btn btn-success">
+                    <button type="submit" class="btn btn-success rounded-pill px-4">
                         Send
                     </button>
                 </div>
             </form>
 
-            <!-- LIST COMMENTS -->
-            @if (Model.Comments.Any())
+            @if (comments.Count > 0)
             {
-                foreach (var c in Model.Comments.OrderByDescending(x => x.CreatedAt))
+                foreach (var c in comments.OrderByDescending(x => x.CreatedAt))
                 {
-                    var cImg = string.IsNullOrEmpty(c.User?.ProfileImagePath)
-                        ? "/images/default-user.png"
-                        : c.User.ProfileImagePath;
+                    var cImg = c.User != null && !string.IsNullOrWhiteSpace(c.User.ProfileImagePath)
+                        ? c.User.ProfileImagePath
+                        : "/images/default-user.png";
 
                     <div class="d-flex gap-3 mb-3">
-
                         <img src="@cImg"
-                             style="width:35px;height:35px;border-radius:50%;" />
+                             style="width:35px;height:35px;border-radius:50%;object-fit:cover;" />
 
                         <div class="flex-grow-1">
-                            <div style="background:#f1f1f1; padding:10px; border-radius:10px;">
-                                <b>@c.User?.FullName</b><br />
+                            <div style="background:#f8fafc; padding:12px 14px; border-radius:14px;">
+                                <b>@(c.User != null ? c.User.FullName : "Student")</b><br />
                                 @c.Content
                             </div>
 
@@ -139,7 +173,7 @@
             }
             else
             {
-                <p class="text-muted">No comments yet.</p>
+                <p class="text-muted mb-0">No comments yet.</p>
             }
 
         </div>

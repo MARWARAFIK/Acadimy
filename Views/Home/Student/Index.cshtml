@@ -1,8 +1,111 @@
 ﻿@{
     ViewData["Title"] = "Espace Étudiant";
+    Layout = "~/Views/Shared/LayoutStudent.cshtml";
 }
 
-<div class="container mt-5">
-    <h1>Bienvenue dans votre espace Étudiant</h1>
-    <p>C'est ici que vous pouvez consulter vos cours et candidatures.</p>
-</div>
+<section class="student-home-hero">
+    <div class="student-home-container">
+
+        <div class="student-home-text">
+            <span class="student-home-badge">
+                <i class="bi bi-mortarboard"></i>
+                Online Learning Platform
+            </span>
+
+            <h1>
+                Grow Your Learning <br />
+                With <span>Acadimy</span>
+            </h1>
+
+            <p>
+                Découvrez vos cours, suivez votre progression, envoyez vos devoirs
+                et développez vos compétences avec une plateforme moderne.
+            </p>
+
+            <div class="student-home-actions">
+                <a asp-controller="StudentCourses" asp-action="Index" class="student-btn-main">
+                    Get Started <i class="bi bi-arrow-right"></i>
+                </a>
+
+                <a asp-controller="StudentCourses" asp-action="MyCourses" class="student-btn-link">
+                    Mes cours <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+
+        <div class="student-home-image-wrap">
+            <div class="student-orange-shape"></div>
+
+            <div class="student-home-image">
+                <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=900&q=90"
+                     alt="Students learning" />
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<section class="student-features">
+    <div class="student-feature-card">
+        <i class="bi bi-journal-bookmark"></i>
+        <div>
+            <h4>Mes cours</h4>
+            <p>Accédez aux cours publiés par vos enseignants.</p>
+        </div>
+    </div>
+
+    <div class="student-feature-card">
+        <i class="bi bi-clipboard-check"></i>
+        <div>
+            <h4>Mes devoirs</h4>
+            <p>Envoyez vos devoirs et suivez les corrections.</p>
+        </div>
+    </div>
+
+    <div class="student-feature-card">
+        <i class="bi bi-graph-up"></i>
+        <div>
+            <h4>Progression</h4>
+            <p>Suivez votre avancement dans chaque cours.</p>
+        </div>
+    </div>
+</section>
+
+<section class="student-about-section">
+    <div class="student-about-container">
+
+        <div class="student-about-images">
+            <div class="student-about-main-card">
+                <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=900&q=90"
+                     class="student-about-img" />
+            </div>
+
+            <div class="student-experience-box">
+                <strong>24/7</strong>
+                <span>Learning<br />Access</span>
+            </div>
+        </div>
+
+        <div class="student-about-text">
+            <span class="student-section-label">ABOUT ACADIMY</span>
+
+            <h2>Learn better with organized courses and assignments</h2>
+
+            <p>
+                Acadimy vous aide à suivre vos cours, consulter les ressources,
+                rendre vos devoirs et communiquer avec vos enseignants.
+            </p>
+
+            <ul>
+                <li><i class="bi bi-check-circle-fill"></i> Suivi de progression</li>
+                <li><i class="bi bi-check-circle-fill"></i> Devoirs et fichiers</li>
+                <li><i class="bi bi-check-circle-fill"></i> Community & messages</li>
+            </ul>
+
+            <a asp-controller="StudentCourses" asp-action="Index" class="student-btn-main">
+                Explore Courses
+            </a>
+        </div>
+
+    </div>
+</section>

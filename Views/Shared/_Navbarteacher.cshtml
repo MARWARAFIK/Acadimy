@@ -1,0 +1,125 @@
+﻿@model int
+
+<nav class="navbar navbar-expand-lg acadimy-navbar">
+    <div class="container-fluid px-5">
+
+        <a class="navbar-brand d-flex align-items-center gap-2"
+           asp-controller="Teacher"
+           asp-action="Index">
+            <i class="bi bi-person-square logo-icon"></i>
+            <span>Acadimy</span>
+        </a>
+
+        <button class="navbar-toggler border-0"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#teacherNavbar">
+            <i class="bi bi-list fs-1"></i>
+        </button>
+
+        <div class="collapse navbar-collapse justify-content-center" id="teacherNavbar">
+            <ul class="navbar-nav align-items-center gap-4">
+
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="Teacher" asp-action="Index">Home</a>
+                </li>
+
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle"
+                       href="#"
+                       role="button"
+                       data-bs-toggle="dropdown">
+                        Teaching
+                    </a>
+
+                    <ul class="dropdown-menu rounded-4 border-0 shadow-sm">
+                        <li>
+                            <a class="dropdown-item" asp-controller="TeacherCourses" asp-action="Index">
+                                <i class="bi bi-journal-bookmark me-2"></i> My Courses
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" asp-controller="TeacherAssignments" asp-action="Index">
+                                <i class="bi bi-clipboard-check me-2"></i> Assignments
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" asp-controller="TeacherStudents" asp-action="Index">
+                                <i class="bi bi-people me-2"></i> Students
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" asp-controller="LiveClasses" asp-action="Index">
+                                <i class="bi bi-camera-video me-2"></i> Live Classes
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="Marketplace" asp-action="Index">Marketplace</a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="Community" asp-action="Index">Community</a>
+                </li>
+
+                <li class="nav-item position-relative">
+                    <a class="nav-link" asp-controller="Messages" asp-action="Index">
+                        Messages
+                    </a>
+                </li>
+
+            </ul>
+        </div>
+
+        <div class="teacher-nav-actions d-flex align-items-center gap-3">
+            <a asp-controller="Notifications"
+               asp-action="Index"
+               class="teacher-circle-btn position-relative">
+                <i class="bi bi-bell"></i>
+
+                @if (Model > 0)
+                {
+                    <span class="teacher-nav-badge">@Model</span>
+                }
+            </a>
+
+            <div class="dropdown">
+                <a href="#"
+                   class="teacher-circle-btn"
+                   data-bs-toggle="dropdown">
+                    <i class="bi bi-person-circle"></i>
+                </a>
+
+                <ul class="dropdown-menu dropdown-menu-end rounded-4 border-0 shadow-sm">
+                    <li>
+                        <a class="dropdown-item" asp-controller="TeacherProfile" asp-action="Index">
+                            <i class="bi bi-person me-2"></i> Profile
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" asp-controller="TeacherSettings" asp-action="Index">
+                            <i class="bi bi-gear me-2"></i> Settings
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" asp-controller="TeacherArchive" asp-action="Index">
+                            <i class="bi bi-archive me-2"></i> Archive
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider" /></li>
+                    <li>
+                        <form asp-controller="Account" asp-action="Logout" method="post">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="dropdown-item text-danger">
+                                <i class="bi bi-box-arrow-right me-2"></i> Logout
+                            </button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+</nav>

@@ -1,0 +1,110 @@
+﻿.student-settings-page {
+    padding: 70px 0 90px !important;
+    background: #fff !important;
+}
+
+.student-settings-container {
+    width: 90% !important;
+    max-width: 1250px !important;
+    margin: auto !important;
+}
+
+.student-settings-header {
+    margin-bottom: 30px !important;
+}
+
+.student-settings-badge {
+    color: #16a34a !important;
+    font-weight: 950 !important;
+    letter-spacing: 1px !important;
+    font-size: 13px !important;
+    text-transform: uppercase;
+}
+
+.student-settings-header h1 {
+    color: #12372a !important;
+    font-size: 46px !important;
+    font-weight: 950 !important;
+    margin: 6px 0 !important;
+}
+
+.student-settings-header p {
+    color: #64748b !important;
+    font-size: 18px;
+}
+
+.student-settings-card {
+    background: #fff !important;
+    border: 1px solid #eef2f0 !important;
+    border-radius: 28px !important;
+    box-shadow: 0 16px 40px rgba(15, 23, 42, .055) !important;
+    padding: 36px !important;
+}
+
+.student-settings-title {
+    color: #12372a !important;
+    font-size: 34px !important;
+    font-weight: 950 !important;
+    margin-bottom: 30px !important;
+}
+
+.settings-label {
+    color: #12372a !important;
+    font-size: 16px !important;
+    font-weight: 800 !important;
+    margin-bottom: 10px !important;
+}
+
+.settings-input,
+.settings-textarea,
+.form-control,
+.form-select {
+    border-radius: 18px !important;
+    border: 1px solid #dfeee7 !important;
+    background: #fbfefd !important;
+    min-height: 58px !important;
+    padding: 14px 20px !important;
+    box-shadow: none !important;
+    font-size: 16px !important;
+}
+
+    .settings-input:focus,
+    .settings-textarea:focus,
+    .form-control:focus,
+    .form-select:focus {
+        border-color: #16a34a !important;
+        box-shadow: 0 0 0 4px rgba(22, 163, 74, .12) !important;
+    }
+
+.settings-textarea {
+    min-height: 130px !important;
+}
+
+.student-back-link {
+    color: #16a34a !important;
+    font-weight: 800 !important;
+    text-decoration: none !important;
+    display: inline-flex;
+    gap: 6px;
+    margin: 20px 0;
+}
+
+    .student-back-link:hover {
+        color: #15803d !important;
+    }
+
+.btn-acadimy,
+.save-btn {
+    background: #16a34a !important;
+    color: #fff !important;
+    border: none !important;
+    border-radius: 999px !important;
+    padding: 12px 28px !important;
+    font-weight: 900 !important;
+}
+
+    .btn-acadimy:hover,
+    .save-btn:hover {
+        background: #15803d !important;
+        color: #fff !important;
+    }

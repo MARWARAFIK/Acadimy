@@ -1,0 +1,66 @@
+﻿@model Acadimy.Models.Marketplace.ProjectPost
+
+@{
+    Layout = "~/Views/Shared/LayoutStudent.cshtml";
+    ViewData["Title"] = "Modifier le projet";
+
+    var image = string.IsNullOrWhiteSpace(Model.ImagePath)
+        ? "/images/default-cover.jpg"
+        : Model.ImagePath;
+}
+
+<div class="container py-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">Modifier le projet</h2>
+            <p class="text-muted mb-0">Mettez à jour les informations de votre projet.</p>
+        </div>
+
+        <a asp-controller="Marketplace" asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-success rounded-pill">
+            <i class="bi bi-arrow-left"></i> Retour
+        </a>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <img src="@image" class="w-100" style="max-height:280px;object-fit:cover;" />
+
+        <div class="card-body p-4">
+            <form asp-controller="Marketplace" asp-action="Edit" asp-route-id="@Model.Id" method="post" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Titre du projet</label>
+                    <input type="text" name="title" value="@Model.Title" class="form-control" required />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Description</label>
+                    <textarea name="description" class="form-control" rows="5" required>@Model.Description</textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Nouvelle image</label>
+                    <input type="file" name="image" class="form-control" accept="image/*" />
+                    <small class="text-muted">Laissez vide pour garder l’image actuelle.</small>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Nouveau fichier</label>
+                    <input type="file" name="file" class="form-control" />
+                    <small class="text-muted">Laissez vide pour garder le fichier actuel.</small>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 flex-wrap">
+                    <a asp-controller="Marketplace" asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-secondary rounded-pill px-4">
+                        Annuler
+                    </a>
+
+                    <button type="submit" class="btn btn-success rounded-pill px-5">
+                        <i class="bi bi-save"></i> Enregistrer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

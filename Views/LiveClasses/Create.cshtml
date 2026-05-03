@@ -1,11 +1,61 @@
 ﻿@model Acadimy.Models.Live.LiveClass
 
-<div class="container mt-4">
-    <h3>Créer Live Class</h3>
+@{
+    Layout = User.IsInRole("Enseignant")
+        ? "~/Views/Shared/LayoutTeacher.cshtml"
+        : "~/Views/Shared/LayoutStudent.cshtml";
 
-    <form asp-action="Create" method="post">
-        <input asp-for="Title" class="form-control mb-3" placeholder="Titre" />
+    ViewData["Title"] = "Create Live Class";
+}
 
-        <button class="btn btn-success">Créer</button>
-    </form>
-</div>
+<section class="live-page">
+    <div class="live-wrapper">
+
+        <div class="live-form-card">
+
+            <!-- HEADER -->
+            <div class="live-form-header">
+                <h2>Créer Live Class</h2>
+                <p>Organisez une session en direct avec vos étudiants</p>
+            </div>
+
+            <!-- FORM -->
+            <form asp-action="Create" method="post">
+                @Html.AntiForgeryToken()
+
+                <!-- TITLE -->
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Titre</label>
+
+                    <input asp-for="Title"
+                           class="live-input"
+                           placeholder="Ex: Machine Learning Live"
+                           required />
+
+                    <span asp-validation-for="Title" class="text-danger small"></span>
+                </div>
+
+                <!-- ACTIONS -->
+                <div class="d-flex gap-3 mt-4">
+
+                    <button type="submit" class="live-main-btn">
+                        <i class="bi bi-camera-video"></i>
+                        Créer la classe
+                    </button>
+
+                    <a asp-action="Index" class="live-outline-btn">
+                        Annuler
+                    </a>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

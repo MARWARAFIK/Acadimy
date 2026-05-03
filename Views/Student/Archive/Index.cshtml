@@ -5,69 +5,79 @@
     ViewData["Title"] = "Archive";
 }
 
-<div class="container mt-4">
+<section class="teacher-white-page">
+    <div class="teacher-white-container">
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2>Archive</h2>
-            <p class="text-muted">Vos posts archivés</p>
+        <!-- HEADER -->
+        <div class="teacher-page-header">
+            <div>
+                <span class="page-badge">ARCHIVE</span>
+                <h1>Posts archivés</h1>
+                <p>Vos publications archivées</p>
+            </div>
+
+            <a asp-controller="Profile" asp-action="Index" class="btn-acadimy-outline">
+                <i class="bi bi-arrow-left"></i> Retour au profil
+            </a>
         </div>
 
-        <a asp-controller="Profile" asp-action="Index" class="btn btn-light">
-            <i class="bi bi-arrow-left"></i> Retour au profil
-        </a>
-    </div>
-
-    @if (Model != null && Model.Any())
-    {
-        foreach (var post in Model)
+        <!-- CONTENT -->
+        @if (Model != null && Model.Any())
         {
-            <div class="card mb-3 shadow-sm border-0 rounded-4">
-                <div class="card-body">
+            foreach (var post in Model)
+            {
+                <div class="teacher-card">
 
                     @if (!string.IsNullOrWhiteSpace(post.Content))
                     {
-                        <p>@post.Content</p>
+                        <p class="mb-2">@post.Content</p>
                     }
 
                     @if (!string.IsNullOrEmpty(post.ImagePath))
                     {
-                        <img src="@post.ImagePath" class="img-fluid rounded-3 mb-3" />
+                        <img src="@post.ImagePath" class="archive-img" />
                     }
 
-                    <small class="text-muted">
+                    <div class="archive-meta">
+                        <i class="bi bi-calendar"></i>
                         @post.CreatedAt.ToString("dd/MM/yyyy HH:mm")
-                    </small>
+                    </div>
 
-                    <div class="d-flex gap-2 mt-3">
-                        <form asp-controller="Posts" asp-action="Restore" method="post" class="w-50">
+                    <div class="archive-actions">
+
+                        <!-- RESTORE -->
+                        <form asp-controller="Posts" asp-action="Restore" method="post">
                             @Html.AntiForgeryToken()
                             <input type="hidden" name="postId" value="@post.Id" />
 
-                            <button type="submit" class="btn btn-outline-success w-100">
+                            <button type="submit" class="btn-acadimy-main">
                                 <i class="bi bi-arrow-counterclockwise"></i> Restore
                             </button>
                         </form>
 
-                        <form asp-controller="Posts" asp-action="Delete" method="post" class="w-50">
+                        <!-- DELETE -->
+                        <form asp-controller="Posts" asp-action="Delete" method="post">
                             @Html.AntiForgeryToken()
                             <input type="hidden" name="postId" value="@post.Id" />
 
-                            <button type="submit" class="btn btn-outline-danger w-100">
+                            <button type="submit" class="btn-acadimy-danger">
                                 <i class="bi bi-trash"></i> Delete
                             </button>
                         </form>
+
                     </div>
 
                 </div>
+            }
+        }
+        else
+        {
+            <div class="teacher-empty">
+                <i class="bi bi-archive"></i>
+                <h3>Aucun post archivé</h3>
+                <p>Vos posts archivés apparaîtront ici.</p>
             </div>
         }
-    }
-    else
-    {
-        <div class="alert alert-light border">
-            Aucun post archivé.
-        </div>
-    }
 
-</div>
+    </div>
+</section>

@@ -5,67 +5,76 @@
     ViewData["Title"] = "Ajouter un cours";
 }
 
-<div class="container teacher-settings-page">
+<section class="teacher-form-page">
+    <div class="teacher-form-container">
 
-    <div class="d-flex align-items-center mb-4">
-        <a asp-action="Index" class="btn btn-light rounded-pill shadow-sm me-3 px-3 py-2">
-            <i class="bi bi-arrow-left"></i>
-        </a>
+        <div class="teacher-form-header">
+            <a asp-action="Index" class="teacher-back-btn">
+                <i class="bi bi-arrow-left"></i>
+            </a>
 
-        <div>
-            <h2 class="settings-title mb-0">Ajouter un cours</h2>
-            <p class="text-muted small mb-0">Créez un nouveau contenu pédagogique</p>
+            <div>
+                <span class="teacher-form-badge">COURSE MANAGEMENT</span>
+                <h1>Ajouter un cours</h1>
+                <p>Créez un nouveau contenu pédagogique pour vos étudiants.</p>
+            </div>
         </div>
+
+        <div id="ajaxMessage"></div>
+
+        <div class="teacher-form-card">
+            <form id="createCourseForm" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+
+                <div class="row g-4">
+                    <div class="col-md-12">
+                        <label asp-for="Title" class="teacher-label">Titre du cours</label>
+                        <input asp-for="Title" class="form-control teacher-input" placeholder="Ex: ASP.NET Core MVC" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="Category" class="teacher-label">Catégorie</label>
+                        <input asp-for="Category" class="form-control teacher-input" placeholder="Ex: Développement Web" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="Level" class="teacher-label">Niveau</label>
+                        <input asp-for="Level" class="form-control teacher-input" placeholder="Ex: Débutant" />
+                    </div>
+
+                    <div class="col-md-12">
+                        <label asp-for="Description" class="teacher-label">Description</label>
+                        <textarea asp-for="Description"
+                                  class="form-control teacher-input teacher-textarea"
+                                  rows="5"
+                                  placeholder="Décrivez le contenu du cours..."></textarea>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="Thumbnail" class="teacher-label">Image du cours</label>
+                        <input asp-for="Thumbnail" type="file" class="form-control teacher-input" accept="image/*" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="CourseFile" class="teacher-label">Fichier du cours</label>
+                        <input asp-for="CourseFile" type="file" class="form-control teacher-input" />
+                    </div>
+                </div>
+
+                <div class="teacher-form-actions">
+                    <a asp-action="Index" class="teacher-btn-cancel">
+                        Annuler
+                    </a>
+
+                    <button type="submit" id="saveCourseBtn" class="teacher-btn-save">
+                        <i class="bi bi-save me-2"></i> Enregistrer
+                    </button>
+                </div>
+            </form>
+        </div>
+
     </div>
-
-    <div id="ajaxMessage"></div>
-
-    <div class="course-management-card p-4">
-        <form id="createCourseForm" enctype="multipart/form-data">
-            @Html.AntiForgeryToken()
-
-            <div class="mb-3">
-                <label asp-for="Title" class="form-label fw-bold">Titre</label>
-                <input asp-for="Title" class="form-control" />
-            </div>
-
-            <div class="mb-3">
-                <label asp-for="Category" class="form-label fw-bold">Catégorie</label>
-                <input asp-for="Category" class="form-control" />
-            </div>
-
-            <div class="mb-3">
-                <label asp-for="Level" class="form-label fw-bold">Niveau</label>
-                <input asp-for="Level" class="form-control" />
-            </div>
-
-            <div class="mb-3">
-                <label asp-for="Description" class="form-label fw-bold">Description</label>
-                <textarea asp-for="Description" class="form-control" rows="5"></textarea>
-            </div>
-
-            <div class="mb-3">
-                <label asp-for="Thumbnail" class="form-label fw-bold">Image du cours</label>
-                <input asp-for="Thumbnail" type="file" class="form-control" accept="image/*" />
-            </div>
-
-            <div class="mb-4">
-                <label asp-for="CourseFile" class="form-label fw-bold">Fichier du cours</label>
-                <input asp-for="CourseFile" type="file" class="form-control" />
-            </div>
-
-            <div class="d-flex justify-content-end gap-2">
-                <a asp-action="Index" class="btn btn-light rounded-pill px-4">
-                    Annuler
-                </a>
-
-                <button type="submit" id="saveCourseBtn" class="btn-add-course border-0">
-                    <i class="bi bi-save me-2"></i> Enregistrer
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
+</section>
 
 @section Scripts {
     <script>
@@ -83,30 +92,41 @@
                 btn.disabled = true;
                 btn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i> Enregistrement...';
 
-                const response = await fetch("/TeacherCourses/CreateAjax", {
-                    method: "POST",
-                    body: formData
-                });
+                try {
+                    const response = await fetch("/TeacherCourses/CreateAjax", {
+                        method: "POST",
+                        body: formData
+                    });
 
-                const result = await response.json();
+                    const result = await response.json();
 
-                btn.disabled = false;
-                btn.innerHTML = '<i class="bi bi-save me-2"></i> Enregistrer';
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="bi bi-save me-2"></i> Enregistrer';
 
-                if (!result.success) {
+                    if (!result.success) {
+                        msg.innerHTML = `
+                            <div class="alert alert-danger rounded-4 teacher-alert">
+                                ${result.message || "Erreur lors de l'ajout du cours."}
+                            </div>`;
+                        return false;
+                    }
+
                     msg.innerHTML = `
-                        <div class="alert alert-danger rounded-4">
-                            ${result.message || "Erreur lors de l'ajout du cours."}
+                        <div class="alert alert-success rounded-4 teacher-alert">
+                            Cours ajouté avec succès.
                         </div>`;
-                    return false;
+
+                    form.reset();
+                } catch {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="bi bi-save me-2"></i> Enregistrer';
+
+                    msg.innerHTML = `
+                        <div class="alert alert-danger rounded-4 teacher-alert">
+                            Erreur serveur. Réessayez.
+                        </div>`;
                 }
 
-                msg.innerHTML = `
-                    <div class="alert alert-success rounded-4">
-                        Cours ajouté avec succès.
-                    </div>`;
-
-                form.reset();
                 return false;
             });
         });

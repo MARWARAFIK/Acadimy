@@ -1,0 +1,115 @@
+﻿<div id="ai-btn" title="AI Assistant">
+    <i class="bi bi-robot"></i>
+</div>
+
+<div id="ai-box" class="d-none">
+    <div class="ai-header">
+        <div>
+            <i class="bi bi-robot"></i>
+            <span>AI Assistant</span>
+        </div>
+
+        <button type="button" onclick="toggleAI()">
+            <i class="bi bi-x-lg"></i>
+        </button>
+    </div>
+
+    <div id="ai-messages" class="ai-messages">
+        <div class="ai-msg ai-bot">
+            Bonjour 👋 Je peux t’aider avec les cours, projets et devoirs.
+        </div>
+    </div>
+
+    <div class="ai-input-zone">
+        <div class="ai-send-row">
+            <input type="text" id="ai-text" placeholder="Écris ta question..." />
+            <button type="button" onclick="sendAI()">
+                <i class="bi bi-send"></i>
+            </button>
+        </div>
+
+        <input type="file" id="ai-file" class="ai-file" />
+
+        <button type="button" onclick="uploadAIFile()" class="ai-upload-btn">
+            <i class="bi bi-file-earmark-text"></i> Upload & Analyze
+        </button>
+    </div>
+</div>
+
+<script>
+    function toggleAI() {
+        const box = document.getElementById("ai-box");
+        if (box) box.classList.toggle("d-none");
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const btn = document.getElementById("ai-btn");
+        const input = document.getElementById("ai-text");
+
+        if (btn) {
+            btn.addEventListener("click", toggleAI);
+        }
+
+        if (input) {
+            input.addEventListener("keydown", function (e) {
+                if (e.key === "Enter") sendAI();
+            });
+        }
+    });
+
+    async function sendAI() {
+        const input = document.getElementById("ai-text");
+        const chat = document.getElementById("ai-messages");
+
+        if (!input || !chat) return;
+
+        const msg = input.value.trim();
+        if (!msg) return;
+
+        chat.innerHTML += `<div class="ai-msg ai-user">${msg}</div>`;
+        input.value = "";
+
+        try {
+            const response = await fetch("/AiAssistant/Ask", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: msg })
+            });
+
+            const data = await response.json();
+            chat.innerHTML += `<div class="ai-msg ai-bot">${data.answer}</div>`;
+            chat.scrollTop = chat.scrollHeight;
+        } catch {
+            chat.innerHTML += `<div class="ai-msg ai-bot text-danger">Erreur AI Assistant.</div>`;
+        }
+    }
+
+    async function uploadAIFile() {
+        const fileInput = document.getElementById("ai-file");
+        const chat = document.getElementById("ai-messages");
+
+        if (!fileInput || !chat || fileInput.files.length === 0) {
+            alert("Choisir un fichier");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("file", fileInput.files[0]);
+
+        chat.innerHTML += `<div class="ai-msg ai-user">📄 Fichier envoyé...</div>`;
+
+        try {
+            const response = await fetch("/AiAssistant/Upload", {
+                method: "POST",
+                body: formData
+            });
+
+            const data = await response.json();
+            chat.innerHTML += `<div class="ai-msg ai-bot">${data.answer}</div>`;
+            chat.scrollTop = chat.scrollHeight;
+            fileInput.value = "";
+        } catch {
+            chat.innerHTML += `<div class="ai-msg ai-bot text-danger">Erreur upload fichier.</div>`;
+        }
+    }
+</script>

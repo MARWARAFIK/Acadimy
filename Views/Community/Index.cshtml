@@ -15,207 +15,200 @@
     ViewData["Title"] = "Community";
 }
 
-<div class="container mt-4">
+<section class="community-page">
+    <div class="community-container">
 
-    <div class="card shadow-sm border-0 rounded-4 mb-4">
-        <div class="card-body">
+        <div class="community-create-card">
             <form asp-controller="Community" asp-action="Create" method="post" enctype="multipart/form-data">
                 @Html.AntiForgeryToken()
 
                 <textarea name="content"
-                          class="form-control rounded-4 mb-3"
-                          rows="3"
+                          class="community-textarea"
+                          rows="4"
                           placeholder="Partager une idée, question ou ressource..."></textarea>
 
-                <div class="d-flex justify-content-between align-items-center">
-                    <input type="file" name="image" class="form-control w-50" accept="image/*" />
+                <div class="community-create-actions">
+                    <input type="file" name="image" class="community-file-input" accept="image/*" />
 
-                    <button type="submit" class="btn btn-success rounded-pill px-4">
+                    <button type="submit" class="community-publish-btn">
                         <i class="bi bi-send"></i> Publier
                     </button>
                 </div>
             </form>
         </div>
-    </div>
 
-    @if (Model == null || !Model.Any())
-    {
-        <div class="alert alert-light border rounded-4 shadow-sm">
-            Aucun post pour le moment.
-        </div>
-    }
-    else
-    {
-        foreach (var post in Model)
+        @if (Model == null || !Model.Any())
         {
-            var liked = currentUser != null && post.Likes.Any(l => l.UserId == currentUser.Id);
-
-            var fullName = ((post.User?.FirstName ?? "") + " " + (post.User?.LastName ?? "")).Trim();
-            if (string.IsNullOrWhiteSpace(fullName))
+            <div class="community-empty">
+                Aucun post pour le moment.
+            </div>
+        }
+        else
+        {
+            foreach (var post in Model)
             {
-                fullName = post.User?.UserName ?? "Utilisateur";
-            }
+                var liked = currentUser != null && post.Likes.Any(l => l.UserId == currentUser.Id);
 
-            var postUserIsTeacher = post.User != null && await UserManager.IsInRoleAsync(post.User, "Enseignant");
-            var profileController = postUserIsTeacher ? "TeacherProfile" : "Profile";
-            var profileAction = postUserIsTeacher ? "ViewProfile" : "Index";
+                var fullName = ((post.User?.FirstName ?? "") + " " + (post.User?.LastName ?? "")).Trim();
+                if (string.IsNullOrWhiteSpace(fullName))
+                {
+                    fullName = post.User?.UserName ?? "Utilisateur";
+                }
 
-            <div id="post-@post.Id" class="card post-card shadow-sm border-0 rounded-4 mb-4">
+                var postUserIsTeacher = post.User != null && await UserManager.IsInRoleAsync(post.User, "Enseignant");
+                var profileController = postUserIsTeacher ? "TeacherProfile" : "Profile";
+                var profileAction = postUserIsTeacher ? "ViewProfile" : "Index";
 
-                <a asp-controller="@profileController"
-                   asp-action="@profileAction"
-                   asp-route-id="@post.UserId"
-                   class="post-header p-3 text-decoration-none text-dark">
+                <div id="post-@post.Id" class="community-post-card">
 
-                    <img src="@(string.IsNullOrEmpty(post.User?.ProfileImagePath) ? "/images/default-user.png" : post.User.ProfileImagePath)"
-                         class="post-avatar" />
+                    <a asp-controller="@profileController"
+                       asp-action="@profileAction"
+                       asp-route-id="@post.UserId"
+                       class="community-post-header">
 
-                    <div>
-                        <div class="post-name">@fullName</div>
-                        <small class="text-muted">
-                            @post.CreatedAt.ToString("dd/MM/yyyy HH:mm")
-                        </small>
-                    </div>
-                </a>
+                        <img src="@(string.IsNullOrEmpty(post.User?.ProfileImagePath) ? "/images/default-user.png" : post.User.ProfileImagePath)"
+                             class="community-avatar"
+                             alt="avatar" />
 
-                <div class="px-3 pb-3">
-                    <p class="mb-2" style="white-space:pre-line;">@post.Content</p>
-
-                    @if (!string.IsNullOrWhiteSpace(post.ImagePath))
-                    {
-                        <div class="community-post-image-wrap">
-                            <img src="@post.ImagePath" class="community-post-image" />
+                        <div>
+                            <div class="community-name">@fullName</div>
+                            <div class="community-date">@post.CreatedAt.ToString("dd/MM/yyyy HH:mm")</div>
                         </div>
-                    }
-                </div>
+                    </a>
 
-                <div class="d-flex align-items-center gap-4 border-top border-bottom py-2 px-3">
+                    <div class="community-post-body">
+                        <p>@post.Content</p>
 
-                    <form class="m-0 ajax-like-form">
-                        @Html.AntiForgeryToken()
+                        @if (!string.IsNullOrWhiteSpace(post.ImagePath))
+                        {
+                            <img src="@post.ImagePath" class="community-post-image" />
+                        }
+                    </div>
 
-                        <input type="hidden" name="postId" value="@post.Id" />
-
-                        <button type="button"
-                                class="btn btn-link text-decoration-none p-0 ajax-like-btn @(liked ? "text-danger fw-bold" : "text-muted")"
-                                data-post-id="@post.Id">
-                            <i class="bi @(liked ? "bi-heart-fill" : "bi-heart")"></i>
-                            Like (<span class="like-count">@post.Likes.Count</span>)
-                        </button>
-                    </form>
-
-                    <button class="btn btn-link text-decoration-none text-muted p-0"
-                            type="button"
-                            data-bs-toggle="collapse"
-                            data-bs-target="#comments-@post.Id">
-                        <i class="bi bi-chat-dots"></i>
-                        Comments (<span id="comment-count-@post.Id">@post.Comments.Count(c => c.ParentCommentId == null)</span>)
-                    </button>
-                </div>
-
-                <div class="collapse show" id="comments-@post.Id">
-                    <div class="p-3">
-
-                        <form class="mb-3 ajax-comment-form" data-post-id="@post.Id">
+                    <div class="community-actions">
+                        <form class="m-0 ajax-like-form">
                             @Html.AntiForgeryToken()
                             <input type="hidden" name="postId" value="@post.Id" />
 
-                            <input name="content"
-                                   class="form-control rounded-pill comment-input"
-                                   placeholder="Write a comment..." />
+                            <button type="button"
+                                    class="community-action-btn ajax-like-btn @(liked ? "liked" : "")"
+                                    data-post-id="@post.Id">
+                                <i class="bi @(liked ? "bi-heart-fill" : "bi-heart")"></i>
+                                <span class="like-count">@post.Likes.Count</span>
+                            </button>
                         </form>
 
-                        <div class="comments-list" id="comments-list-@post.Id">
+                        <button class="community-action-btn"
+                                type="button"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#comments-@post.Id">
+                            <i class="bi bi-chat-dots"></i>
+                            <span id="comment-count-@post.Id">
+                                @post.Comments.Count(c => c.ParentCommentId == null)
+                            </span>
+                        </button>
+                    </div>
 
-                            @foreach (var comment in post.Comments.Where(c => c.ParentCommentId == null).OrderByDescending(c => c.CreatedAt))
-                            {
-                                var commentName = ((comment.User?.FirstName ?? "") + " " + (comment.User?.LastName ?? "")).Trim();
-                                if (string.IsNullOrWhiteSpace(commentName))
+                    <div class="collapse show" id="comments-@post.Id">
+                        <div class="community-comments-box">
+
+                            <form class="ajax-comment-form community-comment-form" data-post-id="@post.Id">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="postId" value="@post.Id" />
+
+                                <input name="content"
+                                       class="community-comment-input comment-input"
+                                       placeholder="Write a comment..." />
+                            </form>
+
+                            <div class="comments-list" id="comments-list-@post.Id">
+
+                                @foreach (var comment in post.Comments.Where(c => c.ParentCommentId == null).OrderByDescending(c => c.CreatedAt))
                                 {
-                                    commentName = comment.User?.UserName ?? "Utilisateur";
-                                }
+                                    var commentName = ((comment.User?.FirstName ?? "") + " " + (comment.User?.LastName ?? "")).Trim();
+                                    if (string.IsNullOrWhiteSpace(commentName))
+                                    {
+                                        commentName = comment.User?.UserName ?? "Utilisateur";
+                                    }
 
-                                var commentLiked = currentUser != null && comment.Likes.Any(l => l.UserId == currentUser.Id);
+                                    var commentLiked = currentUser != null && comment.Likes.Any(l => l.UserId == currentUser.Id);
 
-                                <div class="d-flex mb-3">
-                                    <img src="@(string.IsNullOrEmpty(comment.User?.ProfileImagePath) ? "/images/default-user.png" : comment.User.ProfileImagePath)"
-                                         class="rounded-circle me-2"
-                                         style="width:38px;height:38px;object-fit:cover;" />
+                                    <div class="community-comment">
+                                        <img src="@(string.IsNullOrEmpty(comment.User?.ProfileImagePath) ? "/images/default-user.png" : comment.User.ProfileImagePath)"
+                                             class="community-comment-avatar" />
 
-                                    <div class="w-100">
-                                        <div class="bg-light rounded-4 p-3">
-                                            <div class="fw-bold small">@commentName</div>
-                                            <div>@comment.Content</div>
-                                        </div>
+                                        <div class="community-comment-content">
+                                            <div class="community-comment-bubble">
+                                                <strong>@commentName</strong>
+                                                <p>@comment.Content</p>
+                                            </div>
 
-                                        <div class="d-flex gap-3 ms-2 mt-1 small">
+                                            <div class="community-comment-actions">
+                                                <form class="ajax-like-comment-form m-0">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="commentId" value="@comment.Id" />
 
-                                            <form class="ajax-like-comment-form m-0">
-                                                @Html.AntiForgeryToken()
-                                                <input type="hidden" name="commentId" value="@comment.Id" />
+                                                    <button type="button"
+                                                            class="community-comment-btn ajax-like-comment-btn @(commentLiked ? "liked" : "")"
+                                                            data-comment-id="@comment.Id">
+                                                        <i class="bi @(commentLiked ? "bi-heart-fill" : "bi-heart")"></i>
+                                                        Like (<span class="like-comment-count">@comment.Likes.Count</span>)
+                                                    </button>
+                                                </form>
 
                                                 <button type="button"
-                                                        class="btn btn-link p-0 text-decoration-none small ajax-like-comment-btn @(commentLiked ? "text-danger fw-bold" : "text-muted")"
-                                                        data-comment-id="@comment.Id">
-                                                    <i class="bi @(commentLiked ? "bi-heart-fill" : "bi-heart")"></i>
-                                                    Like (<span class="like-comment-count">@comment.Likes.Count</span>)
+                                                        class="community-comment-btn"
+                                                        data-bs-toggle="collapse"
+                                                        data-bs-target="#reply-@comment.Id">
+                                                    Reply
                                                 </button>
-                                            </form>
+                                            </div>
 
-                                            <button type="button"
-                                                    class="btn btn-link p-0 text-muted text-decoration-none small"
-                                                    data-bs-toggle="collapse"
-                                                    data-bs-target="#reply-@comment.Id">
-                                                Reply
-                                            </button>
-                                        </div>
+                                            <div class="collapse mt-2" id="reply-@comment.Id">
+                                                <form class="ajax-reply-form" data-comment-id="@comment.Id">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="commentId" value="@comment.Id" />
 
-                                        <div class="collapse mt-2" id="reply-@comment.Id">
-                                            <form class="ajax-reply-form" data-comment-id="@comment.Id">
-                                                @Html.AntiForgeryToken()
-                                                <input type="hidden" name="commentId" value="@comment.Id" />
+                                                    <input name="content"
+                                                           class="community-reply-input reply-input"
+                                                           placeholder="Reply..." />
+                                                </form>
+                                            </div>
 
-                                                <input name="content"
-                                                       class="form-control form-control-sm rounded-pill reply-input"
-                                                       placeholder="Reply..." />
-                                            </form>
-                                        </div>
-
-                                        <div class="replies-list" id="replies-list-@comment.Id">
-
-                                            @foreach (var reply in post.Comments.Where(r => r.ParentCommentId == comment.Id).OrderBy(r => r.CreatedAt))
-                                            {
-                                                var replyName = ((reply.User?.FirstName ?? "") + " " + (reply.User?.LastName ?? "")).Trim();
-                                                if (string.IsNullOrWhiteSpace(replyName))
+                                            <div class="replies-list" id="replies-list-@comment.Id">
+                                                @foreach (var reply in post.Comments.Where(r => r.ParentCommentId == comment.Id).OrderBy(r => r.CreatedAt))
                                                 {
-                                                    replyName = reply.User?.UserName ?? "Utilisateur";
-                                                }
+                                                    var replyName = ((reply.User?.FirstName ?? "") + " " + (reply.User?.LastName ?? "")).Trim();
+                                                    if (string.IsNullOrWhiteSpace(replyName))
+                                                    {
+                                                        replyName = reply.User?.UserName ?? "Utilisateur";
+                                                    }
 
-                                                <div class="d-flex mt-2 ms-4">
-                                                    <img src="@(string.IsNullOrEmpty(reply.User?.ProfileImagePath) ? "/images/default-user.png" : reply.User.ProfileImagePath)"
-                                                         class="rounded-circle me-2"
-                                                         style="width:30px;height:30px;object-fit:cover;" />
+                                                    <div class="community-reply">
+                                                        <img src="@(string.IsNullOrEmpty(reply.User?.ProfileImagePath) ? "/images/default-user.png" : reply.User.ProfileImagePath)"
+                                                             class="community-reply-avatar" />
 
-                                                    <div class="bg-light rounded-4 p-2 w-100">
-                                                        <span class="fw-bold small">@replyName</span>
-                                                        <span>@reply.Content</span>
+                                                        <div class="community-reply-bubble">
+                                                            <strong>@replyName</strong>
+                                                            <span>@reply.Content</span>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            }
-
+                                                }
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            }
+                                }
 
+                            </div>
                         </div>
                     </div>
-                </div>
 
-            </div>
+                </div>
+            }
         }
-    }
-</div>
+
+    </div>
+</section>
 
 @section Scripts {
     <script>
@@ -258,13 +251,11 @@
                     count.textContent = result.count;
 
                     if (result.liked) {
-                        this.classList.remove("text-muted");
-                        this.classList.add("text-danger", "fw-bold");
+                        this.classList.add("liked");
                         icon.classList.remove("bi-heart");
                         icon.classList.add("bi-heart-fill");
                     } else {
-                        this.classList.remove("text-danger", "fw-bold");
-                        this.classList.add("text-muted");
+                        this.classList.remove("liked");
                         icon.classList.remove("bi-heart-fill");
                         icon.classList.add("bi-heart");
                     }
@@ -309,24 +300,22 @@
                     const count = document.getElementById("comment-count-" + postId);
 
                     const html = `
-                        <div class="d-flex mb-3">
-                            <img src="${result.profileImage}"
-                                 class="rounded-circle me-2"
-                                 style="width:38px;height:38px;object-fit:cover;" />
+                        <div class="community-comment">
+                            <img src="${result.profileImage}" class="community-comment-avatar" />
 
-                            <div class="w-100">
-                                <div class="bg-light rounded-4 p-3">
-                                    <div class="fw-bold small">${escapeHtml(result.fullName)}</div>
-                                    <div>${escapeHtml(result.content)}</div>
+                            <div class="community-comment-content">
+                                <div class="community-comment-bubble">
+                                    <strong>${escapeHtml(result.fullName)}</strong>
+                                    <p>${escapeHtml(result.content)}</p>
                                 </div>
 
-                                <div class="d-flex gap-3 ms-2 mt-1 small">
+                                <div class="community-comment-actions">
                                     <form class="ajax-like-comment-form m-0">
                                         <input name="__RequestVerificationToken" type="hidden" value="${token}" />
                                         <input type="hidden" name="commentId" value="${result.commentId}" />
 
                                         <button type="button"
-                                                class="btn btn-link p-0 text-decoration-none small ajax-like-comment-btn text-muted"
+                                                class="community-comment-btn ajax-like-comment-btn"
                                                 data-comment-id="${result.commentId}">
                                             <i class="bi bi-heart"></i>
                                             Like (<span class="like-comment-count">0</span>)
@@ -334,7 +323,7 @@
                                     </form>
 
                                     <button type="button"
-                                            class="btn btn-link p-0 text-muted text-decoration-none small"
+                                            class="community-comment-btn"
                                             data-bs-toggle="collapse"
                                             data-bs-target="#reply-${result.commentId}">
                                         Reply
@@ -347,7 +336,7 @@
                                         <input type="hidden" name="commentId" value="${result.commentId}" />
 
                                         <input name="content"
-                                               class="form-control form-control-sm rounded-pill reply-input"
+                                               class="community-reply-input reply-input"
                                                placeholder="Reply..." />
                                     </form>
                                 </div>
@@ -406,13 +395,11 @@
                     const list = document.getElementById("replies-list-" + commentId);
 
                     const html = `
-                        <div class="d-flex mt-2 ms-4">
-                            <img src="${result.profileImage}"
-                                 class="rounded-circle me-2"
-                                 style="width:30px;height:30px;object-fit:cover;" />
+                        <div class="community-reply">
+                            <img src="${result.profileImage}" class="community-reply-avatar" />
 
-                            <div class="bg-light rounded-4 p-2 w-100">
-                                <span class="fw-bold small">${escapeHtml(result.fullName)}</span>
+                            <div class="community-reply-bubble">
+                                <strong>${escapeHtml(result.fullName)}</strong>
                                 <span>${escapeHtml(result.content)}</span>
                             </div>
                         </div>
@@ -459,13 +446,11 @@
                     count.textContent = result.count;
 
                     if (result.liked) {
-                        this.classList.remove("text-muted");
-                        this.classList.add("text-danger", "fw-bold");
+                        this.classList.add("liked");
                         icon.classList.remove("bi-heart");
                         icon.classList.add("bi-heart-fill");
                     } else {
-                        this.classList.remove("text-danger", "fw-bold");
-                        this.classList.add("text-muted");
+                        this.classList.remove("liked");
                         icon.classList.remove("bi-heart-fill");
                         icon.classList.add("bi-heart");
                     }

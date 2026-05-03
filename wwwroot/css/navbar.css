@@ -1,0 +1,112 @@
+﻿.acadimy-navbar {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 80px !important;
+    z-index: 99999 !important;
+    background: #ffffff !important;
+    border-bottom: 1px solid #eef2f0 !important;
+    padding: 0 55px !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+    .acadimy-navbar .container-fluid {
+        height: 80px !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+
+    .acadimy-navbar .navbar-brand {
+        padding: 0 !important;
+        margin: 0 !important;
+        font-weight: 950 !important;
+    }
+
+.logo-icon {
+    color: #20c997 !important;
+    font-size: 36px !important;
+}
+
+.navbar-brand span {
+    font-size: 34px !important;
+    font-weight: 950 !important;
+    color: #12372a !important;
+}
+
+.acadimy-navbar .navbar-nav {
+    display: flex !important;
+    align-items: center !important;
+    gap: 32px !important;
+}
+
+.acadimy-navbar .nav-link {
+    padding: 0 !important;
+    font-weight: 900 !important;
+    font-size: 18px !important;
+    color: #12372a !important;
+}
+
+    .acadimy-navbar .nav-link:hover {
+        color: #16a34a !important;
+    }
+
+.notif-btn,
+.profile-btn {
+    color: #12372a !important;
+    text-decoration: none !important;
+    font-size: 22px !important;
+    position: relative;
+}
+
+.notif-badge {
+    position: absolute;
+    top: -10px;
+    right: -12px;
+    background: #ef4444;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 900;
+    padding: 3px 8px;
+    border-radius: 999px;
+}
+
+.main-content {
+    margin-top: 80px !important;
+}
+.student-nav-actions {
+    min-width: 130px;
+    justify-content: flex-end;
+}
+
+.student-circle-btn {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: #ecfdf5;
+    color: #12372a !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    text-decoration: none;
+    position: relative;
+}
+
+    .student-circle-btn:hover {
+        background: #dff8ee;
+        color: #16a34a !important;
+    }
+
+.student-nav-badge {
+    position: absolute;
+    top: -6px;
+    right: -4px;
+    background: #ef4444;
+    color: white;
+    font-size: 12px;
+    font-weight: 950;
+    border-radius: 999px;
+    padding: 3px 8px;
+}

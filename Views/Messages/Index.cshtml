@@ -4,77 +4,110 @@
 @model List<MessageThread>
 
 @{
-    Layout = User.IsInRole("Enseignant")
+    var isTeacher = User.IsInRole("Enseignant") || User.IsInRole("Teacher");
+
+    Layout = isTeacher
         ? "~/Views/Shared/LayoutTeacher.cshtml"
         : "~/Views/Shared/LayoutStudent.cshtml";
+
+    ViewData["Title"] = "Messages";
 
     var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
     var courseGroups = ViewBag.CourseGroups as List<TeacherCourse> ?? new();
 }
 
-<div class="container mt-4">
-    <h2 class="mb-4 fw-bold">Messages</h2>
+<section class="messages-page">
+    <div class="messages-wrapper">
 
-    <div class="row g-4">
-        <div class="col-lg-6">
-            <div class="card rounded-4 border-0 shadow-sm">
-                <div class="card-body">
-                    <h4 class="mb-3">Conversations privées</h4>
-
-                    @if (Model == null || !Model.Any())
-                    {
-                        <div class="alert alert-info rounded-4">Aucune conversation.</div>
-                    }
-                    else
-                    {
-                        <div class="list-group">
-                            @foreach (var t in Model)
-                            {
-                                var otherId = t.User1Id == currentUserId ? t.User2Id : t.User1Id;
-                                var lastMsg = t.Messages.OrderByDescending(m => m.SentAt).FirstOrDefault();
-
-                                <a asp-controller="Messages"
-                                   asp-action="Chat"
-                                   asp-route-userId="@otherId"
-                                   class="list-group-item list-group-item-action rounded-3 mb-2">
-                                    <strong>Conversation</strong>
-                                    <div class="text-muted small">
-                                        @(lastMsg?.Content ?? lastMsg?.AttachmentFileName ?? "Aucun message")
-                                    </div>
-                                </a>
-                            }
-                        </div>
-                    }
-                </div>
-            </div>
+        <div class="messages-header">
+            <span>MESSAGES</span>
+            <h1>Mes conversations</h1>
+            <p>Discutez avec vos étudiants, enseignants et groupes de cours.</p>
         </div>
 
-        <div class="col-lg-6">
-            <div class="card rounded-4 border-0 shadow-sm">
-                <div class="card-body">
-                    <h4 class="mb-3">Groupes par cours</h4>
+        <div class="messages-grid">
 
-                    @if (!courseGroups.Any())
-                    {
-                        <div class="alert alert-light border rounded-4">Aucun groupe disponible.</div>
-                    }
-                    else
-                    {
-                        <div class="list-group">
-                            @foreach (var course in courseGroups)
-                            {
-                                <a asp-controller="Messages"
-                                   asp-action="CourseGroup"
-                                   asp-route-courseId="@course.Id"
-                                   class="list-group-item list-group-item-action rounded-3 mb-2">
-                                    <strong>@course.Title</strong>
-                                    <div class="text-muted small">Discussion de groupe du cours</div>
-                                </a>
-                            }
-                        </div>
-                    }
+            <div class="messages-card">
+                <div class="messages-card-header">
+                    <i class="bi bi-chat-dots"></i>
+                    <h3>Conversations privées</h3>
                 </div>
+
+                @if (Model == null || !Model.Any())
+                {
+                    <div class="messages-empty">
+                        <i class="bi bi-inbox"></i>
+                        <p>Aucune conversation.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="messages-list">
+                        @foreach (var t in Model)
+                        {
+                            var otherId = t.User1Id == currentUserId ? t.User2Id : t.User1Id;
+                            var lastMsg = t.Messages.OrderByDescending(m => m.SentAt).FirstOrDefault();
+
+                            <a asp-controller="Messages"
+                               asp-action="Chat"
+                               asp-route-userId="@otherId"
+                               class="message-item">
+
+                                <div class="message-icon">
+                                    <i class="bi bi-person"></i>
+                                </div>
+
+                                <div class="message-info">
+                                    <strong>Conversation privée</strong>
+                                    <p>@(lastMsg?.Content ?? lastMsg?.AttachmentFileName ?? "Aucun message")</p>
+                                </div>
+
+                                <i class="bi bi-chevron-right message-arrow"></i>
+                            </a>
+                        }
+                    </div>
+                }
             </div>
+
+            <div class="messages-card">
+                <div class="messages-card-header">
+                    <i class="bi bi-people"></i>
+                    <h3>Groupes par cours</h3>
+                </div>
+
+                @if (!courseGroups.Any())
+                {
+                    <div class="messages-empty">
+                        <i class="bi bi-journal-x"></i>
+                        <p>Aucun groupe disponible.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="messages-list">
+                        @foreach (var course in courseGroups)
+                        {
+                            <a asp-controller="Messages"
+                               asp-action="CourseGroup"
+                               asp-route-courseId="@course.Id"
+                               class="message-item">
+
+                                <div class="message-icon course">
+                                    <i class="bi bi-journal-bookmark"></i>
+                                </div>
+
+                                <div class="message-info">
+                                    <strong>@course.Title</strong>
+                                    <p>Discussion de groupe du cours</p>
+                                </div>
+
+                                <i class="bi bi-chevron-right message-arrow"></i>
+                            </a>
+                        }
+                    </div>
+                }
+            </div>
+
         </div>
     </div>
-</div>
+</section>

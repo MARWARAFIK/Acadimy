@@ -3,9 +3,13 @@
 @model List<Message>
 
 @{
-    Layout = User.IsInRole("Enseignant")
+    var isTeacher = User.IsInRole("Enseignant") || User.IsInRole("Teacher");
+
+    Layout = isTeacher
         ? "~/Views/Shared/LayoutTeacher.cshtml"
         : "~/Views/Shared/LayoutStudent.cshtml";
+
+    ViewData["Title"] = "Chat";
 
     var currentUserId = ViewBag.CurrentUserId?.ToString()
         ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -14,268 +18,147 @@
     var otherUser = ViewBag.OtherUser as Acadimy.Models.ApplicationUser;
 }
 
-<div class="container mt-4 chat-page">
-    <h3 class="fw-bold mb-1">
-        Chat avec @(otherUser?.FullName ?? "Utilisateur")
-    </h3>
+<section class="messages-page">
+    <div class="chat-wrapper">
 
-    <div id="onlineStatus" class="small text-muted mb-3">
-        ● Connexion...
-    </div>
+        <div class="chat-header-card">
+            <a asp-controller="Messages" asp-action="Index" class="chat-back">
+                <i class="bi bi-arrow-left"></i>
+            </a>
 
-    <div id="chatBox" class="chat-box">
-        @if (Model == null || !Model.Any())
-        {
-            <p id="emptyMessage" class="text-muted">Aucun message</p>
-        }
-        else
-        {
-            foreach (var msg in Model)
+            <div>
+                <span>PRIVATE CHAT</span>
+                <h1>@(otherUser?.FullName ?? "Utilisateur")</h1>
+                <p id="onlineStatus">● Connexion...</p>
+            </div>
+        </div>
+
+        <div id="chatBox" class="private-chat-box">
+            @if (Model == null || !Model.Any())
             {
-                var isMe = msg.SenderId == currentUserId;
+                <div id="emptyMessage" class="messages-empty">
+                    <i class="bi bi-chat-square-dots"></i>
+                    <p>Aucun message</p>
+                </div>
+            }
+            else
+            {
+                foreach (var msg in Model)
+                {
+                    var isMe = msg.SenderId == currentUserId;
 
-                <div class="message-row text-@(isMe ? "end" : "start")" data-id="@msg.Id">
-                    <div class="message-wrap">
+                    <div class="private-message-row @(isMe ? "me" : "other")" data-id="@msg.Id">
+                        <div class="private-message-wrap">
 
-                        @if (isMe && !msg.IsDeleted)
-                        {
-                            <div class="dropdown message-menu">
-                                <button class="btn btn-sm menu-btn" type="button" data-bs-toggle="dropdown">
-                                    ⋮
-                                </button>
+                            @if (isMe && !msg.IsDeleted)
+                            {
+                                <div class="dropdown message-menu">
+                                    <button class="menu-btn" type="button" data-bs-toggle="dropdown">
+                                        <i class="bi bi-three-dots"></i>
+                                    </button>
 
-                                <ul class="dropdown-menu dropdown-menu-end">
-                                    @if (!string.IsNullOrWhiteSpace(msg.Content))
-                                    {
+                                    <ul class="dropdown-menu dropdown-menu-end rounded-4 border-0 shadow-sm">
+                                        @if (!string.IsNullOrWhiteSpace(msg.Content))
+                                        {
+                                            <li>
+                                                <button type="button" class="dropdown-item edit-btn" data-id="@msg.Id">
+                                                    <i class="bi bi-pencil me-2"></i> Modifier
+                                                </button>
+                                            </li>
+                                        }
+
                                         <li>
-                                            <button type="button" class="dropdown-item edit-btn" data-id="@msg.Id">
-                                                Modifier
+                                            <button type="button" class="dropdown-item text-danger delete-btn" data-id="@msg.Id">
+                                                <i class="bi bi-trash me-2"></i> Supprimer
                                             </button>
                                         </li>
-                                    }
-
-                                    <li>
-                                        <button type="button" class="dropdown-item text-danger delete-btn" data-id="@msg.Id">
-                                            Supprimer
-                                        </button>
-                                    </li>
-                                </ul>
-                            </div>
-                        }
-
-                        <div class="chat-bubble @(isMe ? "bubble-me" : "bubble-other")">
-                            @if (msg.IsDeleted)
-                            {
-                                <div class="message-content deleted-msg">
-                                    Ce message a été supprimé
+                                    </ul>
                                 </div>
                             }
-                            else
-                            {
-                                @if (!string.IsNullOrWhiteSpace(msg.Content))
-                                {
-                                    <div class="message-content">@msg.Content</div>
-                                }
 
-                                @if (!string.IsNullOrWhiteSpace(msg.AttachmentPath))
+                            <div class="private-bubble @(isMe ? "me" : "other")">
+                                @if (msg.IsDeleted)
                                 {
-                                    if (msg.AttachmentContentType?.StartsWith("image/") == true)
+                                    <div class="message-content deleted-msg">
+                                        Ce message a été supprimé
+                                    </div>
+                                }
+                                else
+                                {
+                                    @if (!string.IsNullOrWhiteSpace(msg.Content))
                                     {
-                                        <img src="@msg.AttachmentPath" class="chat-img" />
+                                        <div class="message-content">@msg.Content</div>
                                     }
-                                    else if (msg.AttachmentContentType?.StartsWith("audio/") == true)
+
+                                    @if (!string.IsNullOrWhiteSpace(msg.AttachmentPath))
                                     {
-                                        <audio controls class="chat-audio">
-                                            <source src="@msg.AttachmentPath" type="@msg.AttachmentContentType" />
-                                        </audio>
-                                    }
-                                    else
-                                    {
-                                        <div class="mt-2">
-                                            <a href="@msg.AttachmentPath" target="_blank" class="btn btn-sm btn-light rounded-pill">
+                                        if (msg.AttachmentContentType?.StartsWith("image/") == true)
+                                        {
+                                            <img src="@msg.AttachmentPath" class="private-chat-img" />
+                                        }
+                                        else if (msg.AttachmentContentType?.StartsWith("audio/") == true)
+                                        {
+                                            <audio controls class="private-chat-audio">
+                                                <source src="@msg.AttachmentPath" type="@msg.AttachmentContentType" />
+                                            </audio>
+                                        }
+                                        else
+                                        {
+                                            <a href="@msg.AttachmentPath" target="_blank" class="private-file-link">
                                                 <i class="bi bi-paperclip"></i> @msg.AttachmentFileName
                                             </a>
-                                        </div>
+                                        }
                                     }
                                 }
+                            </div>
+                        </div>
+
+                        <div class="private-message-status">
+                            @msg.SentAt.ToString("dd/MM HH:mm")
+
+                            @if (isMe)
+                            {
+                                <span class="ms-2">@(msg.IsRead ? "✓✓" : "✓")</span>
+                            }
+
+                            @if (msg.IsEdited)
+                            {
+                                <span class="ms-2 edited-label">(modifié)</span>
                             }
                         </div>
                     </div>
-
-                    <div class="small text-muted mt-1 message-status">
-                        @msg.SentAt.ToString("dd/MM HH:mm")
-
-                        @if (isMe)
-                        {
-                            <span class="ms-2">@(msg.IsRead ? "✓✓" : "✓")</span>
-                        }
-
-                        @if (msg.IsEdited)
-                        {
-                            <span class="ms-2 text-info edited-label">(modifié)</span>
-                        }
-                    </div>
-                </div>
+                }
             }
-        }
-    </div>
+        </div>
 
-    <form id="sendMessageForm" enctype="multipart/form-data">
-        @Html.AntiForgeryToken()
-        <input type="hidden" name="threadId" value="@threadId" />
+        <form id="sendMessageForm" enctype="multipart/form-data" class="private-send-form">
+            @Html.AntiForgeryToken()
 
-        <div class="chat-form">
+            <input type="hidden" name="threadId" value="@threadId" />
+
             <input name="content"
                    id="messageInput"
-                   class="form-control rounded-pill"
+                   class="private-input"
                    placeholder="Écrire un message..." />
 
             <input name="attachment"
                    id="attachmentInput"
                    type="file"
-                   class="form-control file-input"
+                   class="private-file"
                    accept="image/*,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,audio/*" />
 
-            <button type="button" id="recordBtn" class="btn btn-outline-danger rounded-circle mic-btn">
+            <button type="button" id="recordBtn" class="private-mic-btn">
                 <i class="bi bi-mic"></i>
             </button>
 
-            <button type="submit" id="sendBtn" class="btn btn-success rounded-pill px-4">
-                Send
+            <button type="submit" id="sendBtn" class="private-send-btn">
+                <i class="bi bi-send"></i>
             </button>
-        </div>
+        </form>
 
         <div id="recordStatus" class="small text-muted mt-2"></div>
-    </form>
-</div>
-
-<style>
-    .chat-page {
-        max-width: 1150px;
-    }
-
-    .chat-box {
-        height: 500px;
-        overflow-y: auto;
-        background: #fff;
-        border-radius: 22px;
-        padding: 24px;
-        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
-        margin-bottom: 16px;
-    }
-
-    .message-row {
-        width: 100%;
-        margin-bottom: 18px;
-        clear: both;
-    }
-
-    .message-wrap {
-        display: inline-block;
-        position: relative;
-        max-width: 70%;
-    }
-
-    .chat-bubble {
-        display: inline-block;
-        padding: 14px 18px;
-        border-radius: 18px;
-        min-width: 80px;
-        max-width: 100%;
-        width: auto;
-        white-space: normal;
-        word-break: normal;
-        overflow-wrap: break-word;
-        line-height: 1.5;
-        font-size: 16px;
-    }
-
-    .bubble-me {
-        background: #198754;
-        color: #fff;
-        border-top-right-radius: 6px;
-    }
-
-    .bubble-other {
-        background: #f1f5f9;
-        color: #111827;
-        border-top-left-radius: 6px;
-    }
-
-    .message-menu {
-        position: absolute;
-        top: -4px;
-        right: 6px;
-        z-index: 30;
-    }
-
-    .menu-btn {
-        color: white;
-        font-weight: bold;
-        border: none;
-        padding: 0 6px;
-    }
-
-    .bubble-other + .message-menu .menu-btn {
-        color: #111827;
-    }
-
-    .chat-img {
-        max-width: 260px;
-        max-height: 220px;
-        object-fit: cover;
-        border-radius: 14px;
-        margin-top: 8px;
-        display: block;
-    }
-
-    .chat-audio {
-        width: 280px;
-        max-width: 100%;
-        margin-top: 8px;
-    }
-
-    .deleted-msg {
-        font-style: italic;
-        opacity: .75;
-    }
-
-    .chat-form {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .file-input {
-        max-width: 230px;
-    }
-
-    .mic-btn {
-        width: 46px;
-        height: 46px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .dropdown-menu {
-        z-index: 9999;
-    }
-
-    @@media (max-width: 768px) {
-        .message-wrap {
-            max-width: 88%;
-        }
-
-        .chat-form {
-            flex-wrap: wrap;
-        }
-
-        .file-input {
-            max-width: 100%;
-        }
-    }
-</style>
+    </div>
+</section>
 
 @section Scripts {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
@@ -327,23 +210,25 @@
 
         if (data.attachmentPath) {
         if (data.attachmentContentType && data.attachmentContentType.startsWith("image/")) {
-        attachmentHtml = `<img src="${data.attachmentPath}" class="chat-img" />`;
+        attachmentHtml = `<img src="${data.attachmentPath}" class="private-chat-img" />`;
         }
         else if (data.attachmentContentType && data.attachmentContentType.startsWith("audio/")) {
-        attachmentHtml = `<audio controls class="chat-audio"><source src="${data.attachmentPath}" type="${data.attachmentContentType}" /></audio>`;
+        attachmentHtml = `<audio controls class="private-chat-audio"><source src="${data.attachmentPath}" type="${data.attachmentContentType}" /></audio>`;
         }
         else {
-        attachmentHtml = `<div class="mt-2"><a href="${data.attachmentPath}" target="_blank" class="btn btn-sm btn-light rounded-pill"><i class="bi bi-paperclip"></i> ${escapeHtml(data.attachmentFileName)}</a></div>`;
+        attachmentHtml = `<a href="${data.attachmentPath}" target="_blank" class="private-file-link"><i class="bi bi-paperclip"></i> ${escapeHtml(data.attachmentFileName)}</a>`;
         }
         }
 
         const menuHtml = isMe && !data.isDeleted
         ? `
         <div class="dropdown message-menu">
-        <button class="btn btn-sm menu-btn" type="button" data-bs-toggle="dropdown">⋮</button>
-        <ul class="dropdown-menu dropdown-menu-end">
-        ${data.content ? `<li><button type="button" class="dropdown-item edit-btn" data-id="${data.messageId}">Modifier</button></li>` : ""}
-        <li><button type="button" class="dropdown-item text-danger delete-btn" data-id="${data.messageId}">Supprimer</button></li>
+        <button class="menu-btn" type="button" data-bs-toggle="dropdown">
+        <i class="bi bi-three-dots"></i>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end rounded-4 border-0 shadow-sm">
+        ${data.content ? `<li><button type="button" class="dropdown-item edit-btn" data-id="${data.messageId}"><i class="bi bi-pencil me-2"></i> Modifier</button></li>` : ""}
+        <li><button type="button" class="dropdown-item text-danger delete-btn" data-id="${data.messageId}"><i class="bi bi-trash me-2"></i> Supprimer</button></li>
         </ul>
         </div>`
         : "";
@@ -353,19 +238,18 @@
         : `${data.content ? `<div class="message-content">${escapeHtml(data.content)}</div>` : ""}${attachmentHtml}`;
 
         const statusHtml = isMe
-        ? `<span class="ms-2">${data.isRead ? "✓✓" : "✓"}</span>${data.isEdited ? '<span class="ms-2 text-info edited-label">(modifié)</span>' : ""}`
+        ? `<span class="ms-2">${data.isRead ? "✓✓" : "✓"}</span>${data.isEdited ? '<span class="ms-2 edited-label">(modifié)</span>' : ""}`
         : "";
 
         const html = `
-        <div class="message-row text-${isMe ? "end" : "start"}" data-id="${data.messageId}">
-        <div class="message-wrap">
+        <div class="private-message-row ${isMe ? "me" : "other"}" data-id="${data.messageId}">
+        <div class="private-message-wrap">
         ${menuHtml}
-        <div class="chat-bubble ${isMe ? "bubble-me" : "bubble-other"}">
+        <div class="private-bubble ${isMe ? "me" : "other"}">
         ${contentHtml}
         </div>
         </div>
-
-        <div class="small text-muted mt-1 message-status">
+        <div class="private-message-status">
         ${data.sentAt}
         ${statusHtml}
         </div>
@@ -385,13 +269,9 @@
         .build();
 
         connection.start()
-        .then(function () {
-        return connection.invoke("JoinThread", threadId);
-        })
-        .then(function () {
-        loadRealOnlineStatus();
-        })
-        .catch(function () {
+        .then(() => connection.invoke("JoinThread", threadId))
+        .then(() => loadRealOnlineStatus())
+        .catch(() => {
         onlineStatus.innerHTML = '<span class="text-danger">● Disconnected</span>';
         });
 
@@ -411,9 +291,9 @@
         const contentEl = row.querySelector(".message-content");
         if (contentEl) contentEl.innerText = content;
 
-        const status = row.querySelector(".message-status");
+        const status = row.querySelector(".private-message-status");
         if (status && !status.querySelector(".edited-label")) {
-        status.insertAdjacentHTML("beforeend", `<span class="ms-2 text-info edited-label">(modifié)</span>`);
+        status.insertAdjacentHTML("beforeend", `<span class="ms-2 edited-label">(modifié)</span>`);
         }
         });
 
@@ -421,7 +301,7 @@
         const row = document.querySelector(`[data-id='${messageId}']`);
         if (!row) return;
 
-        const bubble = row.querySelector(".chat-bubble");
+        const bubble = row.querySelector(".private-bubble");
         if (bubble) {
         bubble.innerHTML = `<div class="message-content deleted-msg">Ce message a été supprimé</div>`;
         }
@@ -455,7 +335,7 @@
         });
 
         connection.on("MessageSeen", function () {
-        document.querySelectorAll(".message-status span").forEach(x => {
+        document.querySelectorAll(".private-message-status span").forEach(x => {
         if (x.innerText.trim() === "✓") {
         x.innerText = "✓✓";
         }
@@ -509,8 +389,7 @@
 
         recordStatus.innerHTML = "Voice recorded. Click Send.";
         recordBtn.innerHTML = '<i class="bi bi-mic"></i>';
-        recordBtn.classList.remove("btn-danger");
-        recordBtn.classList.add("btn-outline-danger");
+        recordBtn.classList.remove("recording");
 
         stream.getTracks().forEach(track => track.stop());
         };
@@ -520,8 +399,7 @@
 
         recordStatus.innerHTML = "Recording...";
         recordBtn.innerHTML = '<i class="bi bi-stop-fill"></i>';
-        recordBtn.classList.remove("btn-outline-danger");
-        recordBtn.classList.add("btn-danger");
+        recordBtn.classList.add("recording");
         }
         catch {
         alert("Microphone permission refused.");
@@ -534,8 +412,9 @@
         });
 
         document.addEventListener("click", async function (e) {
-        if (e.target.classList.contains("edit-btn")) {
-        const messageId = e.target.dataset.id;
+        if (e.target.closest(".edit-btn")) {
+        const btn = e.target.closest(".edit-btn");
+        const messageId = btn.dataset.id;
         const row = document.querySelector(`[data-id='${messageId}']`);
         const contentEl = row.querySelector(".message-content");
 
@@ -561,8 +440,9 @@
         }
         }
 
-        if (e.target.classList.contains("delete-btn")) {
-        const messageId = e.target.dataset.id;
+        if (e.target.closest(".delete-btn")) {
+        const btn = e.target.closest(".delete-btn");
+        const messageId = btn.dataset.id;
 
         if (!confirm("Supprimer ce message ?")) return;
 
@@ -598,7 +478,7 @@
         }
 
         btn.disabled = true;
-        btn.innerText = "Sending...";
+        btn.innerHTML = '<i class="bi bi-hourglass-split"></i>';
 
         const response = await fetch("/Messages/SendAjax", {
         method: "POST",
@@ -608,7 +488,7 @@
         const result = await response.json();
 
         btn.disabled = false;
-        btn.innerText = "Send";
+        btn.innerHTML = '<i class="bi bi-send"></i>';
 
         if (!result.success) {
         alert(result.message || "Erreur");

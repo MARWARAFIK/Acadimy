@@ -1,17 +1,52 @@
 ﻿@model List<Acadimy.Models.Live.LiveClass>
 
-<div class="container mt-4">
-    <h2>Live Classes</h2>
+@{
+    Layout = User.IsInRole("Enseignant")
+        ? "~/Views/Shared/LayoutTeacher.cshtml"
+        : "~/Views/Shared/LayoutStudent.cshtml";
+}
 
-    <a asp-action="Create" class="btn btn-success mb-3">+ Nouvelle classe</a>
+<section class="live-page">
+    <div class="live-wrapper">
 
-    @foreach (var c in Model)
-    {
-        <div class="card p-3 mb-2">
-            <h5>@c.Title</h5>
-            <a asp-action="Room" asp-route-id="@c.Id" class="btn btn-primary">
-                Join
+        <div class="live-header">
+            <div>
+                <span>LIVE CLASSES</span>
+                <h1>Live Classes</h1>
+                <p>Manage and join live sessions easily.</p>
+            </div>
+
+            <a asp-action="Create" class="live-main-btn">
+                <i class="bi bi-plus-circle"></i> New Class
             </a>
         </div>
-    }
-</div>
+
+        @if (!Model.Any())
+        {
+            <div class="live-empty">
+                <i class="bi bi-camera-video"></i>
+                <h3>No live classes</h3>
+                <p>Create your first session</p>
+            </div>
+        }
+        else
+        {
+            <div class="live-list">
+                @foreach (var c in Model)
+                {
+                    <div class="live-card">
+                        <div>
+                            <h3>@c.Title</h3>
+                            <span class="live-badge">Live Session</span>
+                        </div>
+
+                        <a asp-action="Room" asp-route-id="@c.Id" class="live-main-btn">
+                            <i class="bi bi-play-circle"></i> Join
+                        </a>
+                    </div>
+                }
+            </div>
+        }
+
+    </div>
+</section>

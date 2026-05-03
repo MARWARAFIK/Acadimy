@@ -5,212 +5,208 @@
     ViewData["Title"] = "Settings";
 }
 
-<div class="container py-4">
-    <h1 class="mb-4 fw-bold">Settings</h1>
+<section class="student-settings-page">
+    <div class="student-settings-container">
 
-    @if (TempData["Success"] != null)
-    {
-        <div class="alert alert-success rounded-4">@TempData["Success"]</div>
-    }
-
-    <form asp-action="Index" method="post" enctype="multipart/form-data">
-        @Html.AntiForgeryToken()
-
-        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
-
-        <div class="card settings-card mb-4">
-            <div class="card-body p-4">
-                <h3 class="settings-title mb-4">Personal Information</h3>
-
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label asp-for="FirstName" class="form-label">First Name</label>
-                        <input asp-for="FirstName" class="form-control settings-input" />
-                    </div>
-
-                    <div class="col-md-6">
-                        <label asp-for="LastName" class="form-label">Last Name</label>
-                        <input asp-for="LastName" class="form-control settings-input" />
-                    </div>
-
-                    <div class="col-md-6">
-                        <label asp-for="Email" class="form-label">Email</label>
-                        <input asp-for="Email" class="form-control settings-input" />
-                    </div>
-
-                    <div class="col-md-6">
-                        <label asp-for="PhoneNumberCustom" class="form-label">Phone</label>
-                        <input asp-for="PhoneNumberCustom" class="form-control settings-input" />
-                    </div>
-
-                    <div class="col-md-6">
-                        <label asp-for="Location" class="form-label">Location</label>
-                        <input asp-for="Location" class="form-control settings-input" />
-                    </div>
-
-                    <div class="col-md-6">
-                        <label asp-for="Website" class="form-label">Website</label>
-                        <input asp-for="Website" class="form-control settings-input" />
-                    </div>
-
-                    <div class="col-md-6">
-                        <label asp-for="Filiere" class="form-label">Filière</label>
-                        <input asp-for="Filiere" class="form-control settings-input" />
-                    </div>
-
-                    <div class="col-md-6">
-                        <label asp-for="Niveau" class="form-label">Niveau</label>
-                        <input asp-for="Niveau" class="form-control settings-input" />
-                    </div>
-
-                    <div class="col-12">
-                        <label asp-for="Bio" class="form-label">Bio</label>
-                        <textarea asp-for="Bio" class="form-control settings-input" rows="4"></textarea>
-                    </div>
-                </div>
+        <!-- HEADER -->
+        <div class="student-settings-header">
+            <div>
+                <span class="student-settings-badge">SETTINGS</span>
+                <h1>Account Settings</h1>
+                <p>Modifiez vos informations personnelles et préférences.</p>
             </div>
+
+            <a asp-controller="Profile" asp-action="Index" class="btn-acadimy-outline">
+                <i class="bi bi-arrow-left"></i> Retour profil
+            </a>
         </div>
 
-        <div class="card settings-card mb-4">
-            <div class="card-body p-4">
-                <h3 class="settings-title mb-4">Images</h3>
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success rounded-4">@TempData["Success"]</div>
+        }
 
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label asp-for="ProfileImage" class="form-label">Profile Image</label>
-                        <input asp-for="ProfileImage" type="file" class="form-control settings-input" accept="image/*" />
+        <form asp-action="Index" method="post" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
 
-                        @if (!string.IsNullOrWhiteSpace(Model.ExistingProfileImagePath))
-                        {
-                            <img src="@Model.ExistingProfileImagePath" class="mt-3 rounded-circle" style="width:80px;height:80px;object-fit:cover;" />
-                        }
-                    </div>
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-                    <div class="col-md-6">
-                        <label asp-for="CoverImage" class="form-label">Cover Image</label>
-                        <input asp-for="CoverImage" type="file" class="form-control settings-input" accept="image/*" />
+            <!-- PERSONAL INFO -->
+            <div class="settings-card mb-4">
+                <div class="card-body p-4">
+                    <h3 class="settings-title mb-4">Personal Information</h3>
 
-                        @if (!string.IsNullOrWhiteSpace(Model.ExistingCoverImagePath))
-                        {
-                            <img src="@Model.ExistingCoverImagePath" class="mt-3 rounded-4" style="width:160px;height:80px;object-fit:cover;" />
-                        }
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="card settings-card mb-4">
-            <div class="card-body p-4">
-                <h3 class="settings-title mb-4">Skills</h3>
-
-                <div id="skillContainer">
-                    @for (int i = 0; i < Model.Skills.Count; i++)
-                    {
-                        <div class="row skill-item mb-3">
-                            <div class="col-md-7">
-                                <label class="form-label">Skill</label>
-                                <input asp-for="Skills[i].Name" class="form-control settings-input" placeholder="Ex: HTML" />
-                            </div>
-
-                            <div class="col-md-3">
-                                <label class="form-label">%</label>
-                                <input asp-for="Skills[i].Percentage" type="number" min="0" max="100" class="form-control settings-input" />
-                            </div>
-
-                            <div class="col-md-2 d-flex align-items-end">
-                                <button type="button" class="btn btn-danger w-100 remove-skill">Remove</button>
-                            </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="FirstName" class="settings-label">First Name</label>
+                            <input asp-for="FirstName" class="form-control settings-input" />
                         </div>
-                    }
-                </div>
 
-                <button type="button" id="addSkillBtn" class="btn btn-outline-success mt-2">
-                    Add Skill
+                        <div class="col-md-6">
+                            <label asp-for="LastName" class="settings-label">Last Name</label>
+                            <input asp-for="LastName" class="form-control settings-input" />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="Email" class="settings-label">Email</label>
+                            <input asp-for="Email" class="form-control settings-input" />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="PhoneNumberCustom" class="settings-label">Phone</label>
+                            <input asp-for="PhoneNumberCustom" class="form-control settings-input" />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="Location" class="settings-label">Location</label>
+                            <input asp-for="Location" class="form-control settings-input" />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="Website" class="settings-label">Website</label>
+                            <input asp-for="Website" class="form-control settings-input" />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="Filiere" class="settings-label">Filière</label>
+                            <input asp-for="Filiere" class="form-control settings-input" />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="Niveau" class="settings-label">Niveau</label>
+                            <input asp-for="Niveau" class="form-control settings-input" />
+                        </div>
+
+                        <div class="col-12">
+                            <label asp-for="Bio" class="settings-label">Bio</label>
+                            <textarea asp-for="Bio" class="form-control settings-textarea"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- IMAGES -->
+            <div class="settings-card mb-4">
+                <div class="card-body p-4">
+                    <h3 class="settings-title mb-4">Images</h3>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="ProfileImage" class="settings-label">Profile Image</label>
+                            <input asp-for="ProfileImage" type="file" class="form-control settings-input" accept="image/*" />
+
+                            @if (!string.IsNullOrWhiteSpace(Model.ExistingProfileImagePath))
+                            {
+                                <img src="@Model.ExistingProfileImagePath"
+                                     class="preview-img mt-3" />
+                            }
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="CoverImage" class="settings-label">Cover Image</label>
+                            <input asp-for="CoverImage" type="file" class="form-control settings-input" accept="image/*" />
+
+                            @if (!string.IsNullOrWhiteSpace(Model.ExistingCoverImagePath))
+                            {
+                                <img src="@Model.ExistingCoverImagePath"
+                                     class="preview-cover mt-3" />
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SKILLS -->
+            <div class="settings-card mb-4">
+                <div class="card-body p-4">
+                    <h3 class="settings-title mb-4">Skills</h3>
+
+                    <div id="skillContainer">
+                        @for (int i = 0; i < Model.Skills.Count; i++)
+                        {
+                            <div class="row skill-item mb-3">
+                                <div class="col-md-7">
+                                    <label class="settings-label">Skill</label>
+                                    <input asp-for="Skills[i].Name" class="form-control settings-input" />
+                                </div>
+
+                                <div class="col-md-3">
+                                    <label class="settings-label">%</label>
+                                    <input asp-for="Skills[i].Percentage" type="number" min="0" max="100" class="form-control settings-input" />
+                                </div>
+
+                                <div class="col-md-2 d-flex align-items-end">
+                                    <button type="button" class="btn-acadimy-danger w-100 remove-skill">
+                                        Remove
+                                    </button>
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    <button type="button" id="addSkillBtn" class="btn-acadimy-outline mt-2">
+                        <i class="bi bi-plus"></i> Add Skill
+                    </button>
+                </div>
+            </div>
+
+            <!-- PASSWORD -->
+            <div class="settings-card mb-4">
+                <div class="card-body p-4">
+                    <h3 class="settings-title mb-4">Change Password</h3>
+
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label asp-for="CurrentPassword" class="settings-label"></label>
+                            <input asp-for="CurrentPassword" class="form-control settings-input" />
+                        </div>
+
+                        <div class="col-md-4">
+                            <label asp-for="NewPassword" class="settings-label"></label>
+                            <input asp-for="NewPassword" class="form-control settings-input" />
+                        </div>
+
+                        <div class="col-md-4">
+                            <label asp-for="ConfirmNewPassword" class="settings-label"></label>
+                            <input asp-for="ConfirmNewPassword" class="form-control settings-input" />
+                            <span asp-validation-for="ConfirmNewPassword" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NOTIFICATIONS -->
+            <div class="settings-card mb-4">
+                <div class="card-body p-4">
+                    <h3 class="settings-title mb-4">Notifications</h3>
+
+                    <div class="notification-row">
+                        <label>New course</label>
+                        <input asp-for="NotifyNewCourse" class="form-check-input notification-check" />
+                    </div>
+
+                    <div class="notification-row">
+                        <label>Status changes</label>
+                        <input asp-for="NotifyApplicationStatus" class="form-check-input notification-check" />
+                    </div>
+
+                    <div class="notification-row">
+                        <label>Messages</label>
+                        <input asp-for="NotifyMessages" class="form-check-input notification-check" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- SAVE -->
+            <div class="text-end">
+                <button type="submit" class="btn-acadimy px-5 py-3">
+                    <i class="bi bi-save"></i> Save Changes
                 </button>
             </div>
-        </div>
 
-        <div class="card settings-card mb-4">
-            <div class="card-body p-4">
-                <h3 class="settings-title mb-4">Change Password <small class="text-muted">(optional)</small></h3>
-
-                <p class="text-muted small mb-3">
-                    Leave all password fields empty if you do not want to change your password.
-                </p>
-
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <label asp-for="CurrentPassword" class="form-label">Current Password</label>
-                        <input asp-for="CurrentPassword" class="form-control settings-input" autocomplete="current-password" />
-                    </div>
-
-                    <div class="col-md-4">
-                        <label asp-for="NewPassword" class="form-label">New Password</label>
-                        <input asp-for="NewPassword" class="form-control settings-input" autocomplete="new-password" />
-                    </div>
-
-                    <div class="col-md-4">
-                        <label asp-for="ConfirmNewPassword" class="form-label">Confirm New Password</label>
-                        <input asp-for="ConfirmNewPassword" class="form-control settings-input" autocomplete="new-password" />
-                        <span asp-validation-for="ConfirmNewPassword" class="text-danger"></span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="card settings-card mb-4">
-            <div class="card-body p-4">
-                <h3 class="settings-title mb-4">Account Notifications</h3>
-
-                <div class="form-check mb-2">
-                    <input asp-for="NotifyNewCourse" class="form-check-input notification-check" />
-                    <label asp-for="NotifyNewCourse" class="form-check-label">
-                        When a teacher publishes a new course
-                    </label>
-                </div>
-
-                <div class="form-check mb-2">
-                    <input asp-for="NotifyApplicationStatus" class="form-check-input notification-check" />
-                    <label asp-for="NotifyApplicationStatus" class="form-check-label">
-                        When my course progress/status changes
-                    </label>
-                </div>
-
-                <div class="form-check mb-2">
-                    <input asp-for="NotifyAssignmentCorrection" class="form-check-input notification-check" />
-                    <label asp-for="NotifyAssignmentCorrection" class="form-check-label">
-                        When an assignment is corrected
-                    </label>
-                </div>
-
-                <div class="form-check mb-2">
-                    <input asp-for="NotifyNewLesson" class="form-check-input notification-check" />
-                    <label asp-for="NotifyNewLesson" class="form-check-label">
-                        When a new lesson is added to my course
-                    </label>
-                </div>
-
-                <div class="form-check mb-2">
-                    <input asp-for="NotifyAnnouncement" class="form-check-input notification-check" />
-                    <label asp-for="NotifyAnnouncement" class="form-check-label">
-                        When an admin sends an announcement
-                    </label>
-                </div>
-
-                <div class="form-check mb-2">
-                    <input asp-for="NotifyMessages" class="form-check-input notification-check" />
-                    <label asp-for="NotifyMessages" class="form-check-label">
-                        When I receive a new message
-                    </label>
-                </div>
-            </div>
-        </div>
-
-        <button type="submit" class="btn btn-success px-5 py-3 rounded-pill fw-bold">
-            Save Changes
-        </button>
-    </form>
-</div>
+        </form>
+    </div>
+</section>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
@@ -222,19 +218,19 @@
             const container = document.getElementById("skillContainer");
 
             const html =
-                '<div class="row skill-item mb-3">' +
-                    '<div class="col-md-7">' +
-                        '<label class="form-label">Skill</label>' +
-                        '<input name="Skills[' + skillIndex + '].Name" class="form-control settings-input" placeholder="Ex: HTML" />' +
-                    '</div>' +
-                    '<div class="col-md-3">' +
-                        '<label class="form-label">%</label>' +
-                        '<input name="Skills[' + skillIndex + '].Percentage" type="number" min="0" max="100" class="form-control settings-input" value="0" />' +
-                    '</div>' +
-                    '<div class="col-md-2 d-flex align-items-end">' +
-                        '<button type="button" class="btn btn-danger w-100 remove-skill">Remove</button>' +
-                    '</div>' +
-                '</div>';
+                `<div class="row skill-item mb-3">
+                    <div class="col-md-7">
+                        <label class="settings-label">Skill</label>
+                        <input name="Skills[${skillIndex}].Name" class="form-control settings-input" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="settings-label">%</label>
+                        <input name="Skills[${skillIndex}].Percentage" type="number" class="form-control settings-input" />
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="button" class="btn-acadimy-danger w-100 remove-skill">Remove</button>
+                    </div>
+                </div>`;
 
             container.insertAdjacentHTML("beforeend", html);
             skillIndex++;

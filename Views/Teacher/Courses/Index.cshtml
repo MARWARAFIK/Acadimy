@@ -6,131 +6,137 @@
     ViewData["Title"] = "Gestion des cours";
 }
 
-<div class="container teacher-settings-page">
-    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
-        <div>
-            <h2 class="settings-title mb-0">Gestion de mes cours</h2>
-            <p class="text-muted small mb-0">Consultez et gérez vos publications éducatives</p>
+<section class="teacher-page">
+    <div class="teacher-page-container">
+
+        <!-- HEADER -->
+        <div class="teacher-page-header">
+            <div>
+                <span class="page-badge">COURSE MANAGEMENT</span>
+                <h1>Gestion de mes cours</h1>
+                <p>Consultez et gérez vos publications éducatives</p>
+            </div>
+
+            <a asp-action="Create" class="teacher-btn-main">
+                <i class="bi bi-plus-lg me-2"></i> Ajouter un cours
+            </a>
         </div>
 
-        <a asp-action="Create" class="btn-add-course">
-            <i class="bi bi-plus-lg me-2"></i> Ajouter un nouveau cours
-        </a>
-    </div>
+        <!-- TABLE CARD -->
+        <div class="teacher-card">
 
-    <div class="course-management-card">
-        <div class="table-responsive">
-            <table class="table acadimy-table mb-0 align-middle">
-                <thead>
-                    <tr>
-                        <th>Image</th>
-                        <th>Titre du cours</th>
-                        <th>Catégorie</th>
-                        <th>Niveau</th>
-                        <th class="text-center">Fichier</th>
-                        <th class="text-end">Actions</th>
-                    </tr>
-                </thead>
+            <div class="table-responsive">
+                <table class="table teacher-table align-middle">
 
-                <tbody>
-                    @if (Model != null && Model.Any())
-                    {
-                        foreach (var item in Model)
+                    <thead>
+                        <tr>
+                            <th>Image</th>
+                            <th>Titre</th>
+                            <th>Catégorie</th>
+                            <th>Niveau</th>
+                            <th class="text-center">Fichier</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @if (Model != null && Model.Any())
                         {
-                            <tr>
-                                <td>
-                                    <div class="rounded shadow-sm bg-light d-flex align-items-center justify-content-center"
-                                         style="width: 65px; height: 42px; overflow: hidden; border: 1px solid #eee;">
-                                        @if (!string.IsNullOrEmpty(item.ExistingThumbnailPath))
+                            foreach (var item in Model)
+                            {
+                                <tr>
+
+                                    <!-- IMAGE -->
+                                    <td>
+                                        <div class="table-img">
+                                            @if (!string.IsNullOrEmpty(item.ExistingThumbnailPath))
+                                            {
+                                                <img src="@item.ExistingThumbnailPath" />
+                                            }
+                                            else
+                                            {
+                                                <i class="bi bi-image"></i>
+                                            }
+                                        </div>
+                                    </td>
+
+                                    <!-- TITLE -->
+                                    <td class="fw-bold text-dark">
+                                        @item.Title
+                                    </td>
+
+                                    <!-- CATEGORY -->
+                                    <td>
+                                        <span class="badge-cat">
+                                            @(string.IsNullOrWhiteSpace(item.Category) ? "N/A" : item.Category)
+                                        </span>
+                                    </td>
+
+                                    <!-- LEVEL -->
+                                    <td>
+                                        <span class="badge-lvl">
+                                            @(string.IsNullOrWhiteSpace(item.Level) ? "N/A" : item.Level)
+                                        </span>
+                                    </td>
+
+                                    <!-- FILE -->
+                                    <td class="text-center">
+                                        @if (!string.IsNullOrEmpty(item.ExistingFilePath))
                                         {
-                                            <img src="@item.ExistingThumbnailPath"
-                                                 style="width: 100%; height: 100%; object-fit: cover;"
-                                                 alt="Course Image" />
+                                            <a href="@item.ExistingFilePath" target="_blank" class="download-icon">
+                                                <i class="bi bi-download"></i>
+                                            </a>
                                         }
                                         else
                                         {
-                                            <i class="bi bi-image text-secondary"></i>
+                                            <span class="text-muted">---</span>
                                         }
-                                    </div>
-                                </td>
+                                    </td>
 
-                                <td class="fw-bold text-dark">
-                                    @item.Title
-                                </td>
+                                    <!-- ACTIONS -->
+                                    <td class="text-end">
+                                        <div class="action-group">
 
-                                <td>
-                                    <span class="badge-cat">
-                                        @(string.IsNullOrWhiteSpace(item.Category) ? "N/A" : item.Category)
-                                    </span>
-                                </td>
+                                            <a asp-action="Edit"
+                                               asp-route-id="@item.Id"
+                                               class="btn-action-edit">
+                                                <i class="bi bi-pencil-fill"></i>
+                                            </a>
 
-                                <td>
-                                    <span class="badge-lvl">
-                                        @(string.IsNullOrWhiteSpace(item.Level) ? "N/A" : item.Level)
-                                    </span>
-                                </td>
+                                            <form asp-action="Archive" method="post">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="id" value="@item.Id" />
+                                                <button type="submit" class="btn-action-archive">
+                                                    <i class="bi bi-archive-fill"></i>
+                                                </button>
+                                            </form>
 
-                                <td class="text-center">
-                                    @if (!string.IsNullOrEmpty(item.ExistingFilePath))
-                                    {
-                                        <a href="@item.ExistingFilePath"
-                                           target="_blank"
-                                           class="text-success"
-                                           title="Télécharger">
-                                            <i class="bi bi-download fs-5"></i>
-                                        </a>
-                                    }
-                                    else
-                                    {
-                                        <span class="text-muted small">---</span>
-                                    }
-                                </td>
-
-                                <td class="text-end">
-                                    <div class="action-group">
-
-                                        <a asp-action="Edit"
-                                           asp-route-id="@item.Id"
-                                           class="btn-action-edit"
-                                           title="Modifier">
-                                            <i class="bi bi-pencil-fill"></i>
-                                        </a>
-
-                                        <form asp-action="Archive" method="post" class="m-0">
-                                            @Html.AntiForgeryToken()
-                                            <input type="hidden" name="id" value="@item.Id" />
-                                            <button type="submit"
-                                                    class="btn-action-archive"
-                                                    title="Archiver">
-                                                <i class="bi bi-archive-fill"></i>
+                                            <button onclick="confirmDelete(@item.Id)" class="btn-action-delete">
+                                                <i class="bi bi-trash-fill"></i>
                                             </button>
-                                        </form>
 
-                                        <button type="button"
-                                                onclick="confirmDelete(@item.Id)"
-                                                class="btn-action-delete"
-                                                title="Supprimer">
-                                            <i class="bi bi-trash-fill"></i>
-                                        </button>
-                                    </div>
+                                        </div>
+                                    </td>
+
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center py-5 empty-state">
+                                    <i class="bi bi-book"></i>
+                                    <p>Aucun cours disponible</p>
                                 </td>
                             </tr>
                         }
-                    }
-                    else
-                    {
-                        <tr>
-                            <td colspan="6" class="text-center py-5 text-muted">
-                                <i class="bi bi-book fs-1 mb-3 d-block" style="opacity: 0.3;"></i>
-                                <p class="mb-0">Vous n'avez aucun cours pour le moment.</p>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+                    </tbody>
+
+                </table>
+            </div>
         </div>
     </div>
-</div>
+</section>
 
 <form id="deleteForm" asp-action="Delete" method="post">
     @Html.AntiForgeryToken()
@@ -144,14 +150,13 @@
         function confirmDelete(id) {
         Swal.fire({
         title: 'Supprimer ce cours ?',
-        text: "Cette action supprimera définitivement le cours.",
+        text: "Action irréversible.",
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: '#28a745',
-        cancelButtonColor: '#e11d48',
-        confirmButtonText: 'Oui, supprimer',
-        cancelButtonText: 'Annuler',
-        padding: '2em'
+        confirmButtonColor: '#20c997',
+        cancelButtonColor: '#ef4444',
+        confirmButtonText: 'Oui',
+        cancelButtonText: 'Annuler'
         }).then((result) => {
         if (result.isConfirmed) {
         document.getElementById('deleteId').value = id;

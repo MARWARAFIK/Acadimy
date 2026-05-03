@@ -1,242 +1,258 @@
 ﻿@model Acadimy.ViewModels.Teacher.TeacherSettingsViewModel
 @{
     Layout = "~/Views/Shared/LayoutTeacher.cshtml";
+    ViewData["Title"] = "Teacher Settings";
 }
 
-<div class="teacher-settings-page">
+<section class="teacher-white-page">
+    <div class="teacher-white-container">
 
-    @if (ViewBag.Message != null)
-    {
-        <div class="alert alert-success">@ViewBag.Message</div>
-    }
-
-    <form asp-action="Index" method="post" enctype="multipart/form-data">
-        @Html.AntiForgeryToken()
-
-        <div asp-validation-summary="All" class="text-danger mb-3"></div>
-
-        <div class="card settings-card mb-4">
-            <div class="card-body p-4">
-                <h3 class="settings-title mb-4">Personal Details</h3>
-
-                <div class="row">
-                    <div class="col-md-6 mb-4">
-                        <label asp-for="FirstName" class="form-label settings-label">First Name</label>
-                        <input asp-for="FirstName" class="form-control settings-input" />
-                        <span asp-validation-for="FirstName" class="text-danger"></span>
-                    </div>
-
-                    <div class="col-md-6 mb-4">
-                        <label asp-for="LastName" class="form-label settings-label">Last Name</label>
-                        <input asp-for="LastName" class="form-control settings-input" />
-                        <span asp-validation-for="LastName" class="text-danger"></span>
-                    </div>
-
-                    <div class="col-md-6 mb-4">
-                        <label asp-for="Email" class="form-label settings-label">Email</label>
-                        <input asp-for="Email" class="form-control settings-input" />
-                        <span asp-validation-for="Email" class="text-danger"></span>
-                    </div>
-
-                    <div class="col-12 mb-4">
-                        <label asp-for="Bio" class="form-label settings-label">Bio</label>
-                        <textarea asp-for="Bio" class="form-control settings-textarea" rows="5"></textarea>
-                    </div>
-                </div>
+        <div class="teacher-page-header mb-4">
+            <div>
+                <span class="page-badge">SETTINGS</span>
+                <h1>Paramètres du compte</h1>
+                <p>Modifiez vos informations personnelles et professionnelles.</p>
             </div>
         </div>
 
-        <div class="card settings-card mb-4">
-            <div class="card-body p-4">
-                <h3 class="settings-title mb-4">Professional Details</h3>
-
-                <div class="row">
-                    <div class="col-md-6 mb-4">
-                        <label asp-for="Grade" class="form-label settings-label">Grade</label>
-                        <select asp-for="Grade" class="form-select settings-input">
-                            <option value="">Choose grade</option>
-                            <option value="Professeur">Professeur</option>
-                            <option value="Professeur Assistant">Professeur Assistant</option>
-                            <option value="Professeur Habilité">Professeur Habilité</option>
-                            <option value="Maître de Conférences">Maître de Conférences</option>
-                            <option value="Docteur">Docteur</option>
-                            <option value="Doctorant">Doctorant</option>
-                            <option value="Vacataire">Vacataire</option>
-                            <option value="Chercheur">Chercheur</option>
-                        </select>
-                    </div>
-
-                    <div class="col-md-6 mb-4">
-                        <label asp-for="Specialite" class="form-label settings-label">Spécialité</label>
-                        <input asp-for="Specialite" class="form-control settings-input" />
-                    </div>
-
-                    <div class="col-md-6 mb-4">
-                        <label asp-for="Experience" class="form-label settings-label">Experience (ans)</label>
-                        <input asp-for="Experience" type="number" min="0" class="form-control settings-input" />
-                        <span asp-validation-for="Experience" class="text-danger"></span>
-                    </div>
-                </div>
-
-                <hr class="my-4" />
-
-                <h4 class="mb-3">Expertises</h4>
-
-                <div id="expertiseContainer">
-                    @for (int i = 0; i < Model.Expertises.Count; i++)
-                    {
-                        <div class="row expertise-item mb-3">
-                            <div class="col-md-7">
-                                <label class="form-label settings-label">Expertise</label>
-                                <input asp-for="Expertises[i].Name" class="form-control settings-input" placeholder="Ex: ASP.NET Core" />
-                            </div>
-
-                            <div class="col-md-3">
-                                <label class="form-label settings-label">%</label>
-                                <input asp-for="Expertises[i].Percentage" type="number" min="0" max="100" class="form-control settings-input" />
-                            </div>
-
-                            <div class="col-md-2 d-flex align-items-end">
-                                <button type="button" class="btn btn-danger w-100 remove-expertise">Remove</button>
-                            </div>
-                        </div>
-                    }
-                </div>
-
-                <button type="button" id="addExpertiseBtn" class="btn btn-outline-primary mt-2">
-                    Add Expertise
-                </button>
+        @if (ViewBag.Message != null)
+        {
+            <div class="alert alert-success rounded-4 mb-4">
+                <i class="bi bi-check-circle me-2"></i> @ViewBag.Message
             </div>
-        </div>
+        }
 
-        <div class="card settings-card mb-4">
-            <div class="card-body p-4">
-                <h3 class="settings-title mb-4">Images</h3>
+        <form asp-action="Index" method="post" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
 
-                <div class="row">
-                    <div class="col-md-6 mb-4">
-                        <label asp-for="ProfileImage" class="form-label settings-label">Profile Photo</label>
-                        <input asp-for="ProfileImage" type="file" class="form-control settings-input" />
+            <div asp-validation-summary="All" class="text-danger mb-3"></div>
 
-                        @if (!string.IsNullOrEmpty(Model.ExistingProfileImagePath))
-                        {
-                            <img src="@Model.ExistingProfileImagePath" class="preview-img mt-3" alt="Profile Preview" />
-                        }
-                    </div>
+            <div class="card settings-card mb-4">
+                <div class="card-body p-4">
+                    <h3 class="settings-title mb-4">Personal Details</h3>
 
-                    <div class="col-md-6 mb-4">
-                        <label asp-for="CoverImage" class="form-label settings-label">Cover Photo</label>
-                        <input asp-for="CoverImage" type="file" class="form-control settings-input" />
-
-                        @if (!string.IsNullOrEmpty(Model.ExistingCoverImagePath))
-                        {
-                            <img src="@Model.ExistingCoverImagePath" class="preview-cover mt-3" alt="Cover Preview" />
-                        }
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="card settings-card mb-4">
-            <div class="card-body p-4">
-                <h3 class="settings-title mb-4">Change Password</h3>
-
-                <div class="form-check mb-4">
-                    <input asp-for="ChangePassword" class="form-check-input" id="changePasswordCheck" />
-                    <label asp-for="ChangePassword" class="form-check-label" for="changePasswordCheck">
-                        I want to change my password
-                    </label>
-                </div>
-
-                <div id="passwordFields" style="display:@(Model.ChangePassword ? "block" : "none");">
                     <div class="row">
-                        <div class="col-md-4 mb-4">
-                            <label asp-for="CurrentPassword" class="form-label settings-label">Current Password</label>
-                            <input asp-for="CurrentPassword" type="password" class="form-control settings-input" autocomplete="new-password" />
-                            <span asp-validation-for="CurrentPassword" class="text-danger"></span>
+                        <div class="col-md-6 mb-4">
+                            <label asp-for="FirstName" class="form-label settings-label">First Name</label>
+                            <input asp-for="FirstName" class="form-control settings-input" />
+                            <span asp-validation-for="FirstName" class="text-danger"></span>
                         </div>
 
-                        <div class="col-md-4 mb-4">
-                            <label asp-for="NewPassword" class="form-label settings-label">New Password</label>
-                            <input asp-for="NewPassword" type="password" class="form-control settings-input" autocomplete="new-password" />
-                            <span asp-validation-for="NewPassword" class="text-danger"></span>
+                        <div class="col-md-6 mb-4">
+                            <label asp-for="LastName" class="form-label settings-label">Last Name</label>
+                            <input asp-for="LastName" class="form-control settings-input" />
+                            <span asp-validation-for="LastName" class="text-danger"></span>
                         </div>
 
-                        <div class="col-md-4 mb-4">
-                            <label asp-for="ConfirmNewPassword" class="form-label settings-label">Confirm New Password</label>
-                            <input asp-for="ConfirmNewPassword" type="password" class="form-control settings-input" autocomplete="new-password" />
-                            <span asp-validation-for="ConfirmNewPassword" class="text-danger"></span>
+                        <div class="col-md-6 mb-4">
+                            <label asp-for="Email" class="form-label settings-label">Email</label>
+                            <input asp-for="Email" class="form-control settings-input" />
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-12 mb-4">
+                            <label asp-for="Bio" class="form-label settings-label">Bio</label>
+                            <textarea asp-for="Bio" class="form-control settings-textarea" rows="5"></textarea>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="card settings-card mb-4">
-            <div class="card-body p-4">
-                <h3 class="settings-title mb-4">Account Notifications</h3>
+            <div class="card settings-card mb-4">
+                <div class="card-body p-4">
+                    <h3 class="settings-title mb-4">Professional Details</h3>
 
-                <div class="notification-row">
-                    <span>When students submit assignments</span>
-                    <input asp-for="NotifyStudentSubmission" class="form-check-input notification-check" />
-                </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <label asp-for="Grade" class="form-label settings-label">Grade</label>
+                            <select asp-for="Grade" class="form-select settings-input">
+                                <option value="">Choose grade</option>
+                                <option value="Professeur">Professeur</option>
+                                <option value="Professeur Assistant">Professeur Assistant</option>
+                                <option value="Professeur Habilité">Professeur Habilité</option>
+                                <option value="Maître de Conférences">Maître de Conférences</option>
+                                <option value="Docteur">Docteur</option>
+                                <option value="Doctorant">Doctorant</option>
+                                <option value="Vacataire">Vacataire</option>
+                                <option value="Chercheur">Chercheur</option>
+                            </select>
+                        </div>
 
-                <div class="notification-row">
-                    <span>When students interact with my courses</span>
-                    <input asp-for="NotifyCourseActivity" class="form-check-input notification-check" />
-                </div>
+                        <div class="col-md-6 mb-4">
+                            <label asp-for="Specialite" class="form-label settings-label">Spécialité</label>
+                            <input asp-for="Specialite" class="form-control settings-input" />
+                        </div>
 
-                <div class="notification-row">
-                    <span>When an admin sends an announcement</span>
-                    <input asp-for="NotifyAnnouncement" class="form-check-input notification-check" />
-                </div>
+                        <div class="col-md-6 mb-4">
+                            <label asp-for="Experience" class="form-label settings-label">Experience (ans)</label>
+                            <input asp-for="Experience" type="number" min="0" class="form-control settings-input" />
+                            <span asp-validation-for="Experience" class="text-danger"></span>
+                        </div>
+                    </div>
 
-                <div class="notification-row border-bottom-0">
-                    <span>When I receive a new message</span>
-                    <input asp-for="NotifyMessages" class="form-check-input notification-check" />
-                </div>
+                    <hr class="my-4" />
 
-                <div class="mt-4">
-                    <button type="submit" class="btn save-btn">Save Changes</button>
+                    <h4 class="settings-subtitle mb-3">Expertises</h4>
+
+                    <div id="expertiseContainer">
+                        @for (int i = 0; i < Model.Expertises.Count; i++)
+                        {
+                            <div class="row expertise-item mb-3">
+                                <div class="col-md-7">
+                                    <label class="form-label settings-label">Expertise</label>
+                                    <input asp-for="Expertises[i].Name" class="form-control settings-input" placeholder="Ex: ASP.NET Core" />
+                                </div>
+
+                                <div class="col-md-3">
+                                    <label class="form-label settings-label">%</label>
+                                    <input asp-for="Expertises[i].Percentage" type="number" min="0" max="100" class="form-control settings-input" />
+                                </div>
+
+                                <div class="col-md-2 d-flex align-items-end">
+                                    <button type="button" class="btn-acadimy-danger w-100 remove-expertise">
+                                        Remove
+                                    </button>
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    <button type="button" id="addExpertiseBtn" class="btn-acadimy-outline">
+                        <i class="bi bi-plus-lg me-1"></i> Add Expertise
+                    </button>
                 </div>
             </div>
-        </div>
-    </form>
-</div>
+
+            <div class="card settings-card mb-4">
+                <div class="card-body p-4">
+                    <h3 class="settings-title mb-4">Images</h3>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <label asp-for="ProfileImage" class="form-label settings-label">Profile Photo</label>
+                            <input asp-for="ProfileImage" type="file" class="form-control settings-input" />
+
+                            @if (!string.IsNullOrEmpty(Model.ExistingProfileImagePath))
+                            {
+                                <img src="@Model.ExistingProfileImagePath" class="preview-img mt-3" alt="Profile Preview" />
+                            }
+                        </div>
+
+                        <div class="col-md-6 mb-4">
+                            <label asp-for="CoverImage" class="form-label settings-label">Cover Photo</label>
+                            <input asp-for="CoverImage" type="file" class="form-control settings-input" />
+
+                            @if (!string.IsNullOrEmpty(Model.ExistingCoverImagePath))
+                            {
+                                <img src="@Model.ExistingCoverImagePath" class="preview-cover mt-3" alt="Cover Preview" />
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @{
+                var passwordDisplay = Model.ChangePassword ? "block" : "none";
+            }
+
+            <div class="card settings-card mb-4">
+                <div class="card-body p-4">
+                    <h3 class="settings-title mb-4">Change Password</h3>
+
+                    <div class="form-check mb-4">
+                        <input asp-for="ChangePassword" class="form-check-input" id="changePasswordCheck" />
+                        <label asp-for="ChangePassword" class="form-check-label" for="changePasswordCheck">
+                            I want to change my password
+                        </label>
+                    </div>
+
+                    <div id="passwordFields" style="display:@passwordDisplay;">
+                        <div class="row">
+                            <div class="col-md-4 mb-4">
+                                <label asp-for="CurrentPassword" class="form-label settings-label">Current Password</label>
+                                <input asp-for="CurrentPassword" type="password" class="form-control settings-input" autocomplete="current-password" />
+                                <span asp-validation-for="CurrentPassword" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-4 mb-4">
+                                <label asp-for="NewPassword" class="form-label settings-label">New Password</label>
+                                <input asp-for="NewPassword" type="password" class="form-control settings-input" autocomplete="new-password" />
+                                <span asp-validation-for="NewPassword" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-4 mb-4">
+                                <label asp-for="ConfirmNewPassword" class="form-label settings-label">Confirm New Password</label>
+                                <input asp-for="ConfirmNewPassword" type="password" class="form-control settings-input" autocomplete="new-password" />
+                                <span asp-validation-for="ConfirmNewPassword" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card settings-card mb-4">
+                <div class="card-body p-4">
+                    <h3 class="settings-title mb-4">Account Notifications</h3>
+
+                    <div class="notification-row">
+                        <span>When students submit assignments</span>
+                        <input asp-for="NotifyStudentSubmission" class="form-check-input notification-check" />
+                    </div>
+
+                    <div class="notification-row">
+                        <span>When students interact with my courses</span>
+                        <input asp-for="NotifyCourseActivity" class="form-check-input notification-check" />
+                    </div>
+
+                    <div class="notification-row">
+                        <span>When an admin sends an announcement</span>
+                        <input asp-for="NotifyAnnouncement" class="form-check-input notification-check" />
+                    </div>
+
+                    <div class="notification-row">
+                        <span>When I receive a new message</span>
+                        <input asp-for="NotifyMessages" class="form-check-input notification-check" />
+                    </div>
+
+                    <div class="mt-4 text-end">
+                        <button type="submit" class="btn-acadimy">
+                            <i class="bi bi-save me-2"></i> Save Changes
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+    </div>
+</section>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 
     <script>
-        let expertiseIndex = @(Model.Expertises?.Count ?? 0);
+        let expertiseIndex = @((Model.Expertises?.Count ?? 0));
 
-        const addBtn = document.getElementById("addExpertiseBtn");
-        if (addBtn) {
-            addBtn.addEventListener("click", function () {
-                const container = document.getElementById("expertiseContainer");
+        document.getElementById("addExpertiseBtn")?.addEventListener("click", function () {
+            const container = document.getElementById("expertiseContainer");
 
-                const html = `
-                    <div class="row expertise-item mb-3">
-                        <div class="col-md-7">
-                            <label class="form-label settings-label">Expertise</label>
-                            <input name="Expertises[${expertiseIndex}].Name" class="form-control settings-input" placeholder="Ex: ASP.NET Core" />
-                        </div>
+            const html =
+                '<div class="row expertise-item mb-3">' +
+                    '<div class="col-md-7">' +
+                        '<label class="form-label settings-label">Expertise</label>' +
+                        '<input name="Expertises[' + expertiseIndex + '].Name" class="form-control settings-input" placeholder="Ex: ASP.NET Core" />' +
+                    '</div>' +
+                    '<div class="col-md-3">' +
+                        '<label class="form-label settings-label">%</label>' +
+                        '<input name="Expertises[' + expertiseIndex + '].Percentage" type="number" min="0" max="100" class="form-control settings-input" />' +
+                    '</div>' +
+                    '<div class="col-md-2 d-flex align-items-end">' +
+                        '<button type="button" class="btn-acadimy-danger w-100 remove-expertise">Remove</button>' +
+                    '</div>' +
+                '</div>';
 
-                        <div class="col-md-3">
-                            <label class="form-label settings-label">%</label>
-                            <input name="Expertises[${expertiseIndex}].Percentage" type="number" min="0" max="100" class="form-control settings-input" />
-                        </div>
-
-                        <div class="col-md-2 d-flex align-items-end">
-                            <button type="button" class="btn btn-danger w-100 remove-expertise">Remove</button>
-                        </div>
-                    </div>
-                `;
-
-                container.insertAdjacentHTML("beforeend", html);
-                expertiseIndex++;
-            });
-        }
+            container.insertAdjacentHTML("beforeend", html);
+            expertiseIndex++;
+        });
 
         document.addEventListener("click", function (e) {
             if (e.target.classList.contains("remove-expertise")) {
@@ -252,9 +268,7 @@
             passwordFields.style.display = changePasswordCheck.checked ? "block" : "none";
         }
 
-        if (changePasswordCheck) {
-            changePasswordCheck.addEventListener("change", togglePasswordFields);
-            togglePasswordFields();
-        }
+        changePasswordCheck?.addEventListener("change", togglePasswordFields);
+        togglePasswordFields();
     </script>
 }

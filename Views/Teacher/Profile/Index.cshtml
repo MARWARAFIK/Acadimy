@@ -1,5 +1,4 @@
 ﻿@model Acadimy.ViewModels.Teacher.TeacherProfileViewModel
-
 @{
     bool isOwnProfile = ViewBag.IsOwnProfile != null && (bool)ViewBag.IsOwnProfile;
 
@@ -107,11 +106,11 @@
                     <div class="card profile-card-box mb-4">
                         <div class="card-body p-4">
                             <h3 class="profile-section-title">Create Post</h3>
+
                             <form asp-controller="TeacherPosts"
                                   asp-action="Create"
                                   method="post"
                                   enctype="multipart/form-data">
-
                                 @Html.AntiForgeryToken()
 
                                 <div class="mb-3">
@@ -128,11 +127,9 @@
                                            accept="image/*" />
                                 </div>
 
-                                <button type="submit"
-                                        class="btn btn-success w-100 rounded-pill">
+                                <button type="submit" class="btn btn-success w-100 rounded-pill">
                                     <i class="bi bi-send"></i> Publish
                                 </button>
-
                             </form>
                         </div>
                     </div>

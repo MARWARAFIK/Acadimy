@@ -1,19 +1,191 @@
-﻿@{
+﻿@model List<Acadimy.Models.Teacher.TeacherCourse>
+
+@{
     ViewData["Title"] = "Espace Enseignant";
+    Layout = "~/Views/Shared/LayoutTeacher.cshtml";
 }
 
-<div class="container mt-5">
-    <div class="card shadow-sm p-4">
-        <h1 class="text-success"><i class="bi bi-person-workspace"></i> Bienvenue, Cher Enseignant</h1>
-        <p class="lead">Gestion de vos cours et suivi des étudiants d'Acadimy.</p>
-        <hr />
-        <div class="row">
-            <div class="col-md-4">
-                <div class="p-3 border rounded bg-light text-center">
-                    <h3>Mes Cours</h3>
-                    <a class="btn btn-outline-success" asp-controller="Courses" asp-action="Manage">Gérer</a>
-                </div>
+<!-- HERO -->
+<section class="teacher-home-hero">
+    <div class="teacher-home-container">
+
+        <div class="teacher-home-text">
+            <span class="teacher-home-badge">
+                <i class="bi bi-stars"></i> 100% Academic Platform
+            </span>
+
+            <h1>
+                Teach Smarter With <br />
+                <span>Acadimy</span>
+            </h1>
+
+            <p>
+                Gérez vos cours, vos étudiants, vos devoirs et votre communauté académique
+                dans un espace moderne, clair et professionnel.
+            </p>
+
+            <div class="teacher-home-actions">
+                <a href="#teacherCourses" class="teacher-btn-main">
+                    Voir mes cours <i class="bi bi-arrow-right"></i>
+                </a>
+
+                <a asp-controller="TeacherStudents" asp-action="Index" class="teacher-btn-link">
+                    Mes étudiants <i class="bi bi-arrow-right"></i>
+                </a>
             </div>
         </div>
+
+        <div class="teacher-home-image-wrap">
+            <div class="orange-shape"></div>
+            <div class="teacher-home-image">
+                <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1100&q=90"
+                     alt="Acadimy Teacher" />
+            </div>
+        </div>
+
     </div>
-</div>
+</section>
+
+<!-- FEATURES -->
+<section class="teacher-features">
+    <div class="teacher-feature-card">
+        <i class="bi bi-journals"></i>
+        <div>
+            <h4>Course Management</h4>
+            <p>Créer, modifier et organiser vos cours.</p>
+        </div>
+    </div>
+
+    <div class="teacher-feature-card">
+        <i class="bi bi-people"></i>
+        <div>
+            <h4>Student Tracking</h4>
+            <p>Suivre la progression des étudiants.</p>
+        </div>
+    </div>
+
+    <div class="teacher-feature-card">
+        <i class="bi bi-camera-video"></i>
+        <div>
+            <h4>Online Learning</h4>
+            <p>Classes live, devoirs et communication.</p>
+        </div>
+    </div>
+</section>
+
+<!-- ABOUT -->
+<section class="teacher-about-section">
+    <div class="teacher-about-container">
+
+        <div class="teacher-about-images">
+            <div class="about-main-card">
+                <img class="about-img-main"
+                     src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=900&q=90"
+                     alt="Students learning" />
+            </div>
+
+            <div class="about-small-card">
+                <img class="about-img-small"
+                     src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=700&q=90"
+                     alt="Online learning" />
+            </div>
+
+            <div class="experience-box">
+                <strong>16+</strong>
+                <span>Years of Experience</span>
+            </div>
+        </div>
+
+        <div class="teacher-about-text">
+            <span class="section-label">ABOUT US</span>
+
+            <h2>Who We Are – Introduction to Acadimy Platform</h2>
+
+            <p>
+                Acadimy est une plateforme moderne pour les enseignants et les étudiants.
+                Elle simplifie la création des cours, le suivi des étudiants, les devoirs
+                et la communication académique.
+            </p>
+
+            <ul>
+                <li><i class="bi bi-check-circle-fill"></i> Course Catalog & Programs</li>
+                <li><i class="bi bi-check-circle-fill"></i> Online Assignments</li>
+                <li><i class="bi bi-check-circle-fill"></i> Live Classes & Progress Tracking</li>
+            </ul>
+
+            <a href="#teacherCourses" class="teacher-btn-main">
+                More About <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+
+    </div>
+</section>
+
+<!-- COURSES -->
+<section class="teacher-courses-section" id="teacherCourses">
+    <div class="teacher-section-header">
+        <span>ACADEMIC PROGRAMS</span>
+        <h2>Mes cours publiés</h2>
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="teacher-courses-grid">
+            @foreach (var course in Model)
+            {
+                <div class="teacher-course-card">
+                    @if (!string.IsNullOrEmpty(course.ThumbnailPath))
+                    {
+                        <img src="@course.ThumbnailPath" alt="@course.Title" />
+                    }
+                    else
+                    {
+                        <div class="teacher-course-empty">
+                            <i class="bi bi-journals"></i>
+                        </div>
+                    }
+
+                    <div class="teacher-course-body">
+                        @if (!string.IsNullOrEmpty(course.Category))
+                        {
+                            <span class="teacher-course-category">@course.Category</span>
+                        }
+
+                        <h4>@course.Title</h4>
+
+                        <p>
+                            @(course.Description != null && course.Description.Length > 95
+                                ? course.Description.Substring(0, 95) + "..."
+                                : course.Description)
+                        </p>
+
+                        <div class="teacher-course-footer">
+                            <small>
+                                <i class="bi bi-calendar"></i>
+                                @course.CreatedAt.ToString("dd MMM yyyy")
+                            </small>
+
+                            <a asp-controller="TeacherCourses"
+                               asp-action="Edit"
+                               asp-route-id="@course.Id">
+                                Modifier <i class="bi bi-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="empty-teacher-courses">
+            <i class="bi bi-journals"></i>
+            <h3>Aucun cours publié</h3>
+            <p>Commencez par créer votre premier cours.</p>
+
+            <a asp-controller="TeacherCourses" asp-action="Create" class="teacher-btn-main">
+                Créer un cours <i class="bi bi-plus-lg"></i>
+            </a>
+        </div>
+    }
+</section>
