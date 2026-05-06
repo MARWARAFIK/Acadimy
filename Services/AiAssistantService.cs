@@ -1,83 +1,113 @@
 ﻿using Acadimy.Data;
-using Acadimy.Models.Teacher;
 using Microsoft.EntityFrameworkCore;
+using System.Text;
+using System.Text.Json;
 
 namespace Acadimy.Services
 {
     public class AiAssistantService : IAiAssistantService
     {
         private readonly ApplicationDbContext _context;
+        private readonly IConfiguration _config;
+        private readonly HttpClient _http;
 
-        public AiAssistantService(ApplicationDbContext context)
+        public AiAssistantService(
+            ApplicationDbContext context,
+            IConfiguration config,
+            HttpClient http)
         {
             _context = context;
+            _config = config;
+            _http = http;
         }
 
         public async Task<string> AskAsync(string userId, string message)
         {
             if (string.IsNullOrWhiteSpace(message))
-                return "Pose-moi une question sur les cours, projets ou contenus pédagogiques.";
+                return "Pose-moi une question 😊";
 
-            var msg = message.ToLower();
-
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.Id == userId);
 
             if (user == null)
                 return "Utilisateur introuvable.";
 
-            if (msg.Contains("cours") || msg.Contains("course") || msg.Contains("recommande"))
+            var apiKey = _config["Groq:ApiKey"];
+
+            if (string.IsNullOrWhiteSpace(apiKey))
+                return "Clé Groq manquante.";
+
+            var body = new
             {
-                var courses = await _context.TeacherCourses
-           .Where(c =>
-               (!string.IsNullOrEmpty(user.Filiere) &&
-                !string.IsNullOrEmpty(c.Category) &&
-                c.Category.Contains(user.Filiere)) ||
+                model = "llama-3.1-8b-instant",
 
-               (!string.IsNullOrEmpty(user.Niveau) &&
-                !string.IsNullOrEmpty(c.Level) &&
-                c.Level.Contains(user.Niveau)) ||
-
-               (!string.IsNullOrEmpty(user.Skill) &&
-                !string.IsNullOrEmpty(c.Title) &&
-                c.Title.Contains(user.Skill)))
-           .OrderByDescending(c => c.CreatedAt)
-           .Take(5)
-           .ToListAsync();
-
-                if (!courses.Any())
-                    return "Aucun cours disponible pour le moment.";
-
-                var result = "Je te recommande ces cours :<br/>";
-
-                foreach (var c in courses)
+                messages = new object[]
                 {
-                    result += $"• <b>{c.Title}</b> - {c.Category} / {c.Level}<br/>";
+                    new
+                    {
+                        role = "system",
+                        content = $@"
+Tu es l'assistant IA de Acadimy.
+
+Utilisateur:
+Nom: {user.FullName}
+Filière: {user.Filiere}
+Niveau: {user.Niveau}
+
+Réponds en français ou darija.
+Tu aides avec:
+- ASP.NET
+- programmation
+- projets
+- cours
+- résumé
+- correction
+- questions générales
+
+Utilise HTML simple:
+<br>, <b>, <ul>, <li>
+"
+                    },
+
+                    new
+                    {
+                        role = "user",
+                        content = message
+                    }
                 }
+            };
 
-                return result;
-            }
+            var json = JsonSerializer.Serialize(body);
 
-            if (msg.Contains("résumé") || msg.Contains("resume") || msg.Contains("summarize"))
-            {
-                return "Résumé automatique : ce contenu explique les idées principales, les objectifs pédagogiques, et les points importants à retenir. Pour un meilleur résumé, colle-moi le texte du cours.";
-            }
+            using var request = new HttpRequestMessage(
+                HttpMethod.Post,
+                "https://api.groq.com/openai/v1/chat/completions"
+            );
 
-            if (msg.Contains("projet") || msg.Contains("project"))
-            {
-                return "Aide projet : explique clairement l’objectif, les technologies utilisées, les fonctionnalités principales, puis ajoute des améliorations possibles comme recherche, filtres, commentaires ou statistiques.";
-            }
+            request.Headers.Add("Authorization", $"Bearer {apiKey}");
 
-            if (msg.Contains("corrige") || msg.Contains("correction") || msg.Contains("texte"))
-            {
-                return "Assistance enseignant : je peux aider à corriger, reformuler et améliorer un texte. Colle-moi le texte que tu veux corriger.";
-            }
+            request.Content = new StringContent(
+                json,
+                Encoding.UTF8,
+                "application/json"
+            );
 
-            if (msg.Contains("bonjour") || msg.Contains("salut") || msg.Contains("hello"))
-            {
-                return $"Bonjour {user.FullName} 👋 Je suis ton assistant IA. Tu peux me demander une recommandation de cours, un résumé, ou de l’aide pour un projet.";
-            }
+            var response = await _http.SendAsync(request);
 
-            return "Je peux t’aider avec :<br/>• Recommandation de cours<br/>• Résumé de contenu<br/>• Aide projet<br/>• Correction de texte";
+            var responseText = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                return "Erreur Groq : " + responseText;
+
+            using var doc = JsonDocument.Parse(responseText);
+
+            var answer = doc.RootElement
+                .GetProperty("choices")[0]
+                .GetProperty("message")
+                .GetProperty("content")
+                .GetString();
+
+            return answer ?? "Pas de réponse.";
         }
     }
 }

@@ -7,9 +7,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
-
+builder.Services.AddHttpClient<IAiAssistantService, AiAssistantService>();
 builder.Services.AddSingleton<OnlineUserTracker>();
-builder.Services.AddScoped<IAiAssistantService, AiAssistantService>();
+
 builder.Services.AddSignalR();
 builder.Services.AddScoped<NotificationService>();
 
